@@ -1,10 +1,10 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
 import { SigninAuthDto, SignupAuthDto } from './dto';
-import { PrismaClientKnownRequestError } from 'generated/prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -49,15 +49,12 @@ export class AuthService {
         },
       });
 
-      // (No funciona) Para evitar que se devuelva el hash
-      // delete user.password;
-
       // Se devuelve el usuario almacenado como respuesta de la petición
       return this.signToken(user.id, user.mail);
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException(
+          throw new ConflictException(
             'Credentials already exist. Please try again with different credentials.',
           );
         }

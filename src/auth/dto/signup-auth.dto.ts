@@ -1,7 +1,7 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumber,
+  IsNumber, IsOptional,
   IsString,
   Max,
   Min,
@@ -13,7 +13,8 @@ export class SignupAuthDto {
   name: string;
 
   @IsString()
-  surname: string;
+  @IsOptional()
+  surname?: string;
 
   @IsEmail()
   @IsNotEmpty()
@@ -27,6 +28,7 @@ export class SignupAuthDto {
 
   @IsNumber()
   @IsNotEmpty()
+  @Min(10000)
   phone_number: number;
 
   @IsString()
