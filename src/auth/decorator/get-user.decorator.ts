@@ -8,6 +8,7 @@ export const GetUser = createParamDecorator(
       return request.user[data];
     }
 
-    return request.user;
+    const { password, refresh_token, ...userWithoutPrivateInfo } = request.user;
+    return userWithoutPrivateInfo;
   },
 );

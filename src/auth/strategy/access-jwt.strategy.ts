@@ -5,13 +5,14 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class AccessJwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     config: ConfigService,
     private prisma: PrismaService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
       secretOrKey: config.get('JWT_SECRET') as string,
     });
   }
@@ -26,11 +27,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     // Si no existe, se devuelve un objeto vacío
     if (!user) {
-      return {};
+      return null;
     }
 
-    // Se elimina la contraseña del objeto y se devuelve
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    // Se elimina la contraseña y el token del objeto y se devuelve
+    const { password, refresh_token, ...userWithoutPrivateInfo } = user;
+    return userWithoutPrivateInfo;
   }
 }

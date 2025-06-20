@@ -1,10 +1,16 @@
-import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
 import { SigninAuthDto, SignupAuthDto } from './dto';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
+import { TokensDto } from './dto/tokens.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,25 +20,123 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signToken(id: number, mail: string): Promise<{ access_token: string }> {
+  /**
+   * Verifies the provided JWT token and decodes its payload.
+   *
+   * @param {string} token - The JWT token to be verified.
+   * @param {boolean} [isAccessToken=true] - A flag indicating whether the provided token is an access token. If false, the method will use the refresh token secret to verify the token.
+   * @return {Promise<{ sub: number; mail: string }>} Resolves with the decoded payload of the token, which includes `sub` (subject) and `mail` (email) fields.
+   * @throws {TokenExpiredError} Throws if the token has expired.
+   * @throws {UnauthorizedException} Throws if the token is invalid for any other reason.
+   */
+  async verifyToken(
+    token: string,
+    isAccessToken: boolean = true,
+  ): Promise<{ sub: number; mail: string }> {
+    try {
+      const secret = isAccessToken
+        ? (this.config.get('JWT_SECRET') as string)
+        : (this.config.get('JWT_REFRESH_SECRET') as string);
+
+      return await this.jwt.verifyAsync<{ sub: number; mail: string }>(token, {
+        secret: secret,
+      });
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw error;
+      }
+
+      throw new UnauthorizedException('Invalid token. Please try again.');
+    }
+  }
+
+  /**
+   * Decodes a given JWT token and retrieves its payload.
+   *
+   * @param token - The JWT token to be decoded.
+   * @return The decoded payload containing the subject (sub) and email (mail).
+   */
+  private decodeToken(token: string) {
+    return this.jwt.decode<{ sub: number; mail: string }>(token);
+  }
+
+  /**
+   * Validates the provided payload to ensure it contains the required properties.
+   *
+   * @param {Object} payload - The payload to validate.
+   * @param {number} payload.sub - A numerical identifier within the payload.
+   * @param {string} payload.mail - An email string within the payload.
+   * @return {boolean} Returns true if the payload is valid and contains the required properties; otherwise, false.
+   */
+  validatePayload(payload: { sub: number; mail: string }): boolean {
+    return !(!payload || !payload.sub || !payload.mail);
+  }
+
+  /**
+   * Signs a JWT access token and refresh token for a given user ID and email.
+   * The method generates tokens with specified expiration periods and updates
+   * the database with the newly generated refresh token.
+   *
+   * @param {number} id - The ID of the user for whom the tokens are being signed.
+   * @param {string} mail - The email of the user for token payload inclusion.
+   * @return {Promise<TokensDto>} A promise that resolves to an instance of TokensDto containing the access token and
+   * refresh token.
+   */
+  async signToken(id: number, mail: string): Promise<TokensDto> {
     const payload = {
       sub: id,
       mail,
     };
 
-    const secret: string = this.config.get('JWT_SECRET') as string;
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwt.signAsync(payload, {
+        expiresIn: '15m',
+        secret: this.config.get('JWT_SECRET') as string,
+      }),
+      this.jwt.signAsync(payload, {
+        expiresIn: '7d',
+        secret: this.config.get('JWT_REFRESH_SECRET') as string,
+      }),
+    ]);
 
-    const token = await this.jwt.signAsync(payload, {
-      expiresIn: '1h',
-      secret: secret,
+    await this.updateDBRefreshToken(id, refreshToken);
+
+    return new TokensDto({
+      accessToken: accessToken,
+      refreshToken: refreshToken,
     });
-
-    return {
-      access_token: token,
-    };
   }
 
-  async signup(dto: SignupAuthDto) {
+  /**
+   * Updates the refresh token in the database for a specific user.
+   *
+   * @param {number} id - The unique identifier of the user whose refresh token should be updated.
+   * @param {string} refreshToken - The new refresh token to be stored, which will be hashed before saving.
+   * @return {Promise<void>} A promise that resolves when the operation is complete.
+   */
+  async updateDBRefreshToken(id: number, refreshToken: string): Promise<void> {
+    const hash = await argon.hash(refreshToken);
+    await this.prisma.users.update({
+      where: {
+        id: id,
+      },
+      data: {
+        refresh_token: hash,
+      },
+    });
+  }
+
+  /**
+   * Signs up a new user by hashing their password, storing their details in the database,
+   * and returning a signed token upon successful registration.
+   *
+   * @param {SignupAuthDto} dto - Data Transfer Object containing the signup details,
+   * including name, surname, email, phone prefix, phone number, and password.
+   * @return {Promise<TokensDto>} A promise that resolves to signed authentication tokens for the newly created user.
+   * @throws {ConflictException} If a user with the same unique credentials already exists.
+   * @throws {Error} If any other error occurs during the signup process.
+   */
+  async signup(dto: SignupAuthDto): Promise<TokensDto> {
     // Se genera el hash de la contraseña
     const hash = await argon.hash(dto.password);
 
@@ -64,7 +168,14 @@ export class AuthService {
     }
   }
 
-  async signin(dto: SigninAuthDto) {
+  /**
+   * Authenticates a user based on the provided credentials.
+   *
+   * @param {SigninAuthDto} dto - An object containing the sign-in details, including the user's email and password.
+   * @return {Promise<TokensDto>} Returns a promise that resolves to signed authentication tokens if the credentials are valid.
+   * @throws {ForbiddenException} Throws an exception if the email or password is invalid.
+   */
+  async signin(dto: SigninAuthDto): Promise<TokensDto> {
     // Se busca al usuario según el correo electrónico
     const user = await this.prisma.users.findUnique({
       where: {
@@ -86,6 +197,99 @@ export class AuthService {
     }
 
     // Se devuelve el usuario
+    return this.signToken(user.id, user.mail);
+  }
+
+  /**
+   * Logs out a user by setting their refresh token to null in the database.
+   *
+   * @param {number} id - The ID of the user to log out.
+   * @return {Promise<void>} A promise that resolves once the user's refresh token has been cleared.
+   */
+  async logout(id: number): Promise<void> {
+    // Se establece el valor del token a nulo
+    await this.prisma.users.updateMany({
+      where: {
+        id: id,
+        refresh_token: {
+          not: null,
+        },
+      },
+      data: {
+        refresh_token: null,
+      },
+    });
+  }
+
+  /**
+   * Refreshes the user's tokens by validating and verifying the provided access and refresh tokens.
+   *
+   * @param {TokensDto} dto - An object containing the access token and refresh token to be validated.
+   * @return {Promise<TokensDto>} A promise that resolves to a new signed token if validation is successful.
+   * @throws {UnauthorizedException} If any of the tokens are invalid, expired, or do not match the user.
+   */
+  async refreshToken(dto: TokensDto): Promise<TokensDto> {
+    // Se verifica el token de acceso
+    const accessTokenPayload = this.decodeToken(dto.accessToken);
+    const validAccessToken = this.validatePayload(accessTokenPayload);
+    if (!validAccessToken) {
+      throw new UnauthorizedException(
+        'Invalid access token. Please try again.',
+      );
+    }
+
+    // Se trata de obtener el usuario con los datos del token de acceso
+    const user = await this.prisma.users.findUnique({
+      where: {
+        id: accessTokenPayload.sub,
+      },
+    });
+
+    // Se verifica que el usuario y el token de refresco son válidos
+    if (!user || !user.refresh_token) {
+      throw new UnauthorizedException('User not registered. Please try again.');
+    }
+
+    // Se compara el token de refresco dado con el almacenado
+    const refreshTokenMatch = argon.verify(
+      user.refresh_token,
+      dto.refreshToken,
+    );
+    if (!refreshTokenMatch) {
+      throw new UnauthorizedException(
+        'Invalid refresh token. Please try again.',
+      );
+    }
+
+    // Se obtienen los datos del token de refresco
+    const refreshTokenPayload = await this.verifyToken(
+      dto.refreshToken,
+      false,
+    ).catch((error: Error) => {
+      if (error instanceof TokenExpiredError) {
+        throw error;
+      }
+
+      throw new UnauthorizedException(
+        'Invalid refresh token. Please try again.',
+      );
+    });
+
+    // Se validan los datos del token de refresco
+    const validRefreshToken = this.validatePayload(refreshTokenPayload);
+    if (!validRefreshToken) {
+      throw new UnauthorizedException(
+        'Invalid refresh token. Please try again.',
+      );
+    }
+
+    // Se verifica que los datos del token de refresco se corresponden con los del de acceso
+    if (accessTokenPayload.sub != refreshTokenPayload.sub) {
+      throw new UnauthorizedException(
+        'Invalid access token. Please try again.',
+      );
+    }
+
     return this.signToken(user.id, user.mail);
   }
 }
