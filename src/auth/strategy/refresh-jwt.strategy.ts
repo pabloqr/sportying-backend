@@ -35,11 +35,6 @@ export class RefreshJwtStrategy extends PassportStrategy(
       return null;
     }
 
-    const accessToken = req.get('Authorization')?.replace('Bearer', '').trim();
-    const refreshToken = req.body.refreshToken;
-    const userFull = { ...user, accessToken, refreshToken };
-    console.log(userFull);
-
     // Se elimina la contraseña y el token del objeto y se devuelve
     const { password, refresh_token, ...userWithoutPrivateInfo } = user;
     return userWithoutPrivateInfo;

@@ -11,6 +11,7 @@ import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { TokensDto } from './dto/tokens.dto';
+import { Role } from './enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -32,13 +33,17 @@ export class AuthService {
   async verifyToken(
     token: string,
     isAccessToken: boolean = true,
-  ): Promise<{ sub: number; mail: string }> {
+  ): Promise<{ sub: number; mail: string; role: string }> {
     try {
       const secret = isAccessToken
         ? (this.config.get('JWT_SECRET') as string)
         : (this.config.get('JWT_REFRESH_SECRET') as string);
 
-      return await this.jwt.verifyAsync<{ sub: number; mail: string }>(token, {
+      return await this.jwt.verifyAsync<{
+        sub: number;
+        mail: string;
+        role: string;
+      }>(token, {
         secret: secret,
       });
     } catch (error) {
@@ -57,7 +62,7 @@ export class AuthService {
    * @return The decoded payload containing the subject (sub) and email (mail).
    */
   private decodeToken(token: string) {
-    return this.jwt.decode<{ sub: number; mail: string }>(token);
+    return this.jwt.decode<{ sub: number; mail: string; role: string }>(token);
   }
 
   /**
@@ -68,24 +73,31 @@ export class AuthService {
    * @param {string} payload.mail - An email string within the payload.
    * @return {boolean} Returns true if the payload is valid and contains the required properties; otherwise, false.
    */
-  validatePayload(payload: { sub: number; mail: string }): boolean {
-    return !(!payload || !payload.sub || !payload.mail);
+  validatePayload(payload: {
+    sub: number;
+    mail: string;
+    role: string;
+  }): boolean {
+    return !(!payload || !payload.sub || !payload.mail || !payload.role);
   }
 
   /**
-   * Signs a JWT access token and refresh token for a given user ID and email.
-   * The method generates tokens with specified expiration periods and updates
-   * the database with the newly generated refresh token.
+   * Generates signed access and refresh tokens for a given user.
    *
-   * @param {number} id - The ID of the user for whom the tokens are being signed.
-   * @param {string} mail - The email of the user for token payload inclusion.
-   * @return {Promise<TokensDto>} A promise that resolves to an instance of TokensDto containing the access token and
-   * refresh token.
+   * @param {number} id - The unique identifier of the user.
+   * @param {string} mail - The user's email address.
+   * @param {Role} role - The role assigned to the user.
+   * @return {Promise<TokensDto>} A promise that resolves to an object containing the signed access and refresh tokens.
    */
-  async signToken(id: number, mail: string): Promise<TokensDto> {
+  async getSignedTokens(
+    id: number,
+    mail: string,
+    role: Role,
+  ): Promise<TokensDto> {
     const payload = {
       sub: id,
       mail,
+      role,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -154,7 +166,7 @@ export class AuthService {
       });
 
       // Se devuelve el usuario almacenado como respuesta de la petición
-      return this.signToken(user.id, user.mail);
+      return this.getSignedTokens(user.id, user.mail, Role.USER);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -196,8 +208,19 @@ export class AuthService {
       throw new ForbiddenException('Credentials invalid. Please try again.');
     }
 
+    // Se verifica si el usuario es un administrador o un cliente
+    const admin = await this.prisma.admins.findUnique({
+      where: {
+        id_complex_id: {
+          id: user.id,
+          complex_id: 1,
+        },
+      },
+    });
+    const role = admin ? Role.ADMIN : Role.USER;
+
     // Se devuelve el usuario
-    return this.signToken(user.id, user.mail);
+    return this.getSignedTokens(user.id, user.mail, role);
   }
 
   /**
@@ -290,6 +313,8 @@ export class AuthService {
       );
     }
 
-    return this.signToken(user.id, user.mail);
+    // Se obtiene el rol y los tokens
+    const role = Role[accessTokenPayload.role as keyof typeof Role];
+    return this.getSignedTokens(user.id, user.mail, role);
   }
 }

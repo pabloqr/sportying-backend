@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
-export class AccessJwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     config: ConfigService,
     private prisma: PrismaService,
@@ -17,7 +17,7 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: { sub: number; mail: string }) {
+  async validate(payload: { sub: number; mail: string; role: string }) {
     // Se trata de obtener el usuario dado su identificador
     const user = await this.prisma.users.findUnique({
       where: {
@@ -32,6 +32,6 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     // Se elimina la contraseña y el token del objeto y se devuelve
     const { password, refresh_token, ...userWithoutPrivateInfo } = user;
-    return userWithoutPrivateInfo;
+    return { ...userWithoutPrivateInfo, role: payload.role };
   }
 }
