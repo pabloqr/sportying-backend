@@ -10,11 +10,11 @@ datasource db {
 model admins {
   id         Int
   complex_id Int
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
-  system     system    @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       users     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean? @default(false)
+  system     system   @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       users    @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id, complex_id])
 }
@@ -26,8 +26,8 @@ model courts {
   name         String           @db.VarChar
   description  String?          @db.VarChar
   max_people   Int
-  created_at   DateTime?        @default(now()) @db.Timestamp(6)
-  updated_at   DateTime?        @default(now()) @db.Timestamp(6)
+  created_at   DateTime         @default(now()) @db.Timestamp(6)
+  updated_at   DateTime         @default(now()) @db.Timestamp(6)
   is_delete    Boolean?         @default(false)
   system       system           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   devices      courts_devices[]
@@ -40,35 +40,35 @@ model courts {
 model courts_devices {
   court_id   Int
   device_id  Int
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
-  court      courts    @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  device     devices   @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean? @default(false)
+  court      courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  device     devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, device_id])
 }
 
 model courts_status {
   court_id   Int
-  created    DateTime  @default(now()) @db.Timestamp(6)
-  status     String?   @default("o") @db.VarChar(1)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
-  court      courts    @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  created    DateTime @default(now()) @db.Timestamp(6)
+  status     String?  @default("o") @db.VarChar(1)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean? @default(false)
+  court      courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, created])
 }
 
 model device_telemetry {
   device_id  Int
-  created    DateTime  @default(now()) @db.Timestamp(6)
+  created    DateTime @default(now()) @db.Timestamp(6)
   value      Float
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
-  device     devices   @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean? @default(false)
+  device     devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([device_id, created])
 }
@@ -78,8 +78,8 @@ model devices {
   complex_id Int
   type       String             @default("p") @db.VarChar(1)
   status     String?            @default("n") @db.VarChar(1)
-  created_at DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at DateTime?          @default(now()) @db.Timestamp(6)
+  created_at DateTime           @default(now()) @db.Timestamp(6)
+  updated_at DateTime           @default(now()) @db.Timestamp(6)
   is_delete  Boolean?           @default(false)
   courts     courts_devices[]
   telemetry  device_telemetry[]
@@ -87,16 +87,16 @@ model devices {
 }
 
 model notifications {
-  id         Int       @default(autoincrement())
+  id         Int      @default(autoincrement())
   user_id    Int
-  created    DateTime  @default(now()) @db.Timestamp(6)
-  title      String    @db.VarChar
-  body       String    @db.VarChar
-  type       String?   @default("i") @db.VarChar(1)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
-  user       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  created    DateTime @default(now()) @db.Timestamp(6)
+  title      String   @db.VarChar
+  body       String   @db.VarChar
+  type       String?  @default("i") @db.VarChar(1)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean? @default(false)
+  user       users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id, user_id, created])
 }
@@ -104,14 +104,14 @@ model notifications {
 model reservations {
   user_id    Int
   court_id   Int
-  date_ini   DateTime  @db.Timestamp(6)
-  date_end   DateTime  @db.Timestamp(6)
-  status     String?   @default("e") @db.VarChar(1)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
-  court      courts    @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  date_ini   DateTime @db.Timestamp(6)
+  date_end   DateTime @db.Timestamp(6)
+  status     String?  @default("e") @db.VarChar(1)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean? @default(false)
+  court      courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, date_ini])
 }
@@ -123,8 +123,8 @@ model system {
   time_end      DateTime  @db.Time(6)
   loc_longitude Float?
   loc_latitude  Float?
-  created_at    DateTime? @default(now()) @db.Timestamp(6)
-  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  created_at    DateTime  @default(now()) @db.Timestamp(6)
+  updated_at    DateTime  @default(now()) @db.Timestamp(6)
   is_delete     Boolean?  @default(false)
   admins        admins[]
   courts        courts[]
@@ -140,8 +140,8 @@ model users {
   mail          String          @unique @db.VarChar
   phone_prefix  Int
   phone_number  Int
-  created_at    DateTime?       @default(now()) @db.Timestamp(6)
-  updated_at    DateTime?       @default(now()) @db.Timestamp(6)
+  created_at    DateTime        @default(now()) @db.Timestamp(6)
+  updated_at    DateTime        @default(now()) @db.Timestamp(6)
   is_delete     Boolean?        @default(false)
   admins        admins[]
   notifications notifications[]
