@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -9,9 +8,9 @@ import * as argon from 'argon2';
 import { SigninAuthDto, SignupAuthDto } from './dto';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
 import { TokensDto } from './dto/tokens.dto';
 import { Role } from './enums/role.enum';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +18,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private usersService: UsersService,
   ) {}
 
   /**
@@ -139,52 +139,38 @@ export class AuthService {
   }
 
   /**
-   * Signs up a new user by hashing their password, storing their details in the database,
-   * and returning a signed token upon successful registration.
+   * Handles the signup process by creating a new user and generating authentication tokens.
    *
-   * @param {SignupAuthDto} dto - Data Transfer Object containing the signup details,
-   * including name, surname, email, phone prefix, phone number, and password.
-   * @return {Promise<TokensDto>} A promise that resolves to signed authentication tokens for the newly created user.
-   * @throws {ConflictException} If a user with the same unique credentials already exists.
-   * @throws {Error} If any other error occurs during the signup process.
+   * @param {SignupAuthDto} dto - The data transfer object containing user signup details, including name, surname,
+   * email, phone prefix, phone number, and password.
+   * @return {Promise<object>} Returns a Promise that resolves to an object containing the created user details and
+   * authentication tokens.
    */
-  async signup(dto: SignupAuthDto): Promise<TokensDto> {
-    // Se genera el hash de la contraseña
-    const hash = await argon.hash(dto.password);
+  async signup(dto: SignupAuthDto): Promise<object> {
+    const user = await this.usersService.createUser({
+      role: Role.USER,
+      name: dto.name,
+      surname: dto.surname,
+      mail: dto.mail,
+      phone_prefix: dto.phone_prefix,
+      phone_number: dto.phone_number,
+      password: dto.password,
+    });
 
-    // Se almacena el usuario en la BD
-    try {
-      const user = await this.prisma.users.create({
-        data: {
-          password: hash,
-          name: dto.name,
-          surname: dto.surname,
-          mail: dto.mail,
-          phone_prefix: dto.phone_prefix,
-          phone_number: dto.phone_number,
-        },
-      });
+    const tokens = await this.getSignedTokens(user.id, user.mail, user.role);
 
-      // Se devuelve el usuario almacenado como respuesta de la petición
-      return this.getSignedTokens(user.id, user.mail, Role.USER);
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ConflictException(
-            'Credentials already exist. Please try again with different credentials.',
-          );
-        }
-      }
-
-      throw error;
-    }
+    return {
+      ...tokens,
+      user,
+    };
   }
 
   /**
    * Authenticates a user based on the provided credentials.
    *
    * @param {SigninAuthDto} dto - An object containing the sign-in details, including the user's email and password.
-   * @return {Promise<TokensDto>} Returns a promise that resolves to signed authentication tokens if the credentials are valid.
+   * @return {Promise<TokensDto>} Returns a promise that resolves to signed authentication tokens if the credentials
+   * are valid.
    * @throws {ForbiddenException} Throws an exception if the email or password is invalid.
    */
   async signin(dto: SigninAuthDto): Promise<TokensDto> {
