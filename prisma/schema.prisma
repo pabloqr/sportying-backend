@@ -38,39 +38,33 @@ model courts {
 }
 
 model courts_devices {
-  court_id   Int
-  device_id  Int
-  created_at DateTime @default(now()) @db.Timestamp(6)
-  updated_at DateTime @default(now()) @db.Timestamp(6)
-  is_delete  Boolean? @default(false)
-  court      courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  device     devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  court_id  Int
+  device_id Int
+  is_delete Boolean? @default(false)
+  court     courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  device    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, device_id])
 }
 
 model courts_status {
   court_id   Int
-  created    DateTime @default(now()) @db.Timestamp(6)
   status     String?  @default("o") @db.VarChar(1)
   created_at DateTime @default(now()) @db.Timestamp(6)
-  updated_at DateTime @default(now()) @db.Timestamp(6)
   is_delete  Boolean? @default(false)
   court      courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([court_id, created])
+  @@id([court_id, created_at])
 }
 
 model device_telemetry {
   device_id  Int
-  created    DateTime @default(now()) @db.Timestamp(6)
   value      Float
   created_at DateTime @default(now()) @db.Timestamp(6)
-  updated_at DateTime @default(now()) @db.Timestamp(6)
   is_delete  Boolean? @default(false)
   device     devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([device_id, created])
+  @@id([device_id, created_at])
 }
 
 model devices {
@@ -89,16 +83,17 @@ model devices {
 model notifications {
   id         Int      @default(autoincrement())
   user_id    Int
-  created    DateTime @default(now()) @db.Timestamp(6)
   title      String   @db.VarChar
   body       String   @db.VarChar
-  type       String?  @default("i") @db.VarChar(1)
+  severity   String   @db.VarChar(1)
+  type       String   @db.VarChar(1)
+  related_id Int?
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
   is_delete  Boolean? @default(false)
   user       users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([id, user_id, created])
+  @@id([id, user_id, created_at])
 }
 
 model reservations {
