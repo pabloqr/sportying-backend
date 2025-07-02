@@ -1,6 +1,7 @@
 export enum Role {
-  ANONYMOUS = 'ANONYMOUS',
+  SUPERADMIN = 'SUPERADMIN',
   ADMIN = 'ADMIN',
   USER = 'USER',
   DEVICE = 'DEVICE',
+  NONE = 'NONE',
 }

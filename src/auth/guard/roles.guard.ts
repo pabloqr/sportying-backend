@@ -30,7 +30,7 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
     const currentRole = user?.role
       ? Role[user.role as keyof typeof Role]
-      : Role.ANONYMOUS;
+      : Role.NONE;
 
     // Se verifica si el usuario está autorizado (tiene el rol necesario)
     return roles.some((role) =>
