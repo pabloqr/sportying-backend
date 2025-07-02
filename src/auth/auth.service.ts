@@ -148,7 +148,7 @@ export class AuthService {
    */
   async signup(dto: SignupAuthDto): Promise<object> {
     const user = await this.usersService.createUser({
-      role: Role.USER,
+      role: Role.CLIENT,
       name: dto.name,
       surname: dto.surname,
       mail: dto.mail,
@@ -203,7 +203,7 @@ export class AuthService {
         },
       },
     });
-    const role = admin ? Role.ADMIN : Role.USER;
+    const role = admin ? Role.ADMIN : Role.CLIENT;
 
     // Se devuelve el usuario
     return this.getSignedTokens(user.id, user.mail, role);

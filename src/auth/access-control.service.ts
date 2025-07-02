@@ -15,7 +15,7 @@ export class AccessControlService {
    * Creates an instance of the class with specified hierarchies and an optional priority.
    */
   constructor() {
-    this.buildHierarchy([Role.NONE, Role.USER, Role.ADMIN, Role.SUPERADMIN]);
+    this.buildHierarchy([Role.NONE, Role.CLIENT, Role.ADMIN, Role.SUPERADMIN]);
     this.buildHierarchy([Role.NONE, Role.DEVICE]);
   }
 

@@ -32,7 +32,7 @@ export class UsersController {
     return this.usersService.createUser(dto);
   }
 
-  @Roles(Role.USER, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':id')
   getUser(
     @Param('id', ParseIntPipe) id: number,
@@ -40,14 +40,14 @@ export class UsersController {
     @GetUser('role') userRole: Role,
   ) {
     // Se verifica que el usuario está autorizado
-    if (userRole === Role.USER && userId !== id) {
+    if (userRole === Role.CLIENT && userId !== id) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
 
     return this.usersService.getUser(id);
   }
 
-  @Roles(Role.USER, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Put(':id')
   updateUser(
     @Param('id', ParseIntPipe) id: number,
@@ -57,14 +57,14 @@ export class UsersController {
     dto: UpdateUserDto,
   ) {
     // Se verifica que el usuario está autorizado
-    if (userRole === Role.USER && userId !== id) {
+    if (userRole === Role.CLIENT && userId !== id) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
 
     return this.usersService.updateUser(id, dto);
   }
 
-  @Roles(Role.USER, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Delete(':id')
   deleteUser(
     @Param('id', ParseIntPipe) id: number,
@@ -72,7 +72,7 @@ export class UsersController {
     @GetUser('role') userRole: Role,
   ) {
     // Se verifica que el usuario está autorizado
-    if (userRole === Role.USER && userId !== id) {
+    if (userRole === Role.CLIENT && userId !== id) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
 

@@ -79,7 +79,7 @@ export class UsersService {
     // Se añade el campo para el tipo de usuario
     return users.map((user) => ({
       ...user,
-      role: user.admins.length > 0 ? Role.ADMIN : Role.USER,
+      role: user.admins.length > 0 ? Role.ADMIN : Role.CLIENT,
       admins: undefined,
     }));
   }

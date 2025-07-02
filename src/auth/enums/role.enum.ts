@@ -1,7 +1,7 @@
 export enum Role {
   SUPERADMIN = 'SUPERADMIN',
   ADMIN = 'ADMIN',
-  USER = 'USER',
+  CLIENT = 'CLIENT',
   DEVICE = 'DEVICE',
   NONE = 'NONE',
 }
