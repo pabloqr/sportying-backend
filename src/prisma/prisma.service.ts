@@ -1,4 +1,4 @@
-import { Injectable /*, OnModuleInit*/ } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 
@@ -29,7 +29,7 @@ export class PrismaService extends PrismaClient /* implements OnModuleInit */ {
       this.courts.deleteMany(),
       this.device_telemetry.deleteMany(),
       this.devices.deleteMany(),
-      this.system.deleteMany(),
+      this.complexes.deleteMany(),
     ]);
   }
 }
