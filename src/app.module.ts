@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard, RolesGuard } from './auth/guard';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
+import { ComplexesModule } from './complexes/complexes.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CommonModule } from './common/common.module';
     AuthModule,
     DevicesModule,
     UsersModule,
+    ComplexesModule,
   ],
   providers: [
     {
