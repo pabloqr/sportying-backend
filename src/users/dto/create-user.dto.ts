@@ -31,12 +31,12 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Min(1)
   @Max(999)
-  phone_prefix: number;
+  phonePrefix: number;
 
   @IsNumber()
   @IsNotEmpty()
   @Min(10000)
-  phone_number: number;
+  phoneNumber: number;
 
   @IsString()
   @IsOptional()

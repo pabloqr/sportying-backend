@@ -22,19 +22,19 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @Get()
-  getUsers(@Query() query: GetUsersDto) {
+  async getUsers(@Query() query: GetUsersDto) {
     return this.usersService.getUsers(query);
   }
 
   @Roles(Role.ADMIN)
   @Post()
-  createUser(@Body() dto: CreateUserDto) {
+  async createUser(@Body() dto: CreateUserDto) {
     return this.usersService.createUser(dto);
   }
 
   @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':id')
-  getUser(
+  async getUser(
     @Param('id', ParseIntPipe) id: number,
     @GetUser('id') userId: number,
     @GetUser('role') userRole: Role,
@@ -49,7 +49,7 @@ export class UsersController {
 
   @Roles(Role.CLIENT, Role.ADMIN)
   @Put(':id')
-  updateUser(
+  async updateUser(
     @Param('id', ParseIntPipe) id: number,
     @GetUser('id') userId: number,
     @GetUser('role') userRole: Role,
@@ -66,7 +66,7 @@ export class UsersController {
 
   @Roles(Role.CLIENT, Role.ADMIN)
   @Delete(':id')
-  deleteUser(
+  async deleteUser(
     @Param('id', ParseIntPipe) id: number,
     @GetUser('id') userId: number,
     @GetUser('role') userRole: Role,

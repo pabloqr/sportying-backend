@@ -8,12 +8,14 @@ import {
   Min,
 } from 'class-validator';
 import { Role } from '../../auth/enums/role.enum';
+import { Type } from 'class-transformer';
 
 export class GetUsersDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
 
+  @Type(() => Number)
   @IsNumber()
   @IsOptional()
   id?: number;
@@ -35,10 +37,10 @@ export class GetUsersDto {
   @IsOptional()
   @Min(1)
   @Max(999)
-  phone_prefix?: number;
+  phonePrefix?: number;
 
   @IsNumber()
   @IsOptional()
   @Min(10000)
-  phone_number?: number;
+  phoneNumber?: number;
 }
