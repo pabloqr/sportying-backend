@@ -18,20 +18,20 @@ export class AuthController {
 
   @Public()
   @Post('signup')
-  signup(@Body() dto: SignupAuthDto) {
+  async signup(@Body() dto: SignupAuthDto) {
     return this.authService.signup(dto);
   }
 
   @Public()
   @Post('signin')
   @HttpCode(HttpStatus.OK)
-  signin(@Body() dto: SigninAuthDto) {
+  async signin(@Body() dto: SigninAuthDto) {
     return this.authService.signin(dto);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@GetUser('id') id: number) {
+  async logout(@GetUser('id') id: number) {
     return this.authService.logout(id);
   }
 
@@ -39,7 +39,7 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
-  refreshToken(@GetTokens() tokens: TokensDto) {
+  async refreshToken(@GetTokens() tokens: TokensDto) {
     return this.authService.refreshToken(tokens);
   }
 }
