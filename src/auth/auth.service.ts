@@ -152,8 +152,8 @@ export class AuthService {
       name: dto.name,
       surname: dto.surname,
       mail: dto.mail,
-      phone_prefix: dto.phonePrefix,
-      phone_number: dto.phoneNumber,
+      phonePrefix: dto.phonePrefix,
+      phoneNumber: dto.phoneNumber,
       password: dto.password,
     });
 
