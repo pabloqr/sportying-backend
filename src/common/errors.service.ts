@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -12,6 +13,12 @@ interface ErrorContext {
 
 @Injectable()
 export class ErrorsService {
+  public noBodyError(dto: any, ctx?: string) {
+    if (dto === undefined) {
+      throw new BadRequestException(ctx ?? 'No properties to update.');
+    }
+  }
+
   public dbError(error: any, ctx?: ErrorContext) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
