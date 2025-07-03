@@ -1,6 +1,7 @@
 import {
-  BadRequestException,
-  Injectable, InternalServerErrorException, NotFoundException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -51,8 +52,8 @@ export class UsersService {
       }),
 
       ...(dto.mail !== undefined && { mail: dto.mail }),
-      ...(dto.phone_prefix !== undefined && { phone_prefix: dto.phone_prefix }),
-      ...(dto.phone_number !== undefined && { phone_number: dto.phone_number }),
+      ...(dto.phonePrefix !== undefined && { phone_prefix: dto.phonePrefix }),
+      ...(dto.phoneNumber !== undefined && { phone_number: dto.phoneNumber }),
     };
 
     // Se realiza la consulta especificando las columnas para evitar devolver las credenciales privadas
@@ -60,6 +61,7 @@ export class UsersService {
       where,
       select: {
         id: true,
+        role: true,
         name: true,
         surname: true,
         mail: true,
@@ -68,19 +70,13 @@ export class UsersService {
         is_delete: true,
         created_at: true,
         updated_at: true,
-        admins: {
-          select: {
-            id: true,
-          },
-        },
       },
     });
 
-    // Se añade el campo para el tipo de usuario
+    // Se formatea el campo para el rol de usuario
     return users.map((user) => ({
       ...user,
-      role: user.admins.length > 0 ? Role.ADMIN : Role.CLIENT,
-      admins: undefined,
+      role: user.role as Role,
     }));
   }
 
@@ -116,14 +112,25 @@ export class UsersService {
             password: await argon.hash(dto.password),
             name: dto.name,
             surname: dto.surname,
-            phone_prefix: dto.phone_prefix,
-            phone_number: dto.phone_number,
+            phone_prefix: dto.phonePrefix,
+            phone_number: dto.phoneNumber,
+          },
+          select: {
+            id: true,
+            role: true,
+            name: true,
+            surname: true,
+            mail: true,
+            phone_prefix: true,
+            phone_number: true,
+            created_at: true,
+            updated_at: true,
           },
         });
 
         return {
           ...user,
-          role: dto.role,
+          role: user.role as Role,
         };
       } catch (error) {
         this.errorsService.dbError(error, {
@@ -143,11 +150,12 @@ export class UsersService {
             name: dto.name,
             surname: dto.surname,
             mail: dto.mail,
-            phone_prefix: dto.phone_prefix,
-            phone_number: dto.phone_number,
+            phone_prefix: dto.phonePrefix,
+            phone_number: dto.phoneNumber,
           },
           select: {
             id: true,
+            role: true,
             name: true,
             surname: true,
             mail: true,
@@ -158,8 +166,11 @@ export class UsersService {
           },
         });
 
+        // Se obtiene el rol del usuario
+        const role = user.role as Role;
+
         // Se verifica si el usuario que se crea es un administrador
-        if (dto.role === Role.ADMIN) {
+        if (role === Role.ADMIN) {
           // Se crea la entrada para el administrador en la BD
           await this.prisma.admins.create({
             data: {
@@ -169,10 +180,10 @@ export class UsersService {
           });
         }
 
-        // Se devuelve el objeto creado
+        // Se devuelve el objeto creado formateando el campo para el rol de usuario
         return {
           ...user,
-          role: dto.role,
+          role,
         };
       } catch (error) {
         this.errorsService.dbError(error, {
@@ -210,25 +221,19 @@ export class UsersService {
     return result[0];
   }
 
-  async updateUser(id: number, dto: UpdateUserDto) {
-    if (dto === undefined) {
-      throw new BadRequestException('No properties to update.');
-    }
+  async updateUser(id: number, dto: UpdateUserDto): Promise<ResponseUserDto> {
+    this.errorsService.noBodyError(dto);
 
     // Se establecen las propiedades a actualizar
     const data = {
-      ...('password' in dto &&
-        dto.password !== undefined && {
-          password: await argon.hash(dto.password),
-        }),
-      ...('name' in dto && dto.name !== undefined && { name: dto.name }),
-      ...('surname' in dto &&
-        dto.surname !== undefined && { surname: dto.surname }),
-      ...('mail' in dto && dto.mail !== undefined && { mail: dto.mail }),
-      ...('phone_prefix' in dto &&
-        dto.phone_prefix !== undefined && { phone_prefix: dto.phone_prefix }),
-      ...('phone_number' in dto &&
-        dto.phone_number !== undefined && { phone_number: dto.phone_number }),
+      ...(dto.password !== undefined && {
+        password: await argon.hash(dto.password),
+      }),
+      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.surname !== undefined && { surname: dto.surname }),
+      ...(dto.mail !== undefined && { mail: dto.mail }),
+      ...(dto.phonePrefix !== undefined && { phone_prefix: dto.phonePrefix }),
+      ...(dto.phoneNumber !== undefined && { phone_number: dto.phoneNumber }),
     };
 
     try {
@@ -242,7 +247,7 @@ export class UsersService {
       });
 
       // Se verifica el rol del usuario
-      if ('role' in dto && dto.role !== undefined) {
+      if (dto.role !== undefined) {
         // Se trata de obtener la entrada en la tabla de administradores para el usuario actual
         const isAdmin = await this.prisma.admins.findUnique({
           where: {
@@ -291,17 +296,22 @@ export class UsersService {
         }
       }
 
-      return user;
+      return {
+        ...user,
+        role: user.role as Role,
+      };
     } catch (error) {
       this.errorsService.dbError(error, {
         p2002:
           'Credentials already exist. Please try again with different credentials.',
         p2025: `User with ID ${id} not found.`,
       });
+
+      throw error;
     }
   }
 
-  async deleteUser(id: number) {
+  async deleteUser(id: number): Promise<null> {
     try {
       await this.prisma.users.update({
         where: { id },
@@ -318,6 +328,8 @@ export class UsersService {
       this.errorsService.dbError(error, {
         p2025: `User with ID ${id} not found.`,
       });
+
+      throw error;
     }
   }
 }
