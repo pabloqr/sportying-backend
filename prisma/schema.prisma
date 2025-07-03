@@ -134,8 +134,8 @@ model users {
 model complexes {
   id            Int       @id @default(autoincrement())
   complex_name  String    @db.VarChar
-  time_ini      DateTime  @db.Time(6)
-  time_end      DateTime  @db.Time(6)
+  time_ini      String    @db.VarChar(5)
+  time_end      String    @db.VarChar(5)
   loc_longitude Float?
   loc_latitude  Float?
   created_at    DateTime  @default(now()) @db.Timestamp(6)
