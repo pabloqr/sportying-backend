@@ -20,19 +20,19 @@ import { Role } from '../auth/enums/role.enum';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Get()
   async getUsers(@Query() query: GetUsersDto) {
     return this.usersService.getUsers(query);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.SUPERADMIN)
   @Post()
   async createUser(@Body() dto: CreateUserDto) {
     return this.usersService.createUser(dto);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':id')
   async getUser(
     @Param('id', ParseIntPipe) id: number,
@@ -47,7 +47,7 @@ export class UsersController {
     return this.usersService.getUser(id);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Put(':id')
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
@@ -64,7 +64,7 @@ export class UsersController {
     return this.usersService.updateUser(id, dto);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Delete(':id')
   async deleteUser(
     @Param('id', ParseIntPipe) id: number,
