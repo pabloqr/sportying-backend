@@ -10,7 +10,7 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
 import { ComplexesService } from './complexes.service';
 import {
   CreateComplexDto,
@@ -18,12 +18,13 @@ import {
   UpdateComplexDto,
   UpdateComplexTimeDto,
 } from './dto';
+import { Role } from '../auth/enums/role.enum';
 
 @Controller('complexes')
 export class ComplexesController {
   constructor(private complexesService: ComplexesService) {}
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get()
   async getComplexes(
     @Query(new ValidationPipe({ skipMissingProperties: true }))
@@ -32,19 +33,19 @@ export class ComplexesController {
     return this.complexesService.getComplexes(query);
   }
 
-  @Public()
+  @Roles(Role.SUPERADMIN)
   @Post()
   async createComplex(@Body() dto: CreateComplexDto) {
     return this.complexesService.createComplex(dto);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':id')
   async getComplex(@Param('id', ParseIntPipe) id: number) {
     return this.complexesService.getComplex(id);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Put(':id')
   async updateComplex(
     @Param('id', ParseIntPipe) id: number,
@@ -54,19 +55,19 @@ export class ComplexesController {
     return this.complexesService.updateComplex(id, dto);
   }
 
-  @Public()
+  @Roles(Role.SUPERADMIN)
   @Delete(':id')
   async deleteComplex(@Param('id', ParseIntPipe) id: number) {
     return this.complexesService.deleteComplex(id);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':id/time')
   async getComplexTime(@Param('id', ParseIntPipe) id: number) {
     return this.complexesService.getComplexTime(id);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Post(':id/time')
   async setComplexTime(
     @Param('id', ParseIntPipe) id: number,
