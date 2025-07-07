@@ -14,10 +14,6 @@ export class PrismaService extends PrismaClient /* implements OnModuleInit */ {
     });
   }
 
-  // async onModuleInit() {
-  //   await this.$connect();
-  // }
-
   cleanDb() {
     return this.$transaction([
       this.reservations.deleteMany(),
@@ -27,7 +23,7 @@ export class PrismaService extends PrismaClient /* implements OnModuleInit */ {
       this.courts_status.deleteMany(),
       this.courts_devices.deleteMany(),
       this.courts.deleteMany(),
-      this.device_telemetry.deleteMany(),
+      this.devices_telemetry.deleteMany(),
       this.devices.deleteMany(),
       this.complexes.deleteMany(),
     ]);
