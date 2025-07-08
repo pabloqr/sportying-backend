@@ -51,22 +51,21 @@ model courts_status {
   court_id   Int
   status     court_status @default(OPEN)
   created_at DateTime     @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?     @default(false)
   court      courts       @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, created_at])
 }
 
 model devices {
-  id                Int                 @id @default(autoincrement())
-  complex_id        Int
-  type              device_type
-  created_at        DateTime            @default(now()) @db.Timestamp(6)
-  updated_at        DateTime            @default(now()) @db.Timestamp(6)
-  is_delete         Boolean?            @default(false)
-  courts            courts_devices[]
-  complex           complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  telemetry         devices_telemetry[]
+  id         Int                 @id @default(autoincrement())
+  complex_id Int
+  type       device_type
+  created_at DateTime            @default(now()) @db.Timestamp(6)
+  updated_at DateTime            @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?            @default(false)
+  courts     courts_devices[]
+  complex    complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  telemetry  devices_telemetry[]
 }
 
 model notifications {
@@ -86,6 +85,7 @@ model notifications {
 }
 
 model reservations {
+  id         Int                @default(autoincrement())
   user_id    Int
   court_id   Int
   date_ini   DateTime           @db.Timestamp(6)
@@ -139,7 +139,6 @@ model devices_telemetry {
   device_id  Int
   value      Float
   created_at DateTime @default(now()) @db.Timestamp(6)
-  is_delete  Boolean? @default(false)
   devices    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([device_id, created_at])
