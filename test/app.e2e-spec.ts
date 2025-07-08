@@ -40,8 +40,8 @@ describe('App e2e', () => {
         name: 'Test',
         surname: 'Test',
         mail: 'test@gmail.com',
-        phone_prefix: 34,
-        phone_number: 111111111,
+        phonePrefix: 34,
+        phoneNumber: 111111111,
       };
 
       it('should fail if no body', () => {
@@ -92,7 +92,7 @@ describe('App e2e', () => {
       });
 
       it('should fail if phone_prefix is empty', () => {
-        const { phone_prefix, ...dtoWithoutPrefix } = dto;
+        const { phonePrefix, ...dtoWithoutPrefix } = dto;
         return pactum
           .spec()
           .post('/auth/signup')
@@ -101,7 +101,7 @@ describe('App e2e', () => {
       });
 
       it('should fail if phone_number is empty', () => {
-        const { phone_number, ...dtoWithoutNumber } = dto;
+        const { phoneNumber, ...dtoWithoutNumber } = dto;
         return pactum
           .spec()
           .post('/auth/signup')
