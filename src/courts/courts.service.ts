@@ -282,7 +282,28 @@ export class CourtsService {
     complexId: number,
     courtId: number,
   ): Promise<ResponseCourtAvailabilityDto> {
-    return new ResponseCourtAvailabilityDto();
+    const availability = await this.prisma.reservations.findMany({
+      where: {
+        court_id: courtId,
+      },
+      select: {
+        court_id: true,
+        date_ini: true,
+        date_end: true,
+      },
+    });
+
+    const formattedAvailability = availability.map((reservation) => ({
+      date_ini: reservation.date_ini,
+      date_end: reservation.date_end,
+      availability: false,
+    }));
+
+    return new ResponseCourtAvailabilityDto({
+      court_id: courtId,
+      complex_id: complexId,
+      availability: formattedAvailability,
+    });
   }
 
   async setCourtAvailability(
@@ -290,6 +311,8 @@ export class CourtsService {
     courtId: number,
     dto: CreateCourtAvailabilityDto,
   ): Promise<ResponseCourtAvailabilityDto> {
-    return new ResponseCourtAvailabilityDto();
+    // TODO: crear reserva
+
+    return this.getCourtAvailability(complexId, courtId);
   }
 }

@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
+import { CourtAvailabilitySlotDto } from './court-availability-slot.dto';
 
 export class ResponseCourtAvailabilityDto {
   @Type(() => Number)
@@ -12,15 +13,14 @@ export class ResponseCourtAvailabilityDto {
   @IsNotEmpty()
   complexId: number;
 
-  @IsDate()
+  @IsArray()
+  @ValidateNested({ each: true })
   @IsNotEmpty()
-  timeIni: Date;
+  availability: CourtAvailabilitySlotDto[];
 
-  @IsDate()
-  @IsNotEmpty()
-  timeEnd: Date;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  available: boolean;
+  constructor(courtAvailability: any) {
+    this.id = courtAvailability.court_id;
+    this.complexId = courtAvailability.complex_id;
+    this.availability = courtAvailability.availability;
+  }
 }
