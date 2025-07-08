@@ -8,6 +8,7 @@ import { JwtGuard, RolesGuard } from './auth/guard';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { ComplexesModule } from './complexes/complexes.module';
+import { CourtsModule } from './courts/courts.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ComplexesModule } from './complexes/complexes.module';
     DevicesModule,
     UsersModule,
     ComplexesModule,
+    CourtsModule,
   ],
   providers: [
     {

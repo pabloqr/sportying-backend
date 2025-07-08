@@ -1,0 +1,6 @@
+export enum Status {
+  OPEN = 'OPEN',
+  MAINTENANCE = 'MAINTENANCE',
+  BLOCKED = 'BLOCKED',
+  WEATHER = 'WEATHER',
+}
