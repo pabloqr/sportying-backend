@@ -80,8 +80,16 @@ export class CourtsService {
     // Se resuelve la operación asíncrona
     const courtsWithStatus = await Promise.all(courtsWithStatusAsync);
 
+    // Se filtran las entradas del array si está definido el estatus en el dto
+    let courtsWithStatusFiltered = courtsWithStatus;
+    if (dto.status !== undefined) {
+      courtsWithStatusFiltered = courtsWithStatus.filter(
+        (court) => court.status === dto.status,
+      );
+    }
+
     // Se devuelve la lista modificando los elementos obtenidos
-    return courtsWithStatus.map((court) => new ResponseCourtDto(court));
+    return courtsWithStatusFiltered.map((court) => new ResponseCourtDto(court));
   }
 
   async createCourt(
@@ -172,16 +180,19 @@ export class CourtsService {
 
       // Se obtiene el estatus actual de la pista
       const currentStatus = await this.getCourtStatus(complexId, courtId);
-      let status;
 
       // Si está definido, se actualiza el estatus
+      let status;
       if (dto.status !== undefined && dto.status !== currentStatus.status) {
         status = await this.setCourtStatus(complexId, court.id, {
           status: dto.status,
         });
       }
 
-      return new ResponseCourtDto({ ...court, status: status?.status ?? currentStatus.status });
+      return new ResponseCourtDto({
+        ...court,
+        status: status?.status ?? currentStatus.status,
+      });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Court with ID ${courtId} not found.`,
