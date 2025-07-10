@@ -85,19 +85,20 @@ model notifications {
 }
 
 model reservations {
-  id         Int                @default(autoincrement())
+  id         Int                     @id @default(autoincrement())
   user_id    Int
   court_id   Int
-  date_ini   DateTime           @db.Timestamp(6)
-  date_end   DateTime           @db.Timestamp(6)
-  status     reservation_status @default(EMPTY)
-  created_at DateTime           @default(now()) @db.Timestamp(6)
-  updated_at DateTime           @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?           @default(false)
-  court      courts             @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  date_ini   DateTime                @db.Timestamp(6)
+  date_end   DateTime                @db.Timestamp(6)
+  date_range Unsupported("tsrange")? @default(dbgenerated("tsrange(date_ini, date_end, '[)'::text)"))
+  status     reservation_status      @default(EMPTY)
+  created_at DateTime                @default(now()) @db.Timestamp(6)
+  updated_at DateTime                @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?                @default(false)
+  court      courts                  @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       users                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([court_id, date_ini])
+  @@unique([court_id, date_ini])
 }
 
 model users {
