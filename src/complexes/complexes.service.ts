@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  COMPLEX_ORDER_FIELD_MAP,
   CreateComplexDto,
   GetComplexesDto,
   UpdateComplexDto,
@@ -47,6 +48,15 @@ export class ComplexesService {
       ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
     };
 
+    // Se obtiene el modo de ordenación de los elementos
+    let orderBy: Prisma.complexesOrderByWithRelationInput = {};
+    if (dto.orderField !== undefined) {
+      const field = COMPLEX_ORDER_FIELD_MAP[dto.orderField];
+      orderBy = {
+        [field]: dto.order,
+      };
+    }
+
     // Se realiza la consulta seleccionando las columnas que se quieren devolver
     const complexes = await this.prisma.complexes.findMany({
       where,
@@ -60,6 +70,7 @@ export class ComplexesService {
         created_at: true,
         updated_at: true,
       },
+      orderBy,
     });
 
     // Se devuelve la lista modificando los elementos obtenidos

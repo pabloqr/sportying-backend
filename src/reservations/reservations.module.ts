@@ -12,5 +12,6 @@ import { CourtsService } from '../courts/courts.service';
     ComplexReservationsController,
   ],
   providers: [ReservationsService, CourtsService],
+  exports: [ReservationsService],
 })
 export class ReservationsModule {}

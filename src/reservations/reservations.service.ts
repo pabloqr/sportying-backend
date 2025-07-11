@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  BadRequestException, forwardRef, Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -10,6 +10,7 @@ import {
   CreateReservationDto,
   GetReservationsDto,
   GetUserReservationsDto,
+  RESERVATION_ORDER_FIELD_MAP,
   UpdateReservationDto,
 } from './dto';
 import { ResponseReservationDto } from '../common/dto';
@@ -22,6 +23,7 @@ export class ReservationsService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
   ) {}
 
@@ -79,6 +81,7 @@ export class ReservationsService {
       ...(dto.status !== undefined && { status: dto.status }),
     };
 
+    // Se obtiene el filtro por momento de la reserva
     if (dto.timeFilter !== undefined) {
       switch (dto.timeFilter) {
         case ReservationTimeFilter.PAST:
@@ -91,6 +94,15 @@ export class ReservationsService {
         default:
           break;
       }
+    }
+
+    // Se obtiene el modo de ordenación de los elementos
+    let orderBy: Prisma.reservationsOrderByWithRelationInput = {};
+    if (dto.orderField !== undefined) {
+      const field = RESERVATION_ORDER_FIELD_MAP[dto.orderField];
+      orderBy = {
+        [field]: dto.order,
+      };
     }
 
     // Se realiza la consulta seleccionando las columnas que se quieren devolver
@@ -106,6 +118,7 @@ export class ReservationsService {
         created_at: true,
         updated_at: true,
       },
+      orderBy,
     });
 
     return reservations.map(

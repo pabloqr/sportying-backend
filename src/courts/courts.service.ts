@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -6,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ErrorsService } from '../common/errors.service';
 import {
+  COURT_ORDER_FIELD_MAP,
   CreateCourtDto,
   CreateCourtStatusDto,
   GetCourtsDto,
@@ -19,12 +22,16 @@ import {
   ResponseCourtStatusDto,
 } from '../common/dto';
 import { CourtStatus } from './enums';
+import { ReservationsService } from '../reservations/reservations.service';
+import { ReservationOrderField } from '../reservations/dto';
 
 @Injectable()
 export class CourtsService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    @Inject(forwardRef(() => ReservationsService))
+    private reservationsService: ReservationsService,
   ) {}
 
   public async isValidCourt(
@@ -71,6 +78,15 @@ export class CourtsService {
       ...(dto.maxPeople !== undefined && { max_people: dto.maxPeople }),
     };
 
+    // Se obtiene el modo de ordenación de los elementos
+    let orderBy: Prisma.courtsOrderByWithRelationInput = {};
+    if (dto.orderField !== undefined) {
+      const field = COURT_ORDER_FIELD_MAP[dto.orderField];
+      orderBy = {
+        [field]: dto.order,
+      };
+    }
+
     // Se realiza la consulta seleccionando las columnas que se quieren devolver
     const courts = await this.prisma.courts.findMany({
       where,
@@ -84,6 +100,7 @@ export class CourtsService {
         created_at: true,
         updated_at: true,
       },
+      orderBy,
     });
 
     // Se obtienen los estados de todas las pistas encontradas
@@ -108,6 +125,25 @@ export class CourtsService {
 
     // Se devuelve la lista modificando los elementos obtenidos
     return courtsWithStatusFiltered.map((court) => new ResponseCourtDto(court));
+  }
+
+  async getCourt(
+    complexId: number,
+    courtId: number,
+  ): Promise<ResponseCourtDto> {
+    // Se trata de obtener la pista con el 'id' dado
+    const result = await this.getCourts(complexId, { id: courtId });
+
+    // Se verifican los elementos obtenidos
+    if (result.length === 0) {
+      throw new NotFoundException(`Court with ID ${courtId} not found.`);
+    } else if (result.length > 1) {
+      throw new InternalServerErrorException(
+        `Multiple courts found with ID ${courtId}.`,
+      );
+    }
+
+    return result[0];
   }
 
   async createCourt(
@@ -149,25 +185,6 @@ export class CourtsService {
 
       throw error;
     }
-  }
-
-  async getCourt(
-    complexId: number,
-    courtId: number,
-  ): Promise<ResponseCourtDto> {
-    // Se trata de obtener la pista con el 'id' dado
-    const result = await this.getCourts(complexId, { id: courtId });
-
-    // Se verifican los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Court with ID ${courtId} not found.`);
-    } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple courts found with ID ${courtId}.`,
-      );
-    }
-
-    return result[0];
   }
 
   async updateCourt(
@@ -300,18 +317,9 @@ export class CourtsService {
     complexId: number,
     courtId: number,
   ): Promise<ResponseCourtAvailabilityDto> {
-    const reservations = await this.prisma.reservations.findMany({
-      where: {
-        court_id: courtId,
-      },
-      select: {
-        court_id: true,
-        date_ini: true,
-        date_end: true,
-      },
-      orderBy: {
-        date_ini: 'asc',
-      },
+    const reservations = await this.reservationsService.getReservations({
+      courtId,
+      orderField: ReservationOrderField.DATE_INI,
     });
 
     // Se formatean las reservas para que tengan la estructura correcta

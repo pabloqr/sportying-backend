@@ -6,7 +6,12 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
-import { CreateUserDto, GetUsersDto, UpdateUserDto } from './dto';
+import {
+  CreateUserDto,
+  GetUsersDto,
+  UpdateUserDto,
+  USER_ORDER_FIELD_MAP,
+} from './dto';
 import { Role } from '../auth/enums/role.enum';
 import { ResponseUserDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
@@ -56,6 +61,15 @@ export class UsersService {
       ...(dto.phoneNumber !== undefined && { phone_number: dto.phoneNumber }),
     };
 
+    // Se obtiene el modo de ordenación de los elementos
+    let orderBy: Prisma.usersOrderByWithRelationInput = {};
+    if (dto.orderField !== undefined) {
+      const field = USER_ORDER_FIELD_MAP[dto.orderField];
+      orderBy = {
+        [field]: dto.order,
+      };
+    }
+
     // Se realiza la consulta especificando las columnas para evitar devolver las credenciales privadas
     const users = await this.prisma.users.findMany({
       where,
@@ -71,6 +85,7 @@ export class UsersService {
         created_at: true,
         updated_at: true,
       },
+      orderBy,
     });
 
     // Se formatea el campo para el rol de usuario
@@ -78,6 +93,31 @@ export class UsersService {
       ...user,
       role: user.role as Role,
     }));
+  }
+
+  /**
+   * Retrieves a user based on the given ID.
+   * Throws an exception if no user or multiple users are found with the same ID.
+   *
+   * @param {number} userId - The ID of the user to be retrieved.
+   * @return {Promise<ResponseUserDto>} A promise that resolves to the user object.
+   * @throws {NotFoundException} If no user is found with the given ID.
+   * @throws {InternalServerErrorException} If multiple users are found with the same ID.
+   */
+  async getUser(userId: number): Promise<ResponseUserDto> {
+    // Se trata de obtener el usuario con el 'id' dado
+    const result = await this.getUsers({ id: userId });
+
+    // Se verifican los elementos obtenidos
+    if (result.length === 0) {
+      throw new NotFoundException(`User with ID ${userId} not found.`);
+    } else if (result.length > 1) {
+      throw new InternalServerErrorException(
+        `Multiple users found with ID ${userId}.`,
+      );
+    }
+
+    return result[0];
   }
 
   /**
@@ -196,32 +236,10 @@ export class UsersService {
     }
   }
 
-  /**
-   * Retrieves a user based on the given ID.
-   * Throws an exception if no user or multiple users are found with the same ID.
-   *
-   * @param {number} userId - The ID of the user to be retrieved.
-   * @return {Promise<ResponseUserDto>} A promise that resolves to the user object.
-   * @throws {NotFoundException} If no user is found with the given ID.
-   * @throws {InternalServerErrorException} If multiple users are found with the same ID.
-   */
-  async getUser(userId: number): Promise<ResponseUserDto> {
-    // Se trata de obtener el usuario con el 'id' dado
-    const result = await this.getUsers({ id: userId });
-
-    // Se verifican los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`User with ID ${userId} not found.`);
-    } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple users found with ID ${userId}.`,
-      );
-    }
-
-    return result[0];
-  }
-
-  async updateUser(userId: number, dto: UpdateUserDto): Promise<ResponseUserDto> {
+  async updateUser(
+    userId: number,
+    dto: UpdateUserDto,
+  ): Promise<ResponseUserDto> {
     this.errorsService.noBodyError(dto);
 
     // Se establecen las propiedades a actualizar
