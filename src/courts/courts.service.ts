@@ -27,6 +27,24 @@ export class CourtsService {
     private errorsService: ErrorsService,
   ) {}
 
+  public async isValidCourt(
+    complexId: number,
+    courtId: number,
+  ): Promise<boolean> {
+    // Se obtienen las pistas del complejo
+    const courts = await this.getCourts(complexId, {});
+
+    // Se obtienen los índices y los estatus de las pistas por separado
+    const courtIds = courts.map((court) => court.id);
+    const courtStatuses = courts.map((court) => court.status);
+
+    // Se obtiene la posición del 'id' de la pista en el array (si no se encuentra devuelve -1)
+    const index = courtIds.indexOf(courtId);
+    return index !== -1 && courtStatuses[index] === Status.OPEN;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------//
+
   async getCourts(
     complexId: number,
     dto: GetCourtsDto,

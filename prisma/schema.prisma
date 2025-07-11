@@ -51,22 +51,21 @@ model courts_status {
   court_id   Int
   status     court_status @default(OPEN)
   created_at DateTime     @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?     @default(false)
   court      courts       @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, created_at])
 }
 
 model devices {
-  id                Int                 @id @default(autoincrement())
-  complex_id        Int
-  type              device_type
-  created_at        DateTime            @default(now()) @db.Timestamp(6)
-  updated_at        DateTime            @default(now()) @db.Timestamp(6)
-  is_delete         Boolean?            @default(false)
-  courts            courts_devices[]
-  complex           complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  telemetry         devices_telemetry[]
+  id         Int                 @id @default(autoincrement())
+  complex_id Int
+  type       device_type
+  created_at DateTime            @default(now()) @db.Timestamp(6)
+  updated_at DateTime            @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?            @default(false)
+  courts     courts_devices[]
+  complex    complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  telemetry  devices_telemetry[]
 }
 
 model notifications {
@@ -86,18 +85,22 @@ model notifications {
 }
 
 model reservations {
+  id         Int                     @id @default(autoincrement())
   user_id    Int
+  complex_id Int
   court_id   Int
-  date_ini   DateTime           @db.Timestamp(6)
-  date_end   DateTime           @db.Timestamp(6)
-  status     reservation_status @default(EMPTY)
-  created_at DateTime           @default(now()) @db.Timestamp(6)
-  updated_at DateTime           @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?           @default(false)
-  court      courts             @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  date_ini   DateTime                @db.Timestamp(6)
+  date_end   DateTime                @db.Timestamp(6)
+  date_range Unsupported("tsrange")? @default(dbgenerated("tsrange(date_ini, date_end, '[)'::text)"))
+  status     reservation_status      @default(EMPTY)
+  created_at DateTime                @default(now()) @db.Timestamp(6)
+  updated_at DateTime                @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?                @default(false)
+  complexes  complexes               @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  court      courts                  @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       users                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([court_id, date_ini])
+  @@unique([complex_id, court_id, date_ini])
 }
 
 model users {
@@ -121,25 +124,25 @@ model users {
 }
 
 model complexes {
-  id            Int       @id @default(autoincrement())
-  complex_name  String    @db.VarChar
-  time_ini      String    @db.VarChar(5)
-  time_end      String    @db.VarChar(5)
+  id            Int            @id @default(autoincrement())
+  complex_name  String         @db.VarChar
+  time_ini      String         @db.VarChar(5)
+  time_end      String         @db.VarChar(5)
   loc_longitude Float?
   loc_latitude  Float?
-  created_at    DateTime  @default(now()) @db.Timestamp(6)
-  updated_at    DateTime  @default(now()) @db.Timestamp(6)
-  is_delete     Boolean?  @default(false)
+  created_at    DateTime       @default(now()) @db.Timestamp(6)
+  updated_at    DateTime       @default(now()) @db.Timestamp(6)
+  is_delete     Boolean?       @default(false)
   admins        admins[]
   courts        courts[]
   devices       devices[]
+  reservations  reservations[]
 }
 
 model devices_telemetry {
   device_id  Int
   value      Float
   created_at DateTime @default(now()) @db.Timestamp(6)
-  is_delete  Boolean? @default(false)
   devices    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([device_id, created_at])
