@@ -27,7 +27,7 @@ export class ComplexesService {
   ): Promise<Array<ResponseComplexDto>> {
     // Se construye el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.complexesWhereInput = {
-      // Se evita obtener los usuarios eliminados
+      // Se evita obtener los complejos eliminados
       ...(!checkDeleted && { is_delete: false }),
 
       ...(dto.id !== undefined && { id: dto.id }),
@@ -37,7 +37,7 @@ export class ComplexesService {
         complex_name: { contains: dto.complexName, mode: 'insensitive' },
       }),
 
-      // Se establecen las condiciones para los campos de tipo 'DateTime'
+      // Se establecen las condiciones para los campos de tipo 'Date'
       ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
       ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
 
@@ -66,9 +66,25 @@ export class ComplexesService {
     return complexes.map((complex) => new ResponseComplexDto(complex));
   }
 
+  async getComplex(id: number): Promise<ResponseComplexDto> {
+    // Se trata de obtener el complejo con el 'id' dado
+    const result = await this.getComplexes({ id });
+
+    // Se verifican los elementos obtenidos
+    if (result.length === 0) {
+      throw new NotFoundException(`Complex with ID ${id} not found.`);
+    } else if (result.length > 1) {
+      throw new InternalServerErrorException(
+        `Multiple complexes found with ID ${id}.`,
+      );
+    }
+
+    return result[0];
+  }
+
   async createComplex(dto: CreateComplexDto): Promise<ResponseComplexDto> {
     try {
-      // Se crea la entrada para el usuario en la BD
+      // Se crea la entrada para el complejo en la BD
       const complex = await this.prisma.complexes.create({
         data: {
           complex_name: dto.complexName,
@@ -99,24 +115,8 @@ export class ComplexesService {
     }
   }
 
-  async getComplex(id: number): Promise<ResponseComplexDto> {
-    // Se trata de obtener el usuario con el 'id' dado
-    const result = await this.getComplexes({ id });
-
-    // Se verifican los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Complex with ID ${id} not found.`);
-    } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple complexes found with ID ${id}.`,
-      );
-    }
-
-    return result[0];
-  }
-
   async updateComplex(
-    id: number,
+    complexId: number,
     dto: UpdateComplexDto,
   ): Promise<ResponseComplexDto> {
     // Se verifica que el cuerpo contiene elementos
@@ -124,23 +124,20 @@ export class ComplexesService {
 
     // Se establecen las propiedades a actualizar
     const data = {
-      ...('complexName' in dto &&
-        dto.complexName !== undefined && { complex_name: dto.complexName }),
-      ...('timeIni' in dto &&
-        dto.timeIni !== undefined && { time_ini: dto.timeIni }),
-      ...('timeEnd' in dto &&
-        dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
-      ...('locLongitude' in dto &&
-        dto.locLongitude !== undefined && { loc_longitude: dto.locLongitude }),
-      ...('locLatitude' in dto &&
-        dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
+      ...(dto.complexName !== undefined && { complex_name: dto.complexName }),
+      ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
+      ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
+      ...(dto.locLongitude !== undefined && {
+        loc_longitude: dto.locLongitude,
+      }),
+      ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
     };
 
     try {
       // Se actualiza la entrada del complejo
       const complex = await this.prisma.complexes.update({
         where: {
-          id: id,
+          id: complexId,
           is_delete: false,
         },
         data,
@@ -149,40 +146,42 @@ export class ComplexesService {
       return new ResponseComplexDto(complex);
     } catch (error) {
       this.errorsService.dbError(error, {
-        p2025: `Complex with ID ${id} not found.`,
+        p2025: `Complex with ID ${complexId} not found.`,
       });
 
       throw error;
     }
   }
 
-  async deleteComplex(id: number): Promise<null> {
+  async deleteComplex(complexId: number): Promise<null> {
     try {
       await this.prisma.complexes.update({
-        where: { id },
+        where: { id: complexId },
         data: { is_delete: true },
       });
 
       return null;
     } catch (error) {
       this.errorsService.dbError(error, {
-        p2025: `Complex with ID ${id} not found.`,
+        p2025: `Complex with ID ${complexId} not found.`,
       });
 
       throw error;
     }
   }
 
-  async getComplexTime(id: number): Promise<ResponseComplexTimeDto> {
-    const complex = await this.getComplex(id);
+  async getComplexTime(complexId: number): Promise<ResponseComplexTimeDto> {
+    // Se obtiene la información del complejo y se devuelven los campos con el horario
+    const complex = await this.getComplex(complexId);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
 
   async setComplexTime(
-    id: number,
+    complexId: number,
     dto: UpdateComplexTimeDto,
   ): Promise<ResponseComplexTimeDto> {
-    const complex = await this.updateComplex(id, dto);
+    // Se actualiza la información del complejo y se devuelven los campos con el horario
+    const complex = await this.updateComplex(complexId, dto);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
 }

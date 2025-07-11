@@ -18,7 +18,7 @@ import {
   ResponseCourtDto,
   ResponseCourtStatusDto,
 } from '../common/dto';
-import { Status } from './enums';
+import { CourtStatus } from './enums';
 
 @Injectable()
 export class CourtsService {
@@ -40,7 +40,7 @@ export class CourtsService {
 
     // Se obtiene la posición del 'id' de la pista en el array (si no se encuentra devuelve -1)
     const index = courtIds.indexOf(courtId);
-    return index !== -1 && courtStatuses[index] === Status.OPEN;
+    return index !== -1 && courtStatuses[index] === CourtStatus.OPEN;
   }
 
   //------------------------------------------------------------------------------------------------------------------//
@@ -138,7 +138,7 @@ export class CourtsService {
 
       // Se establece el estatus de la pista con el dado o uno por defecto
       const status = await this.setCourtStatus(complexId, court.id, {
-        status: dto.status ?? Status.OPEN,
+        status: dto.status ?? CourtStatus.OPEN,
       });
 
       return new ResponseCourtDto({ ...court, status: status.status });
@@ -261,7 +261,7 @@ export class CourtsService {
     return new ResponseCourtStatusDto({
       ...(status ?? {
         court_id: courtId,
-        status: Status.OPEN,
+        status: CourtStatus.OPEN,
       }),
       complex_id: complexId,
     });

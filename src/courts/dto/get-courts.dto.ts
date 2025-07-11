@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Sport, Status } from '../enums';
+import { Sport, CourtStatus } from '../enums';
 
 export class GetCourtsDto {
   @Type(() => Number)
@@ -21,7 +21,7 @@ export class GetCourtsDto {
   @IsOptional()
   maxPeople?: number;
 
-  @IsEnum(Status)
+  @IsEnum(CourtStatus)
   @IsOptional()
-  status?: Status;
+  status?: CourtStatus;
 }

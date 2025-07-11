@@ -61,12 +61,12 @@ export class ResponseComplexDto {
 
   constructor(complex: any) {
     this.id = complex.id;
-    this.complexName = complex.complex_name;
-    this.timeIni = complex.time_ini;
-    this.timeEnd = complex.time_end;
-    this.locLongitude = complex.loc_longitude;
-    this.locLatitude = complex.loc_latitude;
-    this.createdAt = complex.created_at;
-    this.updatedAt = complex.updated_at;
+    this.complexName = complex.complex_name ?? complex.complexName;
+    this.timeIni = complex.time_ini ?? complex.timeIni;
+    this.timeEnd = complex.time_end ?? complex.timeEnd;
+    this.locLongitude = complex.loc_longitude ?? complex.locLongitude;
+    this.locLatitude = complex.loc_latitude ?? complex.locLatitude;
+    this.createdAt = complex.created_at ?? complex.createdAt;
+    this.updatedAt = complex.updated_at ?? complex.updatedAt;
   }
 }

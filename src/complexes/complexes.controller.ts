@@ -40,39 +40,39 @@ export class ComplexesController {
   }
 
   @Roles(Role.CLIENT, Role.ADMIN)
-  @Get(':id')
-  async getComplex(@Param('id', ParseIntPipe) id: number) {
-    return this.complexesService.getComplex(id);
+  @Get(':complexId')
+  async getComplex(@Param('complexId', ParseIntPipe) complexId: number) {
+    return this.complexesService.getComplex(complexId);
   }
 
   @Roles(Role.ADMIN)
-  @Put(':id')
+  @Put(':complexId')
   async updateComplex(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('complexId', ParseIntPipe) complexId: number,
     @Body(new ValidationPipe({ skipMissingProperties: true }))
     dto: UpdateComplexDto,
   ) {
-    return this.complexesService.updateComplex(id, dto);
+    return this.complexesService.updateComplex(complexId, dto);
   }
 
   @Roles(Role.SUPERADMIN)
-  @Delete(':id')
-  async deleteComplex(@Param('id', ParseIntPipe) id: number) {
-    return this.complexesService.deleteComplex(id);
+  @Delete(':complexId')
+  async deleteComplex(@Param('complexId', ParseIntPipe) complexId: number) {
+    return this.complexesService.deleteComplex(complexId);
   }
 
   @Roles(Role.CLIENT, Role.ADMIN)
-  @Get(':id/time')
-  async getComplexTime(@Param('id', ParseIntPipe) id: number) {
-    return this.complexesService.getComplexTime(id);
+  @Get(':complexId/time')
+  async getComplexTime(@Param('complexId', ParseIntPipe) complexId: number) {
+    return this.complexesService.getComplexTime(complexId);
   }
 
   @Roles(Role.ADMIN)
-  @Post(':id/time')
+  @Post(':complexId/time')
   async setComplexTime(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('complexId', ParseIntPipe) complexId: number,
     @Body() dto: UpdateComplexTimeDto,
   ) {
-    return this.complexesService.setComplexTime(id, dto);
+    return this.complexesService.setComplexTime(complexId, dto);
   }
 }

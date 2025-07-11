@@ -1,2 +1,2 @@
 export * from './sport.enum';
-export * from './status.enum';
+export * from './court-status.enum';

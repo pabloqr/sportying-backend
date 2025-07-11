@@ -84,18 +84,18 @@ export class AuthService {
   /**
    * Generates signed access and refresh tokens for a given user.
    *
-   * @param {number} id - The unique identifier of the user.
+   * @param {number} userId - The unique identifier of the user.
    * @param {string} mail - The user's email address.
    * @param {Role} role - The role assigned to the user.
    * @return {Promise<TokensDto>} A promise that resolves to an object containing the signed access and refresh tokens.
    */
   async getSignedTokens(
-    id: number,
+    userId: number,
     mail: string,
     role: Role,
   ): Promise<TokensDto> {
     const payload = {
-      sub: id,
+      sub: userId,
       mail,
       role,
     };
@@ -111,7 +111,7 @@ export class AuthService {
       }),
     ]);
 
-    await this.updateDBRefreshToken(id, refreshToken);
+    await this.updateDBRefreshToken(userId, refreshToken);
 
     return new TokensDto({
       accessToken: accessToken,
@@ -122,15 +122,15 @@ export class AuthService {
   /**
    * Updates the refresh token in the database for a specific user.
    *
-   * @param {number} id - The unique identifier of the user whose refresh token should be updated.
+   * @param {number} userId - The unique identifier of the user whose refresh token should be updated.
    * @param {string} refreshToken - The new refresh token to be stored, which will be hashed before saving.
    * @return {Promise<void>} A promise that resolves when the operation is complete.
    */
-  async updateDBRefreshToken(id: number, refreshToken: string): Promise<void> {
+  async updateDBRefreshToken(userId: number, refreshToken: string): Promise<void> {
     const hash = await argon.hash(refreshToken);
     await this.prisma.users.update({
       where: {
-        id: id,
+        id: userId,
       },
       data: {
         refresh_token: hash,
@@ -212,14 +212,14 @@ export class AuthService {
   /**
    * Logs out a user by setting their refresh token to null in the database.
    *
-   * @param {number} id - The ID of the user to log out.
+   * @param {number} userId - The ID of the user to log out.
    * @return {Promise<void>} A promise that resolves once the user's refresh token has been cleared.
    */
-  async logout(id: number): Promise<void> {
+  async logout(userId: number): Promise<void> {
     // Se establece el valor del token a nulo
     await this.prisma.users.updateMany({
       where: {
-        id: id,
+        id: userId,
         refresh_token: {
           not: null,
         },

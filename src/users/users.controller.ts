@@ -33,49 +33,49 @@ export class UsersController {
   }
 
   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
-  @Get(':id')
+  @Get(':userId')
   async getUser(
-    @Param('id', ParseIntPipe) id: number,
-    @GetUser('id') userId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @GetUser('id') id: number,
     @GetUser('role') userRole: Role,
   ) {
     // Se verifica que el usuario está autorizado
-    if (userRole === Role.CLIENT && userId !== id) {
+    if (userRole === Role.CLIENT && id !== userId) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
 
-    return this.usersService.getUser(id);
+    return this.usersService.getUser(userId);
   }
 
   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
-  @Put(':id')
+  @Put(':userId')
   async updateUser(
-    @Param('id', ParseIntPipe) id: number,
-    @GetUser('id') userId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @GetUser('id') id: number,
     @GetUser('role') userRole: Role,
     @Body(new ValidationPipe({ skipMissingProperties: true }))
     dto: UpdateUserDto,
   ) {
     // Se verifica que el usuario está autorizado
-    if (userRole === Role.CLIENT && userId !== id) {
+    if (userRole === Role.CLIENT && id !== userId) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
 
-    return this.usersService.updateUser(id, dto);
+    return this.usersService.updateUser(userId, dto);
   }
 
   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
-  @Delete(':id')
+  @Delete(':userId')
   async deleteUser(
-    @Param('id', ParseIntPipe) id: number,
-    @GetUser('id') userId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @GetUser('id') id: number,
     @GetUser('role') userRole: Role,
   ) {
     // Se verifica que el usuario está autorizado
-    if (userRole === Role.CLIENT && userId !== id) {
+    if (userRole === Role.CLIENT && id !== userId) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
 
-    return this.usersService.deleteUser(id);
+    return this.usersService.deleteUser(userId);
   }
 }

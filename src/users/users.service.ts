@@ -200,28 +200,28 @@ export class UsersService {
    * Retrieves a user based on the given ID.
    * Throws an exception if no user or multiple users are found with the same ID.
    *
-   * @param {number} id - The ID of the user to be retrieved.
+   * @param {number} userId - The ID of the user to be retrieved.
    * @return {Promise<ResponseUserDto>} A promise that resolves to the user object.
    * @throws {NotFoundException} If no user is found with the given ID.
    * @throws {InternalServerErrorException} If multiple users are found with the same ID.
    */
-  async getUser(id: number): Promise<ResponseUserDto> {
+  async getUser(userId: number): Promise<ResponseUserDto> {
     // Se trata de obtener el usuario con el 'id' dado
-    const result = await this.getUsers({ id });
+    const result = await this.getUsers({ id: userId });
 
     // Se verifican los elementos obtenidos
     if (result.length === 0) {
-      throw new NotFoundException(`User with ID ${id} not found.`);
+      throw new NotFoundException(`User with ID ${userId} not found.`);
     } else if (result.length > 1) {
       throw new InternalServerErrorException(
-        `Multiple users found with ID ${id}.`,
+        `Multiple users found with ID ${userId}.`,
       );
     }
 
     return result[0];
   }
 
-  async updateUser(id: number, dto: UpdateUserDto): Promise<ResponseUserDto> {
+  async updateUser(userId: number, dto: UpdateUserDto): Promise<ResponseUserDto> {
     this.errorsService.noBodyError(dto);
 
     // Se establecen las propiedades a actualizar
@@ -240,7 +240,7 @@ export class UsersService {
       // Se actualiza la entrada del usuario
       const user = await this.prisma.users.update({
         where: {
-          id: id,
+          id: userId,
           is_delete: false,
         },
         data,
@@ -304,29 +304,29 @@ export class UsersService {
       this.errorsService.dbError(error, {
         p2002:
           'Credentials already exist. Please try again with different credentials.',
-        p2025: `User with ID ${id} not found.`,
+        p2025: `User with ID ${userId} not found.`,
       });
 
       throw error;
     }
   }
 
-  async deleteUser(id: number): Promise<null> {
+  async deleteUser(userId: number): Promise<null> {
     try {
       await this.prisma.users.update({
-        where: { id },
+        where: { id: userId },
         data: { is_delete: true },
       });
 
       await this.prisma.admins.updateMany({
-        where: { id },
+        where: { id: userId },
         data: { is_delete: true },
       });
 
       return null;
     } catch (error) {
       this.errorsService.dbError(error, {
-        p2025: `User with ID ${id} not found.`,
+        p2025: `User with ID ${userId} not found.`,
       });
 
       throw error;

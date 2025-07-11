@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Sport, Status } from '../enums';
+import { Sport, CourtStatus } from '../enums';
 
 export class CreateCourtDto {
   @IsEnum(Sport)
@@ -24,7 +24,7 @@ export class CreateCourtDto {
   @IsNotEmpty()
   maxPeople: number;
 
-  @IsEnum(Status)
+  @IsEnum(CourtStatus)
   @IsOptional()
-  status?: Status;
+  status?: CourtStatus;
 }

@@ -12,4 +12,12 @@ export class CourtAvailabilitySlotDto {
   @IsBoolean()
   @IsNotEmpty()
   available: boolean;
+
+  constructor(courtAvailabilitySlot: any) {
+    this.dateIni =
+      courtAvailabilitySlot.date_ini ?? courtAvailabilitySlot.dateIni;
+    this.dateEnd =
+      courtAvailabilitySlot.date_end ?? courtAvailabilitySlot.dateEnd;
+    this.available = courtAvailabilitySlot.available;
+  }
 }

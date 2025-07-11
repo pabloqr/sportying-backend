@@ -19,8 +19,9 @@ export class ResponseCourtAvailabilityDto {
   availability: CourtAvailabilitySlotDto[];
 
   constructor(courtAvailability: any) {
-    this.id = courtAvailability.court_id;
-    this.complexId = courtAvailability.complex_id;
+    this.id = courtAvailability.court_id ?? courtAvailability.courtId;
+    this.complexId =
+      courtAvailability.complex_id ?? courtAvailability.complexId;
     this.availability = courtAvailability.availability;
   }
 }

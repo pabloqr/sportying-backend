@@ -1,8 +1,8 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { Status } from '../enums';
+import { CourtStatus } from '../enums';
 
 export class CreateCourtStatusDto {
-  @IsEnum(Status)
+  @IsEnum(CourtStatus)
   @IsNotEmpty()
-  status: Status;
+  status: CourtStatus;
 }

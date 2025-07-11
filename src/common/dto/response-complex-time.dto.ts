@@ -14,4 +14,9 @@ export class ResponseComplexTimeDto {
   })
   @IsNotEmpty()
   timeEnd: string;
+
+  constructor(complexTime: any) {
+    this.timeIni = complexTime.time_ini ?? complexTime.timeIni;
+    this.timeEnd = complexTime.time_end ?? complexTime.timeEnd;
+  }
 }

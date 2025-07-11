@@ -6,7 +6,7 @@ import {
   IsNumber,
   IsString,
 } from 'class-validator';
-import { Sport, Status } from '../../courts/enums';
+import { Sport, CourtStatus } from '../../courts/enums';
 
 export class ResponseCourtDto {
   @Type(() => Number)
@@ -36,9 +36,9 @@ export class ResponseCourtDto {
   @IsNotEmpty()
   maxPeople: number;
 
-  @IsEnum(Status)
+  @IsEnum(CourtStatus)
   @IsNotEmpty()
-  status: Status;
+  status: CourtStatus;
 
   @IsDate()
   @IsNotEmpty()
