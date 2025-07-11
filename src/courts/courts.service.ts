@@ -6,7 +6,6 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ErrorsService } from '../common/errors.service';
 import {
-  CreateCourtAvailabilityDto,
   CreateCourtDto,
   CreateCourtStatusDto,
   GetCourtsDto,
@@ -14,6 +13,7 @@ import {
 } from './dto';
 import { Prisma } from '@prisma/client';
 import {
+  CourtAvailabilitySlotDto,
   ResponseCourtAvailabilityDto,
   ResponseCourtDto,
   ResponseCourtStatusDto,
@@ -98,7 +98,7 @@ export class CourtsService {
     // Se resuelve la operación asíncrona
     const courtsWithStatus = await Promise.all(courtsWithStatusAsync);
 
-    // Se filtran las entradas del array si está definido el estatus en el dto
+    // Se filtran las entradas del array si está definido el estatus
     let courtsWithStatusFiltered = courtsWithStatus;
     if (dto.status !== undefined) {
       courtsWithStatusFiltered = courtsWithStatus.filter(
@@ -300,7 +300,7 @@ export class CourtsService {
     complexId: number,
     courtId: number,
   ): Promise<ResponseCourtAvailabilityDto> {
-    const availability = await this.prisma.reservations.findMany({
+    const reservations = await this.prisma.reservations.findMany({
       where: {
         court_id: courtId,
       },
@@ -309,28 +309,60 @@ export class CourtsService {
         date_ini: true,
         date_end: true,
       },
+      orderBy: {
+        date_ini: 'asc',
+      },
     });
 
-    const formattedAvailability = availability.map((reservation) => ({
-      date_ini: reservation.date_ini,
-      date_end: reservation.date_end,
-      availability: false,
-    }));
+    // Se formatean las reservas para que tengan la estructura correcta
+    const formattedReservations = reservations.map(
+      (reservation) =>
+        new CourtAvailabilitySlotDto({
+          ...reservation,
+          available: false,
+        }),
+    );
+
+    // Disponibilidad por intervalos
+    const availability: CourtAvailabilitySlotDto[] = [];
+    if (formattedReservations.length > 0) {
+      // Intervalo actual
+      let currentAvailability: CourtAvailabilitySlotDto | undefined = undefined;
+
+      formattedReservations.forEach((reservation) => {
+        // Si el intervalo actual es indefinido, se actualiza y se devuelve
+        if (currentAvailability === undefined) {
+          currentAvailability = new CourtAvailabilitySlotDto(reservation);
+          return;
+        }
+
+        // Se establecen las condiciones para verificar si los intervalos son contiguos
+        const equalEdgeDates =
+          currentAvailability.dateEnd.getTime() ===
+          reservation.dateIni.getTime();
+        const equalAvailability =
+          currentAvailability.available === reservation.available;
+
+        if (equalEdgeDates && equalAvailability) {
+          // Si son contiguos, se extiende el intervalo
+          currentAvailability.dateEnd = reservation.dateEnd;
+        } else {
+          // Si no son contiguos, se añade el intervalo actual al array y se actualiza
+          availability.push(currentAvailability);
+          currentAvailability = new CourtAvailabilitySlotDto(reservation);
+        }
+      });
+
+      // Se añade el intervalo final al array
+      if (currentAvailability !== undefined) {
+        availability.push(currentAvailability);
+      }
+    }
 
     return new ResponseCourtAvailabilityDto({
       court_id: courtId,
       complex_id: complexId,
-      availability: formattedAvailability,
+      availability: availability,
     });
-  }
-
-  async setCourtAvailability(
-    complexId: number,
-    courtId: number,
-    dto: CreateCourtAvailabilityDto,
-  ): Promise<ResponseCourtAvailabilityDto> {
-    // TODO: crear reserva
-
-    return this.getCourtAvailability(complexId, courtId);
   }
 }

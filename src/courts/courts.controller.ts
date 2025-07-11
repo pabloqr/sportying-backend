@@ -12,7 +12,6 @@ import {
 import { Public } from 'src/auth/decorator';
 import { CourtsService } from './courts.service';
 import {
-  CreateCourtAvailabilityDto,
   CreateCourtDto,
   CreateCourtStatusDto,
   GetCourtsDto,
@@ -95,15 +94,5 @@ export class CourtsController {
     @Param('courtId', ParseIntPipe) courtId: number,
   ) {
     return this.courtsService.getCourtAvailability(complexId, courtId);
-  }
-
-  @Public()
-  @Post(':complexId/courts/:courtId/availability')
-  async setCourtAvailability(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Param('courtId', ParseIntPipe) courtId: number,
-    @Body() dto: CreateCourtAvailabilityDto,
-  ) {
-    return this.courtsService.setCourtAvailability(complexId, courtId, dto);
   }
 }

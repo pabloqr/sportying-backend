@@ -66,7 +66,7 @@ export class ResponseComplexDto {
     this.timeEnd = complex.time_end ?? complex.timeEnd;
     this.locLongitude = complex.loc_longitude ?? complex.locLongitude;
     this.locLatitude = complex.loc_latitude ?? complex.locLatitude;
-    this.createdAt = complex.created_at ?? complex.createdAt;
-    this.updatedAt = complex.updated_at ?? complex.updatedAt;
+    this.createdAt = new Date(complex.created_at ?? complex.createdAt);
+    this.updatedAt = new Date(complex.updated_at ?? complex.updatedAt);
   }
 }

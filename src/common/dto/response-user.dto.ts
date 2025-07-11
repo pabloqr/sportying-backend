@@ -58,7 +58,7 @@ export class ResponseUserDto {
     this.mail = user.mail;
     this.phone_prefix = user.phone_prefix ?? user.phonePrefix;
     this.phone_number = user.phone_number ?? user.phoneNumber;
-    this.created_at = user.created_at ?? user.createdAt;
-    this.updated_at = user.updated_at ?? user.updatedAt;
+    this.created_at = new Date(user.created_at ?? user.createdAt);
+    this.updated_at = new Date(user.updated_at ?? user.updatedAt);
   }
 }

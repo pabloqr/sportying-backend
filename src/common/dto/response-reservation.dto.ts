@@ -56,11 +56,11 @@ export class ResponseReservationDto {
     this.userId = reservation.user_id ?? reservation.userId;
     this.complexId = reservation.complex_id ?? reservation.complexId;
     this.courtId = reservation.court_id ?? reservation.courtId;
-    this.dateIni = reservation.date_ini ?? reservation.dateIni;
-    this.dateEnd = reservation.date_end ?? reservation.dateEnd;
+    this.dateIni = new Date(reservation.date_ini ?? reservation.dateIni);
+    this.dateEnd = new Date(reservation.date_end ?? reservation.dateEnd);
     this.status = reservation.status;
     this.timeFilter = reservation.time_filter ?? reservation.timeFilter;
-    this.createdAt = reservation.created_at ?? reservation.createdAt;
-    this.updatedAt = reservation.updated_at ?? reservation.updatedAt;
+    this.createdAt = new Date(reservation.created_at ?? reservation.createdAt);
+    this.updatedAt = new Date(reservation.updated_at ?? reservation.updatedAt);
   }
 }

@@ -50,13 +50,13 @@ export class ResponseCourtDto {
 
   constructor(court: any) {
     this.id = court.id;
-    this.complexId = court.complex_id;
+    this.complexId = court.complex_id ?? court.complexId;
     this.sport = court.sport;
     this.name = court.name;
     this.description = court.description;
-    this.maxPeople = court.max_people;
+    this.maxPeople = court.max_people ?? court.maxPeople;
     this.status = court.status;
-    this.createdAt = court.created_at;
-    this.updatedAt = court.updated_at;
+    this.createdAt = new Date(court.created_at ?? court.createdAt);
+    this.updatedAt = new Date(court.updated_at ?? court.updatedAt);
   }
 }
