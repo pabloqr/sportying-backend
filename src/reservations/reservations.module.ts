@@ -4,6 +4,7 @@ import { ReservationsService } from './reservations.service';
 import { UserReservationsController } from './user-reservations.controller';
 import { ComplexReservationsController } from './complex-reservations.controller';
 import { CourtsService } from '../courts/courts.service';
+import { ComplexesService } from '../complexes/complexes.service';
 
 @Module({
   controllers: [
@@ -11,7 +12,7 @@ import { CourtsService } from '../courts/courts.service';
     UserReservationsController,
     ComplexReservationsController,
   ],
-  providers: [ReservationsService, CourtsService],
+  providers: [ReservationsService, ComplexesService, CourtsService],
   exports: [ReservationsService],
 })
 export class ReservationsModule {}

@@ -19,22 +19,42 @@ import { ResponseReservationDto } from '../common/dto';
 import { Prisma } from '@prisma/client';
 import { CourtsService } from '../courts/courts.service';
 import { ReservationTimeFilter } from './enums';
+import { ComplexesService } from '../complexes/complexes.service';
 
 @Injectable()
 export class ReservationsService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    @Inject(forwardRef(() => ComplexesService))
+    private complexesService: ComplexesService,
     @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
   ) {}
 
+  /**
+   * Determines the reservation time filter based on the provided date.
+   *
+   * @param {Date} date - The date to evaluate for determining the time filter.
+   * @return {ReservationTimeFilter} Returns PAST if the date is earlier than the current date,
+   *  otherwise returns UPCOMING.
+   */
   private getTimeFilterFromDate(date: Date): ReservationTimeFilter {
     return date < new Date()
       ? ReservationTimeFilter.PAST
       : ReservationTimeFilter.UPCOMING;
   }
 
+  /**
+   * Validates the reservation data provided in the DTO. Checks the validity of the court ID
+   * and ensures the initial and final dates are valid.
+   *
+   * @param {number} complexId - The ID of the complex to validate the court against.
+   * @param {CreateReservationDto | UpdateReservationDto} dto - The reservation data transfer object containing the
+   * court ID and date information.
+   * @return {Promise<void>} A promise that resolves when the validation is successful. Throws a BadRequestException if
+   * validation fails.
+   */
   private async validateReservationData(
     complexId: number,
     dto: CreateReservationDto | UpdateReservationDto,
@@ -46,10 +66,18 @@ export class ReservationsService {
       throw new BadRequestException('Requested court is not valid.');
     }
 
+    // Se obtiene el horario del complejo
+    const complexTime = await this.complexesService.getComplexTime(complexId);
+
     if (
       dto.dateIni !== undefined &&
       dto.dateEnd !== undefined &&
-      !this.isValidDate(dto.dateIni, dto.dateEnd)
+      !this.isValidDate(
+        complexTime.timeIni,
+        complexTime.timeEnd,
+        dto.dateIni,
+        dto.dateEnd,
+      )
     ) {
       throw new BadRequestException(
         'Dates are not valid. Initial date must be previous to final date.',
@@ -57,12 +85,46 @@ export class ReservationsService {
     }
   }
 
-  private isValidDate(dateIni: Date, dateEnd: Date): boolean {
-    return dateIni < dateEnd;
+  /**
+   * Validates whether a given time range is valid based on input constraints.
+   *
+   * @param {string} complexTimeIni - The initial time in HH:mm format as a string.
+   * @param {string} complexTimeEnd - The end time in HH:mm format as a string.
+   * @param {Date} dateIni - The starting date and time to validate.
+   * @param {Date} dateEnd - The ending date and time to validate.
+   * @return {boolean} Returns true if the date range and time constraints are valid, otherwise false.
+   */
+  private isValidDate(
+    complexTimeIni: string,
+    complexTimeEnd: string,
+    dateIni: Date,
+    dateEnd: Date,
+  ): boolean {
+    const complexTimeIniSplit = complexTimeIni.split(':').map(Number);
+    const afterComplexTimeIni =
+      complexTimeIniSplit[0] < dateIni.getHours() ||
+      (complexTimeIniSplit[0] === dateIni.getHours() &&
+        complexTimeIniSplit[1] <= dateIni.getMinutes());
+
+    const complexTimeEndSplit = complexTimeEnd.split(':').map(Number);
+    const beforeComplexTimeEnd =
+      complexTimeEndSplit[0] > dateEnd.getHours() ||
+      (complexTimeEndSplit[0] === dateEnd.getHours() &&
+        complexTimeEndSplit[1] >= dateEnd.getMinutes());
+
+    return dateIni < dateEnd && afterComplexTimeIni && beforeComplexTimeEnd;
   }
 
   //------------------------------------------------------------------------------------------------------------------//
 
+  /**
+   * Fetches a list of reservations based on the provided filter criteria.
+   *
+   * @param {GetReservationsDto} dto - The data transfer object containing the filter and sorting criteria for
+   * reservations.
+   * @param {boolean} [checkDeleted=false] - Determines whether to include deleted reservations in the results.
+   * @return {Promise<Array<ResponseReservationDto>>} A promise that resolves to an array of reservation DTOs.
+   */
   async getReservations(
     dto: GetReservationsDto,
     checkDeleted: boolean = false,
@@ -135,6 +197,14 @@ export class ReservationsService {
     );
   }
 
+  /**
+   * Retrieves a reservation by its unique identifier.
+   *
+   * @param {number} reservationId - The unique identifier of the reservation to retrieve.
+   * @return {Promise<ResponseReservationDto>} A promise that resolves to the reservation details if found.
+   * @throws {NotFoundException} If no reservation with the given ID is found.
+   * @throws {InternalServerErrorException} If multiple reservations with the same ID are found.
+   */
   async getReservation(reservationId: number): Promise<ResponseReservationDto> {
     // Se trata de obtener la reserva con el 'id' dado
     const result = await this.getReservations({ id: reservationId });
@@ -153,6 +223,14 @@ export class ReservationsService {
     return result[0];
   }
 
+  /**
+   * Fetches the reservations associated with a specific user.
+   *
+   * @param {number} userId The unique identifier of the user whose reservations are to be retrieved.
+   * @param {GetUserReservationsDto} dto An object containing filtering and query parameters for fetching reservations.
+   * @param {boolean} [checkDeleted=false] Indicates whether to include deleted reservations in the results.
+   * @return {Promise<Array<ResponseReservationDto>>} A promise that resolves to an array of reservation details.
+   */
   async getUserReservations(
     userId: number,
     dto: GetUserReservationsDto,
@@ -162,6 +240,16 @@ export class ReservationsService {
     return this.getReservations({ ...dto, userId }, checkDeleted);
   }
 
+  /**
+   * Retrieves a list of reservations for a specific complex based on the provided parameters.
+   *
+   * @param {number} complexId - The unique identifier of the complex for which reservations are being retrieved.
+   * @param {GetUserReservationsDto} dto - An object containing reservation filter criteria such as date range or user
+   * information.
+   * @param {boolean} [checkDeleted=false] - Optional flag to include or exclude soft-deleted reservations in the
+   * result.
+   * @return {Promise<Array<ResponseReservationDto>>} A promise that resolves to an array of reservation data objects.
+   */
   async getComplexReservations(
     complexId: number,
     dto: GetUserReservationsDto,
@@ -171,6 +259,16 @@ export class ReservationsService {
     return this.getReservations({ ...dto, complexId }, checkDeleted);
   }
 
+  /**
+   * Creates a new reservation for the specified sports complex and user details.
+   * Validates the reservation data before proceeding and handles potential database errors.
+   *
+   * @param {number} complexId - The identifier of the sports complex where the reservation is being made.
+   * @param {CreateReservationDto} dto - The data transfer object containing reservation details such as user, court,
+   * and time range.
+   * @return {Promise<ResponseReservationDto>} A promise resolving to the response DTO containing reservation details,
+   * including time filter.
+   */
   async createReservation(
     complexId: number,
     dto: CreateReservationDto,
@@ -213,6 +311,14 @@ export class ReservationsService {
     }
   }
 
+  /**
+   * Updates an existing reservation with the provided data.
+   *
+   * @param {number} reservationId - The ID of the reservation to be updated.
+   * @param {UpdateReservationDto} dto - The data transfer object containing the updated reservation details.
+   * @return {Promise<ResponseReservationDto>} A promise resolving to the updated reservation details encapsulated in a
+   * response DTO.
+   */
   async updateReservation(
     reservationId: number,
     dto: UpdateReservationDto,
@@ -257,6 +363,13 @@ export class ReservationsService {
     }
   }
 
+  /**
+   * Marks a reservation as deleted by updating the reservation's status in the database.
+   *
+   * @param {number} reservationId - The unique identifier of the reservation to be deleted.
+   * @return {Promise<null>} A promise that resolves to null upon successful deletion.
+   * @throws Will throw an error if the reservation ID does not exist or if a database error occurs.
+   */
   async deleteReservation(reservationId: number): Promise<null> {
     try {
       // Se marca la reserva como eliminada

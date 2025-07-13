@@ -36,6 +36,13 @@ export class CourtsService {
     private reservationsService: ReservationsService,
   ) {}
 
+  /**
+   * Validates if the given court ID is valid and currently open in the specified complex.
+   *
+   * @param {number} complexId - The ID of the complex to check.
+   * @param {number} courtId - The ID of the court to validate.
+   * @return {Promise<boolean>} A promise that resolves to `true` if the court ID is valid and open; otherwise, `false`.
+   */
   public async isValidCourt(
     complexId: number,
     courtId: number,
@@ -54,6 +61,15 @@ export class CourtsService {
 
   //------------------------------------------------------------------------------------------------------------------//
 
+  /**
+   * Retrieves a list of courts based on the specified criteria.
+   *
+   * @param {number} complexId - The ID of the complex to filter courts.
+   * @param {GetCourtsDto} dto - An object containing filtering and sorting parameters.
+   * @param {boolean} [checkDeleted=false] - Whether to include deleted courts in the results.
+   * @return {Promise<Array<ResponseCourtDto>>} A promise that resolves to an array of ResponseCourtDto objects
+   * representing the filtered and processed courts.
+   */
   async getCourts(
     complexId: number,
     dto: GetCourtsDto,
@@ -131,6 +147,15 @@ export class CourtsService {
     return courtsWithStatusFiltered.map((court) => new ResponseCourtDto(court));
   }
 
+  /**
+   * Retrieves a court by its ID within a given complex.
+   *
+   * @param {number} complexId - The ID of the complex where the court is located.
+   * @param {number} courtId - The ID of the court to be retrieved.
+   * @return {Promise<ResponseCourtDto>} A promise that resolves to the details of the requested court.
+   * @throws {NotFoundException} If no court with the specified ID is found.
+   * @throws {InternalServerErrorException} If multiple courts with the specified ID are found.
+   */
   async getCourt(
     complexId: number,
     courtId: number,
@@ -150,6 +175,15 @@ export class CourtsService {
     return result[0];
   }
 
+  /**
+   * Creates a new court associated with the given complex ID and details provided in the data transfer object (DTO).
+   *
+   * @param {number} complexId - The ID of the complex to which the court belongs.
+   * @param {CreateCourtDto} dto - The data transfer object containing court details such as sport, name, description,
+   * maximum capacity, and status.
+   * @return {Promise<ResponseCourtDto>} A promise that resolves to a ResponseCourtDto containing the details of the
+   * created court, including its status.
+   */
   async createCourt(
     complexId: number,
     dto: CreateCourtDto,
@@ -191,6 +225,15 @@ export class CourtsService {
     }
   }
 
+  /**
+   * Updates the details of a court based on the provided information.
+   *
+   * @param {number} complexId - The ID of the sports complex to which the court belongs.
+   * @param {number} courtId - The unique ID of the court that needs to be updated.
+   * @param {UpdateCourtDto} dto - The data transfer object containing the properties to be updated for the court.
+   * @return {Promise<ResponseCourtDto>} Returns a promise that resolves to a ResponseCourtDto object containing the
+   * updated court information, including its current status.
+   */
   async updateCourt(
     complexId: number,
     courtId: number,
@@ -241,6 +284,15 @@ export class CourtsService {
     }
   }
 
+  /**
+   * Marks a court as deleted by updating its status in the database.
+   *
+   * @param {number} _complexId - The ID of the complex to which the court belongs. Currently unused in the function
+   * logic.
+   * @param {number} courtId - The ID of the court to be marked as deleted.
+   * @return {Promise<null>} A promise that resolves with null once the court is successfully marked as deleted.
+   * @throws Will throw an error if there's a database error or if the court is not found.
+   */
   async deleteCourt(_complexId: number, courtId: number): Promise<null> {
     try {
       // Se marca la pista como eliminada
@@ -259,6 +311,14 @@ export class CourtsService {
     }
   }
 
+  /**
+   * Retrieves the most recent status of a specific court.
+   *
+   * @param {number} complexId - The identifier for the sports complex to which the court belongs.
+   * @param {number} courtId - The identifier for the court whose status is to be retrieved.
+   * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the most updated status of the court, or a
+   * default status if no recent status is found.
+   */
   async getCourtStatus(
     complexId: number,
     courtId: number,
@@ -288,6 +348,14 @@ export class CourtsService {
     });
   }
 
+  /**
+   * Updates the status of a court by creating a new entry in the court status table.
+   *
+   * @param {number} complexId - The ID of the complex to which the court belongs.
+   * @param {number} courtId - The ID of the court whose status is being updated.
+   * @param {CreateCourtStatusDto} dto - The data transfer object containing the new status information for the court.
+   * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the updated court status object.
+   */
   async setCourtStatus(
     complexId: number,
     courtId: number,
@@ -317,6 +385,16 @@ export class CourtsService {
     }
   }
 
+  /**
+   * Retrieves the court availability for a given complex ID. It optionally groups the availability by contiguous time
+   * intervals.
+   *
+   * @param {number} complexId - The identifier of the complex for which the court availability is to be retrieved.
+   * @param {boolean} [groupAvailability=true] - A flag indicating whether the availability should be grouped by
+   * contiguous time slots or not.
+   * @return {Promise<Array<ResponseCourtAvailabilityDto>>} A promise that resolves to an array of court availability
+   * data transfer objects.
+   */
   async getCourtsAvailability(
     complexId: number,
     groupAvailability: boolean = true,
@@ -401,6 +479,15 @@ export class CourtsService {
     });
   }
 
+  /**
+   * Retrieves the availability information for a specific court within a complex.
+   *
+   * @param {number} complexId - The unique identifier of the complex.
+   * @param {number} courtId - The unique identifier of the court.
+   * @param {boolean} [groupAvailability=true] - Specifies whether to group availability by complexes.
+   * @return {Promise<ResponseCourtAvailabilityDto>} A Promise that resolves to the availability details of the
+   * specified court.
+   */
   async getCourtAvailability(
     complexId: number,
     courtId: number,

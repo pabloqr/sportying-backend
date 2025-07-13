@@ -24,13 +24,13 @@ export class UsersService {
   ) {}
 
   /**
-   * Retrieves a list of users based on the specified criteria in the data transfer object (DTO).
+   * Retrieves a list of users based on the provided filters and ordering specifications.
    *
-   * @param {GetUsersDto} dto - The data transfer object containing filters for retrieving users, such as role, name,
-   * or surname.
-   * @param checkDeleted Flag that determines if the method returns deleted users.
-   * @return {Promise<Array<ResponseUserDto>>} A promise that resolves to an array of user objects, filtered and
-   * formatted based on the specified criteria.
+   * @param {GetUsersDto} dto - The data transfer object containing filters and sorting parameters for the query.
+   * @param {boolean} [checkDeleted=false] - Whether to include users marked as deleted in the results. Defaults to
+   * `false`.
+   * @return {Promise<Array<ResponseUserDto>>} - A promise that resolves to an array of user data formatted as
+   * `ResponseUserDto`.
    */
   async getUsers(
     dto: GetUsersDto,
@@ -98,13 +98,12 @@ export class UsersService {
   }
 
   /**
-   * Retrieves a user based on the given ID.
-   * Throws an exception if no user or multiple users are found with the same ID.
+   * Retrieves a user with the specified ID.
    *
-   * @param {number} userId - The ID of the user to be retrieved.
-   * @return {Promise<ResponseUserDto>} A promise that resolves to the user object.
-   * @throws {NotFoundException} If no user is found with the given ID.
-   * @throws {InternalServerErrorException} If multiple users are found with the same ID.
+   * @param {number} userId - The unique identifier of the user to retrieve.
+   * @return {Promise<ResponseUserDto>} Returns a promise that resolves to the user data if found.
+   * @throws {NotFoundException} If no user is found with the specified ID.
+   * @throws {InternalServerErrorException} If multiple users are found with the specified ID.
    */
   async getUser(userId: number): Promise<ResponseUserDto> {
     // Se trata de obtener el usuario con el 'id' dado
@@ -238,6 +237,15 @@ export class UsersService {
     }
   }
 
+  /**
+   * Updates a user's information based on the provided data transfer object (DTO).
+   * This method handles updating user properties, including password, name,
+   * surname, mail, phone details, and role. It also manages the user's admin state.
+   *
+   * @param {number} userId - The unique identifier of the user to update.
+   * @param {UpdateUserDto} dto - An object containing the updated information for the user.
+   * @return {Promise<ResponseUserDto>} A promise resolving to the updated user's information.
+   */
   async updateUser(
     userId: number,
     dto: UpdateUserDto,
@@ -331,6 +339,12 @@ export class UsersService {
     }
   }
 
+  /**
+   * Marks a user and their associated admin data as deleted in the database.
+   *
+   * @param {number} userId - The unique identifier of the user to be deleted.
+   * @return {Promise<null>} Returns a promise that resolves to null after the user and admins are marked as deleted.
+   */
   async deleteUser(userId: number): Promise<null> {
     try {
       await this.prisma.users.update({

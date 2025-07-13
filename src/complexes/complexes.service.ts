@@ -28,6 +28,18 @@ export class ComplexesService {
     private courtsService: CourtsService,
   ) {}
 
+  /**
+   * Retrieves a list of complexes based on the provided filters and conditions.
+   * It supports filtering by various fields, ordering by specific properties,
+   * and optionally includes deleted records.
+   *
+   * @param {GetComplexesDto} dto - The data transfer object containing the filter and order parameters for querying
+   * complexes.
+   * @param {boolean} [checkDeleted=false] - A flag indicating whether to include deleted complexes in the result set.
+   * Defaults to false.
+   * @return {Promise<Array<ResponseComplexDto>>} - A promise that resolves to an array of ResponseComplexDto instances
+   * representing the matching complexes.
+   */
   async getComplexes(
     dto: GetComplexesDto,
     checkDeleted: boolean = false,
@@ -85,6 +97,14 @@ export class ComplexesService {
     return complexes.map((complex) => new ResponseComplexDto(complex));
   }
 
+  /**
+   * Retrieves a complex entity by its unique identifier.
+   *
+   * @param {number} id - The unique identifier of the complex to retrieve.
+   * @return {Promise<ResponseComplexDto>} A promise that resolves to the retrieved complex entity.
+   * @throws {NotFoundException} If no complex is found with the specified ID.
+   * @throws {InternalServerErrorException} If multiple complexes are found with the specified ID.
+   */
   async getComplex(id: number): Promise<ResponseComplexDto> {
     // Se trata de obtener el complejo con el 'id' dado
     const result = await this.getComplexes({ id });
@@ -101,6 +121,14 @@ export class ComplexesService {
     return result[0];
   }
 
+  /**
+   * Creates a new complex entry in the database.
+   *
+   * @param {CreateComplexDto} dto - Data Transfer Object containing the details of the complex to be created.
+   * It includes the complex name, schedule times, and location coordinates.
+   * @return {Promise<ResponseComplexDto>} A promise that resolves to a ResponseComplexDto containing the details of
+   * the newly created complex.
+   */
   async createComplex(dto: CreateComplexDto): Promise<ResponseComplexDto> {
     try {
       // Se crea la entrada para el complejo en la BD
@@ -134,6 +162,14 @@ export class ComplexesService {
     }
   }
 
+  /**
+   * Updates an existing complex with the specified ID using the data provided in the DTO.
+   *
+   * @param {number} complexId - The unique identifier of the complex to update.
+   * @param {UpdateComplexDto} dto - The data transfer object containing the properties to update for the complex.
+   * @return {Promise<ResponseComplexDto>} A promise that resolves to a ResponseComplexDto containing the updated
+   * complex details.
+   */
   async updateComplex(
     complexId: number,
     dto: UpdateComplexDto,
@@ -172,6 +208,13 @@ export class ComplexesService {
     }
   }
 
+  /**
+   * Marks a complex as deleted by updating its is_delete property to true in the database.
+   *
+   * @param {number} complexId - The ID of the complex to be marked as deleted.
+   * @return {Promise<null>} A promise that resolves to null if the operation is successful.
+   * @throws Will rethrow any database error that occurs during the operation.
+   */
   async deleteComplex(complexId: number): Promise<null> {
     try {
       await this.prisma.complexes.update({
@@ -189,12 +232,26 @@ export class ComplexesService {
     }
   }
 
+  /**
+   * Retrieves the operating hours of a complex identified by its ID.
+   *
+   * @param {number} complexId - The unique identifier of the complex.
+   * @return {Promise<ResponseComplexTimeDto>} A promise that resolves to an object containing the opening and closing
+   * times of the complex.
+   */
   async getComplexTime(complexId: number): Promise<ResponseComplexTimeDto> {
     // Se obtiene la información del complejo y se devuelven los campos con el horario
     const complex = await this.getComplex(complexId);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
 
+  /**
+   * Updates the time information of a complex and returns the updated time fields.
+   *
+   * @param {number} complexId - The unique identifier of the complex to update.
+   * @param {UpdateComplexTimeDto} dto - The data transfer object containing the updated time information.
+   * @return {Promise<ResponseComplexTimeDto>} A promise that resolves to an object containing the updated time fields.
+   */
   async setComplexTime(
     complexId: number,
     dto: UpdateComplexTimeDto,
@@ -204,6 +261,13 @@ export class ComplexesService {
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
 
+  /**
+   * Retrieves the availability of courts within a specified complex.
+   *
+   * @param {number} complexId - The unique identifier for the complex.
+   * @param {boolean} [groupAvailability=true] - Determines if the availability should be grouped.
+   * @return {Promise<Array<ResponseCourtAvailabilityDto>>} A promise resolving to an array of court availability data.
+   */
   async getComplexAvailability(
     complexId: number,
     groupAvailability: boolean = true,
