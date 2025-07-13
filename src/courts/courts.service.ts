@@ -79,12 +79,14 @@ export class CourtsService {
     };
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.courtsOrderByWithRelationInput = {};
-    if (dto.orderField !== undefined) {
-      const field = COURT_ORDER_FIELD_MAP[dto.orderField];
-      orderBy = {
-        [field]: dto.order,
-      };
+    let orderBy: Prisma.courtsOrderByWithRelationInput[] = [];
+    if (dto.orderParams !== undefined) {
+      dto.orderParams.forEach((orderParam) => {
+        const field = COURT_ORDER_FIELD_MAP[orderParam.field];
+        orderBy.push({
+          [field]: orderParam.order,
+        });
+      });
     }
 
     // Se realiza la consulta seleccionando las columnas que se quieren devolver
@@ -313,13 +315,19 @@ export class CourtsService {
     }
   }
 
+  async getCourtsAvailability(
+    complexId: number,
+  ): Promise<Array<ResponseCourtAvailabilityDto>> {
+    return [new ResponseCourtAvailabilityDto({})];
+  }
+
   async getCourtAvailability(
     complexId: number,
     courtId: number,
   ): Promise<ResponseCourtAvailabilityDto> {
     const reservations = await this.reservationsService.getReservations({
       courtId,
-      orderField: ReservationOrderField.DATE_INI,
+      orderParams: [{ field: ReservationOrderField.DATE_INI }],
     });
 
     // Se formatean las reservas para que tengan la estructura correcta

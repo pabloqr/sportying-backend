@@ -88,6 +88,14 @@ export class CourtsController {
   }
 
   @Public()
+  @Get(':complexId/courts/availability')
+  async getCourtsAvailability(
+    @Param('complexId', ParseIntPipe) complexId: number,
+  ) {
+    return this.courtsService.getCourtsAvailability(complexId);
+  }
+
+  @Public()
   @Get(':complexId/courts/:courtId/availability')
   async getCourtAvailability(
     @Param('complexId', ParseIntPipe) complexId: number,

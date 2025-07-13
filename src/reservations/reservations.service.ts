@@ -1,5 +1,7 @@
 import {
-  BadRequestException, forwardRef, Inject,
+  BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -97,12 +99,14 @@ export class ReservationsService {
     }
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.reservationsOrderByWithRelationInput = {};
-    if (dto.orderField !== undefined) {
-      const field = RESERVATION_ORDER_FIELD_MAP[dto.orderField];
-      orderBy = {
-        [field]: dto.order,
-      };
+    let orderBy: Prisma.reservationsOrderByWithRelationInput[] = [];
+    if (dto.orderParams !== undefined) {
+      dto.orderParams.forEach((orderParam) => {
+        const field = RESERVATION_ORDER_FIELD_MAP[orderParam.field];
+        orderBy.push({
+          [field]: orderParam.order,
+        });
+      });
     }
 
     // Se realiza la consulta seleccionando las columnas que se quieren devolver

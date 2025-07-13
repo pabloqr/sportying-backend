@@ -62,12 +62,14 @@ export class UsersService {
     };
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.usersOrderByWithRelationInput = {};
-    if (dto.orderField !== undefined) {
-      const field = USER_ORDER_FIELD_MAP[dto.orderField];
-      orderBy = {
-        [field]: dto.order,
-      };
+    let orderBy: Prisma.usersOrderByWithRelationInput[] = [];
+    if (dto.orderParams !== undefined) {
+      dto.orderParams.forEach((orderParam) => {
+        const field = USER_ORDER_FIELD_MAP[orderParam.field];
+        orderBy.push({
+          [field]: orderParam.order,
+        });
+      });
     }
 
     // Se realiza la consulta especificando las columnas para evitar devolver las credenciales privadas

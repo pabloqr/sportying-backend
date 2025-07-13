@@ -49,12 +49,14 @@ export class ComplexesService {
     };
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.complexesOrderByWithRelationInput = {};
-    if (dto.orderField !== undefined) {
-      const field = COMPLEX_ORDER_FIELD_MAP[dto.orderField];
-      orderBy = {
-        [field]: dto.order,
-      };
+    let orderBy: Prisma.complexesOrderByWithRelationInput[] = [];
+    if (dto.orderParams !== undefined) {
+      dto.orderParams.forEach((orderParam) => {
+        const field = COMPLEX_ORDER_FIELD_MAP[orderParam.field];
+        orderBy.push({
+          [field]: orderParam.order,
+        });
+      });
     }
 
     // Se realiza la consulta seleccionando las columnas que se quieren devolver

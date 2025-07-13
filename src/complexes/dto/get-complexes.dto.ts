@@ -1,14 +1,17 @@
 import {
+  IsArray,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Matches,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { Coordinates } from '../../common/validators';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { OrderBy } from '../../common/enums';
 
 export enum ComplexOrderField {
@@ -32,6 +35,18 @@ export const COMPLEX_ORDER_FIELD_MAP: Record<string, string> = {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
 };
+
+export class ComplexOrderParamsDto {
+  @Type(() => String)
+  @IsEnum(ComplexOrderField)
+  @IsNotEmpty()
+  field: ComplexOrderField;
+
+  @Type(() => String)
+  @IsEnum(OrderBy)
+  @IsOptional()
+  order?: OrderBy;
+}
 
 export class GetComplexesDto {
   @Type(() => Number)
@@ -73,11 +88,41 @@ export class GetComplexesDto {
   @IsOptional()
   locLatitude?: number;
 
-  @IsEnum(ComplexOrderField)
-  @IsOptional()
-  orderField?: ComplexOrderField = ComplexOrderField.ID;
+  @Transform(({ value }) => {
+    // Si no se ha proporcionado un valor o es indefinido, se devuelve
+    if (!value) return value;
 
-  @IsEnum(OrderBy)
+    try {
+      // Si ya es un array, se devuelve
+      if (Array.isArray(value)) {
+        return value;
+      }
+
+      // Si es un string, se parsea para obtener el JSON correspondiente
+      if (typeof value === 'string') {
+        const parsed = JSON.parse(value);
+
+        // Se verifica que sea un array
+        if (Array.isArray(parsed)) {
+          // Se crea la instancia de CourtOrderParamsDto para cada elemento
+          return parsed.map((item) => {
+            const orderParam = new ComplexOrderParamsDto();
+            orderParam.field = item.field;
+            orderParam.order = item.order ?? OrderBy.ASC;
+            return orderParam;
+          });
+        }
+      }
+
+      return value;
+    } catch (error) {
+      console.error('Error parsing orderParams:', error);
+      return value;
+    }
+  })
+  @Type(() => ComplexOrderParamsDto)
+  @IsArray()
+  @ValidateNested({ each: true })
   @IsOptional()
-  order?: OrderBy = OrderBy.ASC;
+  orderParams?: ComplexOrderParamsDto[];
 }
