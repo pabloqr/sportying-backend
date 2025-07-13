@@ -10,16 +10,22 @@ import {
   UpdateComplexDto,
   UpdateComplexTimeDto,
 } from './dto';
-import { ResponseComplexDto, ResponseComplexTimeDto } from '../common/dto';
+import {
+  ResponseComplexDto,
+  ResponseComplexTimeDto,
+  ResponseCourtAvailabilityDto,
+} from '../common/dto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ErrorsService } from '../common/errors.service';
+import { CourtsService } from '../courts/courts.service';
 
 @Injectable()
 export class ComplexesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private courtsService: CourtsService,
   ) {}
 
   async getComplexes(
@@ -196,5 +202,15 @@ export class ComplexesService {
     // Se actualiza la información del complejo y se devuelven los campos con el horario
     const complex = await this.updateComplex(complexId, dto);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
+  }
+
+  async getComplexAvailability(
+    complexId: number,
+    groupAvailability: boolean = true,
+  ): Promise<Array<ResponseCourtAvailabilityDto>> {
+    return this.courtsService.getCourtsAvailability(
+      complexId,
+      groupAvailability,
+    );
   }
 }

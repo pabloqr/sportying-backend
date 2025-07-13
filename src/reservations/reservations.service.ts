@@ -115,6 +115,7 @@ export class ReservationsService {
       select: {
         id: true,
         user_id: true,
+        complex_id: true,
         court_id: true,
         date_ini: true,
         date_end: true,

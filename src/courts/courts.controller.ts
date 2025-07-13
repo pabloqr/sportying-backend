@@ -88,19 +88,16 @@ export class CourtsController {
   }
 
   @Public()
-  @Get(':complexId/courts/availability')
-  async getCourtsAvailability(
-    @Param('complexId', ParseIntPipe) complexId: number,
-  ) {
-    return this.courtsService.getCourtsAvailability(complexId);
-  }
-
-  @Public()
   @Get(':complexId/courts/:courtId/availability')
   async getCourtAvailability(
     @Param('complexId', ParseIntPipe) complexId: number,
     @Param('courtId', ParseIntPipe) courtId: number,
+    @Query('groupAvailability') groupAvailability: boolean = true,
   ) {
-    return this.courtsService.getCourtAvailability(complexId, courtId);
+    return this.courtsService.getCourtAvailability(
+      complexId,
+      courtId,
+      groupAvailability,
+    );
   }
 }

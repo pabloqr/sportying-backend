@@ -24,12 +24,14 @@ import {
 import { CourtStatus } from './enums';
 import { ReservationsService } from '../reservations/reservations.service';
 import { ReservationOrderField } from '../reservations/dto';
+import { UtilitiesService } from '../common/utilities.service';
 
 @Injectable()
 export class CourtsService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private utilitiesService: UtilitiesService,
     @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
   ) {}
@@ -317,68 +319,101 @@ export class CourtsService {
 
   async getCourtsAvailability(
     complexId: number,
+    groupAvailability: boolean = true,
   ): Promise<Array<ResponseCourtAvailabilityDto>> {
-    return [new ResponseCourtAvailabilityDto({})];
+    // Se obtienen las reservas para el complejo actual, ordenadas por su 'id' y la fecha de inicio
+    const reservations = await this.reservationsService.getReservations({
+      complexId,
+      orderParams: [
+        { field: ReservationOrderField.ID },
+        { field: ReservationOrderField.DATE_INI },
+      ],
+    });
+
+    // Se agrupan las reservas en función del 'id' de la pista
+    const groupedReservations = this.utilitiesService.groupArrayByField(
+      reservations,
+      'courtId',
+    );
+
+    // Se crea el array de disponibilidad con los datos de las reservas
+    return Array.from(groupedReservations.entries()).map(([key, value]) => {
+      // Se formatean las reservas para que tengan la estructura correcta
+      const formattedReservations = value.map(
+        (reservation) =>
+          new CourtAvailabilitySlotDto({
+            ...reservation,
+            available: false,
+          }),
+      );
+
+      // Si no se quiere agrupar la disponibilidad, se devuelve
+      if (!groupAvailability) {
+        return new ResponseCourtAvailabilityDto({
+          court_id: key,
+          complex_id: complexId,
+          availability: formattedReservations,
+        });
+      }
+
+      // Disponibilidad por intervalos
+      const groupedAvailability: CourtAvailabilitySlotDto[] = [];
+      if (formattedReservations.length > 0) {
+        // Intervalo actual
+        let currentAvailability: CourtAvailabilitySlotDto | undefined =
+          undefined;
+
+        formattedReservations.forEach((reservation) => {
+          // Si el intervalo actual es indefinido, se actualiza y se devuelve
+          if (currentAvailability === undefined) {
+            currentAvailability = new CourtAvailabilitySlotDto(reservation);
+            return;
+          }
+
+          // Se establecen las condiciones para verificar si los intervalos son contiguos
+          const equalEdgeDates =
+            currentAvailability.dateEnd.getTime() ===
+            reservation.dateIni.getTime();
+          const equalAvailability =
+            currentAvailability.available === reservation.available;
+
+          if (equalEdgeDates && equalAvailability) {
+            // Si son contiguos, se extiende el intervalo
+            currentAvailability.dateEnd = reservation.dateEnd;
+          } else {
+            // Si no son contiguos, se añade el intervalo actual al array y se actualiza
+            groupedAvailability.push(currentAvailability);
+            currentAvailability = new CourtAvailabilitySlotDto(reservation);
+          }
+        });
+
+        // Se añade el intervalo final al array
+        if (currentAvailability !== undefined) {
+          groupedAvailability.push(currentAvailability);
+        }
+      }
+
+      return new ResponseCourtAvailabilityDto({
+        court_id: key,
+        complex_id: complexId,
+        availability: groupedAvailability,
+      });
+    });
   }
 
   async getCourtAvailability(
     complexId: number,
     courtId: number,
+    groupAvailability: boolean = true,
   ): Promise<ResponseCourtAvailabilityDto> {
-    const reservations = await this.reservationsService.getReservations({
-      courtId,
-      orderParams: [{ field: ReservationOrderField.DATE_INI }],
-    });
-
-    // Se formatean las reservas para que tengan la estructura correcta
-    const formattedReservations = reservations.map(
-      (reservation) =>
-        new CourtAvailabilitySlotDto({
-          ...reservation,
-          available: false,
-        }),
+    const availability = await this.getCourtsAvailability(
+      complexId,
+      groupAvailability,
     );
-
-    // Disponibilidad por intervalos
-    const availability: CourtAvailabilitySlotDto[] = [];
-    if (formattedReservations.length > 0) {
-      // Intervalo actual
-      let currentAvailability: CourtAvailabilitySlotDto | undefined = undefined;
-
-      formattedReservations.forEach((reservation) => {
-        // Si el intervalo actual es indefinido, se actualiza y se devuelve
-        if (currentAvailability === undefined) {
-          currentAvailability = new CourtAvailabilitySlotDto(reservation);
-          return;
-        }
-
-        // Se establecen las condiciones para verificar si los intervalos son contiguos
-        const equalEdgeDates =
-          currentAvailability.dateEnd.getTime() ===
-          reservation.dateIni.getTime();
-        const equalAvailability =
-          currentAvailability.available === reservation.available;
-
-        if (equalEdgeDates && equalAvailability) {
-          // Si son contiguos, se extiende el intervalo
-          currentAvailability.dateEnd = reservation.dateEnd;
-        } else {
-          // Si no son contiguos, se añade el intervalo actual al array y se actualiza
-          availability.push(currentAvailability);
-          currentAvailability = new CourtAvailabilitySlotDto(reservation);
-        }
-      });
-
-      // Se añade el intervalo final al array
-      if (currentAvailability !== undefined) {
-        availability.push(currentAvailability);
-      }
-    }
-
-    return new ResponseCourtAvailabilityDto({
-      court_id: courtId,
-      complex_id: complexId,
-      availability: availability,
-    });
+    return (
+      availability.find(
+        (courtAvailability) => courtAvailability.id === courtId,
+      ) ?? new ResponseCourtAvailabilityDto({ courtId, complexId })
+    );
   }
 }

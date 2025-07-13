@@ -10,7 +10,7 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
+import { Public, Roles } from 'src/auth/decorator';
 import { ComplexesService } from './complexes.service';
 import {
   CreateComplexDto,
@@ -74,5 +74,17 @@ export class ComplexesController {
     @Body() dto: UpdateComplexTimeDto,
   ) {
     return this.complexesService.setComplexTime(complexId, dto);
+  }
+
+  @Public()
+  @Get(':complexId/availability')
+  async getComplexAvailability(
+    @Param('complexId', ParseIntPipe) complexId: number,
+    @Query('groupAvailability') groupAvailability: boolean = true,
+  ) {
+    return this.complexesService.getComplexAvailability(
+      complexId,
+      groupAvailability,
+    );
   }
 }
