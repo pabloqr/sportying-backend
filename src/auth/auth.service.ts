@@ -5,12 +5,13 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
-import { SigninAuthDto, SignupAuthDto } from './dto';
+import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { TokensDto } from './dto/tokens.dto';
 import { Role } from './enums/role.enum';
 import { UsersService } from '../users/users.service';
+import { v4 as uuidV4 } from 'uuid';
+import { ResponseDeviceDto } from '../common/dto';
 
 @Injectable()
 export class AuthService {
@@ -82,6 +83,48 @@ export class AuthService {
   }
 
   /**
+   * Validates the provided API key by checking its format and authenticity. Ensures the key
+   * corresponds to an existing device and that the secret matches the stored value.
+   *
+   * @param {string} apiKey - The API key to validate, expected to be in the format "idKey.secretKey".
+   * @return {Promise<ResponseDeviceDto>} A promise that resolves with the details of the validated device.
+   * @throws {UnauthorizedException} If the API key format is invalid, the device cannot be found, or the secret key
+   * does not match.
+   */
+  async validateApiKey(apiKey: string): Promise<ResponseDeviceDto> {
+    // Se obtiene el identificador de la API Key y la clave encriptada
+    const [idKey, secretKey] = apiKey.split('.');
+
+    // Si no se ha podido obtener cualquiera de las dos partes de la clave, se lanza una excepción
+    if (!idKey || !secretKey) {
+      throw new UnauthorizedException('Invalid API Key.');
+    }
+
+    // Se obtiene el dispositivo con el identificador de la API Key
+    const device = await this.prisma.devices.findUnique({
+      where: {
+        id_key: idKey,
+      },
+    });
+
+    // Si no se ha podido obtener el dispositivo o no contiene la clave encriptada, se devuelve una excepción
+    if (!device || !device.api_key) {
+      throw new UnauthorizedException('Invalid API Key.');
+    }
+
+    // Se valida la clave encriptada con la clave dada, en caso de no coincidir, se lanza una excepción
+    const valid = await argon.verify(device.api_key, secretKey);
+    if (!valid) {
+      throw new UnauthorizedException('Invalid API Key.');
+    }
+
+    // Se devuelve el dispositivo
+    return new ResponseDeviceDto(device);
+  }
+
+  //------------------------------------------------------------------------------------------------------------------//
+
+  /**
    * Generates signed access and refresh tokens for a given user.
    *
    * @param {number} userId - The unique identifier of the user.
@@ -114,8 +157,8 @@ export class AuthService {
     await this.updateDBRefreshToken(userId, refreshToken);
 
     return new TokensDto({
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken,
+      refreshToken,
     });
   }
 
@@ -126,7 +169,10 @@ export class AuthService {
    * @param {string} refreshToken - The new refresh token to be stored, which will be hashed before saving.
    * @return {Promise<void>} A promise that resolves when the operation is complete.
    */
-  async updateDBRefreshToken(userId: number, refreshToken: string): Promise<void> {
+  async updateDBRefreshToken(
+    userId: number,
+    refreshToken: string,
+  ): Promise<void> {
     const hash = await argon.hash(refreshToken);
     await this.prisma.users.update({
       where: {
@@ -137,6 +183,21 @@ export class AuthService {
       },
     });
   }
+
+  /**
+   * Asynchronously generates a new API key with a unique identifier and a securely hashed secret key.
+   *
+   * @return {Promise<ApiKeyDto>} A promise that resolves to an instance of ApiKeyDto containing the generated idKey and
+   * secretKey.
+   */
+  async generateApiKey(): Promise<ApiKeyDto> {
+    const idKey = uuidV4();
+    const secretKey = await argon.hash(uuidV4());
+
+    return new ApiKeyDto({ idKey, secretKey });
+  }
+
+  //------------------------------------------------------------------------------------------------------------------//
 
   /**
    * Handles the signup process by creating a new user and generating authentication tokens.

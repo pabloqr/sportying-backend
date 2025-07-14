@@ -1,10 +1,12 @@
-import { DeviceType } from '../schemas/device.schema';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { DeviceStatus, DeviceType } from '../enum';
 
 export class CreateDeviceDto {
-  readonly id: number;
-  readonly type: DeviceType;
+  @IsEnum(DeviceType)
+  @IsNotEmpty()
+  type: DeviceType;
 
-  constructor(params: CreateDeviceDto) {
-    Object.assign(this, params);
-  }
+  @IsEnum(DeviceStatus)
+  @IsOptional()
+  status?: DeviceStatus;
 }

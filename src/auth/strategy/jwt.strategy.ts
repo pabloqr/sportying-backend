@@ -26,12 +26,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
 
     // Si no existe, se devuelve un objeto vacío
-    if (!user) {
-      return null;
-    }
+    if (!user) return null;
+
+    // Si el rol no coincide, se devuelve un objeto vacío
+    if (payload.role !== user.role) return null;
 
     // Se elimina la contraseña y el token del objeto y se devuelve
     const { password, refresh_token, ...userWithoutPrivateInfo } = user;
-    return { ...userWithoutPrivateInfo, role: payload.role };
+    return { ...userWithoutPrivateInfo };
   }
 }

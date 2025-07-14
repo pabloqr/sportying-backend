@@ -22,7 +22,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: Request, payload: { sub: number; mail: string }) {
+  async validate(payload: { sub: number; mail: string }) {
     // Se trata de obtener el usuario dado su identificador
     const user = await this.prisma.users.findUnique({
       where: {
@@ -31,9 +31,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
     });
 
     // Si no existe, se devuelve un objeto vacío
-    if (!user) {
-      return null;
-    }
+    if (!user) return null;
 
     // Se elimina la contraseña y el token del objeto y se devuelve
     const { password, refresh_token, ...userWithoutPrivateInfo } = user;
