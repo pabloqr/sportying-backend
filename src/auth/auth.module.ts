@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy, RefreshJwtStrategy } from './strategy';
+import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
 import { AccessControlService } from './access-control.service';
 import { UsersService } from '../users/users.service';
 
@@ -12,10 +12,11 @@ import { UsersService } from '../users/users.service';
   providers: [
     AuthService,
     JwtStrategy,
+    ApiKeyStrategy,
     RefreshJwtStrategy,
     AccessControlService,
     UsersService,
   ],
-  exports: [AccessControlService],
+  exports: [AuthService, AccessControlService],
 })
 export class AuthModule {}

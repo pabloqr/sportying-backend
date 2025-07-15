@@ -58,8 +58,11 @@ model courts_status {
 
 model devices {
   id         Int                 @id @default(autoincrement())
+  id_key     String?             @unique @db.Uuid
+  api_key    String?             @db.VarChar
   complex_id Int
   type       device_type
+  status     device_status       @default(NORMAL)
   created_at DateTime            @default(now()) @db.Timestamp(6)
   updated_at DateTime            @default(now()) @db.Timestamp(6)
   is_delete  Boolean?            @default(false)
