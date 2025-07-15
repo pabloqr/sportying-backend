@@ -19,7 +19,7 @@ export enum DeviceOrderField {
   UPDATED_AT = 'updatedAt',
 }
 
-export const COURT_ORDER_FIELD_MAP: Record<string, string> = {
+export const DEVICE_ORDER_FIELD_MAP: Record<string, string> = {
   id: 'id',
   complexId: 'complex_id',
   type: 'type',

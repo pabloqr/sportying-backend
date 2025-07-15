@@ -7,3 +7,7 @@ export * from './court-availability-slot.dto';
 export * from './response-court-availability.dto';
 export * from './response-reservation.dto';
 export * from './response-device.dto';
+export * from './response-device-status.dto';
+export * from './device-telemetry-slot.dto';
+export * from './response-device-telemetry.dto';
+export * from './response-device-courts.dto';

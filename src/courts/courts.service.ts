@@ -331,11 +331,6 @@ export class CourtsService {
       orderBy: {
         created_at: 'desc',
       },
-      select: {
-        court_id: true,
-        status: true,
-        created_at: true,
-      },
     });
 
     // Se devuelve el objeto obtenido o se construye uno con el estatus por defecto 'OPEN'
@@ -367,11 +362,6 @@ export class CourtsService {
         data: {
           court_id: courtId,
           status: dto.status,
-        },
-        select: {
-          court_id: true,
-          status: true,
-          created_at: true,
         },
       });
 
