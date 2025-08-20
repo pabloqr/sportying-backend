@@ -105,7 +105,7 @@ export class UsersService {
    * @throws {NotFoundException} If no user is found with the specified ID.
    * @throws {InternalServerErrorException} If multiple users are found with the specified ID.
    */
-  async getUser(userId: number): Promise<ResponseUserDto> {
+  async getUserById(userId: number): Promise<ResponseUserDto> {
     // Se trata de obtener el usuario con el 'id' dado
     const result = await this.getUsers({ id: userId });
 
@@ -115,6 +115,30 @@ export class UsersService {
     } else if (result.length > 1) {
       throw new InternalServerErrorException(
         `Multiple users found with ID ${userId}.`,
+      );
+    }
+
+    return result[0];
+  }
+
+  /**
+   * Retrieves a user based on the provided email address.
+   *
+   * @param {string} userMail - The email address of the user to retrieve.
+   * @return {Promise<ResponseUserDto>} A promise that resolves to an object representing the user.
+   * @throws {NotFoundException} If no user is found with the provided email.
+   * @throws {InternalServerErrorException} If multiple users are found with the provided email.
+   */
+  async getUserByMail(userMail: string): Promise<ResponseUserDto> {
+    // Se trata de obtener el usuario con el 'mail' dado
+    const result = await this.getUsers({ mail: userMail });
+
+    // Se verifican los elementos obtenidos
+    if (result.length === 0) {
+      throw new NotFoundException(`User with mail ${userMail} not found.`);
+    } else if (result.length > 1) {
+      throw new InternalServerErrorException(
+        `Multiple users found with mail ${userMail}.`,
       );
     }
 

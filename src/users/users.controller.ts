@@ -44,7 +44,7 @@ export class UsersController {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
 
-    return this.usersService.getUser(userId);
+    return this.usersService.getUserById(userId);
   }
 
   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)

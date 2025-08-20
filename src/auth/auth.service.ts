@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { Role } from './enums/role.enum';
 import { UsersService } from '../users/users.service';
 import { v4 as uuidV4 } from 'uuid';
-import { ResponseDeviceDto } from '../common/dto';
+import { ResponseDeviceDto, ResponseUserDto } from '../common/dto';
 
 @Injectable()
 export class AuthService {
@@ -227,14 +227,14 @@ export class AuthService {
   }
 
   /**
-   * Authenticates a user based on the provided credentials.
+   * Authenticates a user based on provided credentials and returns tokens along with user information.
    *
-   * @param {SigninAuthDto} dto - An object containing the sign-in details, including the user's email and password.
-   * @return {Promise<TokensDto>} Returns a promise that resolves to signed authentication tokens if the credentials
-   * are valid.
-   * @throws {ForbiddenException} Throws an exception if the email or password is invalid.
+   * @param {SigninAuthDto} dto - The data transfer object containing user login credentials, including mail and
+   * password.
+   * @return {Promise<object>} A Promise that resolves to an object containing authentication tokens and user details.
+   * @throws {ForbiddenException} If the provided credentials (email or password) are invalid.
    */
-  async signin(dto: SigninAuthDto): Promise<TokensDto> {
+  async signin(dto: SigninAuthDto): Promise<object> {
     // Se busca al usuario según el correo electrónico
     const user = await this.prisma.users.findUnique({
       where: {
@@ -266,8 +266,12 @@ export class AuthService {
     });
     const role = admin ? Role.ADMIN : Role.CLIENT;
 
-    // Se devuelve el usuario
-    return this.getSignedTokens(user.id, user.mail, role);
+    const tokens = await this.getSignedTokens(user.id, user.mail, role);
+
+    return {
+      ...tokens,
+      user: new ResponseUserDto(user),
+    };
   }
 
   /**
