@@ -12,6 +12,7 @@ import { Role } from './enums/role.enum';
 import { UsersService } from '../users/users.service';
 import { v4 as uuidV4 } from 'uuid';
 import { ResponseDeviceDto, ResponseUserDto } from '../common/dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -149,7 +150,7 @@ export class AuthService {
         secret: this.config.get('JWT_SECRET') as string,
       }),
       this.jwt.signAsync(payload, {
-        expiresIn: '7d',
+        expiresIn: '15d',
         secret: this.config.get('JWT_REFRESH_SECRET') as string,
       }),
     ]);
@@ -296,45 +297,12 @@ export class AuthService {
   }
 
   /**
-   * Refreshes the user's tokens by validating and verifying the provided access and refresh tokens.
+   * Refreshes the user's authentication tokens using a valid refresh token.
    *
-   * @param {TokensDto} dto - An object containing the access token and refresh token to be validated.
-   * @return {Promise<TokensDto>} A promise that resolves to a new signed token if validation is successful.
-   * @throws {UnauthorizedException} If any of the tokens are invalid, expired, or do not match the user.
+   * @param {RefreshTokenDto} dto - The data transfer object containing the refresh token details.
+   * @return {Promise<TokensDto>} A promise that resolves to an object containing the new authentication tokens.
    */
-  async refreshToken(dto: TokensDto): Promise<TokensDto> {
-    // Se verifica el token de acceso
-    const accessTokenPayload = this.decodeToken(dto.accessToken);
-    const validAccessToken = this.validatePayload(accessTokenPayload);
-    if (!validAccessToken) {
-      throw new UnauthorizedException(
-        'Invalid access token. Please try again.',
-      );
-    }
-
-    // Se trata de obtener el usuario con los datos del token de acceso
-    const user = await this.prisma.users.findUnique({
-      where: {
-        id: accessTokenPayload.sub,
-      },
-    });
-
-    // Se verifica que el usuario y el token de refresco son válidos
-    if (!user || !user.refresh_token) {
-      throw new UnauthorizedException('User not registered. Please try again.');
-    }
-
-    // Se compara el token de refresco dado con el almacenado
-    const refreshTokenMatch = argon.verify(
-      user.refresh_token,
-      dto.refreshToken,
-    );
-    if (!refreshTokenMatch) {
-      throw new UnauthorizedException(
-        'Invalid refresh token. Please try again.',
-      );
-    }
-
+  async refreshToken(dto: RefreshTokenDto): Promise<TokensDto> {
     // Se obtienen los datos del token de refresco
     const refreshTokenPayload = await this.verifyToken(
       dto.refreshToken,
@@ -349,6 +317,29 @@ export class AuthService {
       );
     });
 
+    // Se trata de obtener el usuario con los datos del token de refresco
+    const user = await this.prisma.users.findUnique({
+      where: {
+        id: refreshTokenPayload.sub,
+      },
+    });
+
+    // Se verifica que el usuario y el token de refresco son válidos
+    if (!user || !user.refresh_token) {
+      throw new UnauthorizedException('User not registered. Please try again.');
+    }
+
+    // Se compara el token de refresco dado con el almacenado
+    const refreshTokenMatch = await argon.verify(
+      user.refresh_token,
+      dto.refreshToken,
+    );
+    if (!refreshTokenMatch) {
+      throw new UnauthorizedException(
+        'Invalid refresh token. Please try again.',
+      );
+    }
+
     // Se validan los datos del token de refresco
     const validRefreshToken = this.validatePayload(refreshTokenPayload);
     if (!validRefreshToken) {
@@ -357,15 +348,8 @@ export class AuthService {
       );
     }
 
-    // Se verifica que los datos del token de refresco se corresponden con los del de acceso
-    if (accessTokenPayload.sub != refreshTokenPayload.sub) {
-      throw new UnauthorizedException(
-        'Invalid access token. Please try again.',
-      );
-    }
-
     // Se obtiene el rol y los tokens
-    const role = Role[accessTokenPayload.role as keyof typeof Role];
+    const role = Role[refreshTokenPayload.role as keyof typeof Role];
     return this.getSignedTokens(user.id, user.mail, role);
   }
 }
