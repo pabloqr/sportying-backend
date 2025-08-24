@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class TokensDto {
   @IsString()
@@ -8,6 +8,10 @@ export class TokensDto {
   @IsString()
   @IsNotEmpty()
   refreshToken: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  expiresIn: number;
 
   constructor(tokens: TokensDto) {
     Object.assign(this, tokens);

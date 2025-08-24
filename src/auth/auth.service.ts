@@ -160,6 +160,7 @@ export class AuthService {
     return new TokensDto({
       accessToken,
       refreshToken,
+      expiresIn: 900,
     });
   }
 
