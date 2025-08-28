@@ -17,8 +17,8 @@ import { OrderBy } from '../../common/enums';
 export enum ComplexOrderField {
   ID = 'id',
   COMPLEX_NAME = 'complexId',
-  DATE_INI = 'dateIni',
-  DATE_END = 'dateEnd',
+  TIME_INI = 'timeIni',
+  TIME_END = 'timeEnd',
   LOC_LONGITUDE = 'locLongitude',
   LOC_LATITUDE = 'locLatitude',
   CREATED_AT = 'createdAt',
@@ -28,8 +28,8 @@ export enum ComplexOrderField {
 export const COMPLEX_ORDER_FIELD_MAP: Record<string, string> = {
   id: 'id',
   complexName: 'complex_name',
-  dateIni: 'date_ini',
-  dateEnd: 'date_end',
+  timeIni: 'time_ini',
+  timeEnd: 'time_end',
   locLongitude: 'loc_longitude',
   locLatitude: 'loc_latitude',
   createdAt: 'created_at',
