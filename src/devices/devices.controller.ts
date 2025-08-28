@@ -38,21 +38,21 @@ export class DevicesController {
   }
 
   @Public()
-  @Post(':complexId/devices')
-  async createDevice(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Body() body: CreateDeviceDto,
-  ) {
-    return this.devicesService.createDevice(complexId, body);
-  }
-
-  @Public()
   @Get(':complexId/devices/:deviceId')
   async getDevice(
     @Param('complexId', ParseIntPipe) complexId: number,
     @Param('deviceId', ParseIntPipe) deviceId: number,
   ) {
     return this.devicesService.getDevice(complexId, deviceId);
+  }
+
+  @Public()
+  @Post(':complexId/devices')
+  async createDevice(
+    @Param('complexId', ParseIntPipe) complexId: number,
+    @Body() body: CreateDeviceDto,
+  ) {
+    return this.devicesService.createDevice(complexId, body);
   }
 
   @Public()

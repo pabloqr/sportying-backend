@@ -33,16 +33,16 @@ export class ComplexesController {
     return this.complexesService.getComplexes(query);
   }
 
-  @Roles(Role.SUPERADMIN)
-  @Post()
-  async createComplex(@Body() dto: CreateComplexDto) {
-    return this.complexesService.createComplex(dto);
-  }
-
   @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId')
   async getComplex(@Param('complexId', ParseIntPipe) complexId: number) {
     return this.complexesService.getComplex(complexId);
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Post()
+  async createComplex(@Body() dto: CreateComplexDto) {
+    return this.complexesService.createComplex(dto);
   }
 
   @Roles(Role.ADMIN)

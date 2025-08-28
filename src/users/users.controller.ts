@@ -26,12 +26,6 @@ export class UsersController {
     return this.usersService.getUsers(query);
   }
 
-  @Roles(Role.SUPERADMIN)
-  @Post()
-  async createUser(@Body() dto: CreateUserDto) {
-    return this.usersService.createUser(dto);
-  }
-
   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':userId')
   async getUser(
@@ -45,6 +39,12 @@ export class UsersController {
     }
 
     return this.usersService.getUserById(userId);
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Post()
+  async createUser(@Body() dto: CreateUserDto) {
+    return this.usersService.createUser(dto);
   }
 
   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)

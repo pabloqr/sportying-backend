@@ -32,21 +32,21 @@ export class CourtsController {
   }
 
   @Public()
-  @Post(':complexId/courts')
-  async createCourt(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Body() dto: CreateCourtDto,
-  ) {
-    return this.courtsService.createCourt(complexId, dto);
-  }
-
-  @Public()
   @Get(':complexId/courts/:courtId')
   async getCourt(
     @Param('complexId', ParseIntPipe) complexId: number,
     @Param('courtId', ParseIntPipe) courtId: number,
   ) {
     return this.courtsService.getCourt(complexId, courtId);
+  }
+
+  @Public()
+  @Post(':complexId/courts')
+  async createCourt(
+    @Param('complexId', ParseIntPipe) complexId: number,
+    @Body() dto: CreateCourtDto,
+  ) {
+    return this.courtsService.createCourt(complexId, dto);
   }
 
   @Public()

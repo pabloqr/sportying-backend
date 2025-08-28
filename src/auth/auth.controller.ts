@@ -14,7 +14,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Public()
   @Post('signup')
@@ -29,17 +29,17 @@ export class AuthController {
     return this.authService.signin(dto);
   }
 
-  @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  async logout(@GetUser('id') id: number) {
-    return this.authService.logout(id);
-  }
-
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Body() token: RefreshTokenDto) {
     return this.authService.refreshToken(token);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@GetUser('id') id: number) {
+    return this.authService.logout(id);
   }
 }
