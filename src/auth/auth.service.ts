@@ -257,17 +257,8 @@ export class AuthService {
       throw new ForbiddenException('Credentials invalid. Please try again.');
     }
 
-    // Se verifica si el usuario es un administrador o un cliente
-    const admin = await this.prisma.admins.findUnique({
-      where: {
-        id_complex_id: {
-          id: user.id,
-          complex_id: 1,
-        },
-      },
-    });
-    const role = admin ? Role.ADMIN : Role.CLIENT;
-
+    // Se obtiene el rol del usuario y se generan los tokens
+    const role = user.role as Role;
     const tokens = await this.getSignedTokens(user.id, user.mail, role);
 
     return {
