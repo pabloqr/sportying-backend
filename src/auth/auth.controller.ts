@@ -37,9 +37,9 @@ export class AuthController {
     return this.authService.refreshToken(token);
   }
 
-  @Post('logout')
+  @Post('signout')
   @HttpCode(HttpStatus.OK)
-  async logout(@GetUser('id') id: number) {
-    return this.authService.logout(id);
+  async signout(@GetUser('id') id: number) {
+    return this.authService.signout(id);
   }
 }

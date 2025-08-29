@@ -273,7 +273,7 @@ export class AuthService {
    * @param {number} userId - The ID of the user to log out.
    * @return {Promise<void>} A promise that resolves once the user's refresh token has been cleared.
    */
-  async logout(userId: number): Promise<void> {
+  async signout(userId: number): Promise<void> {
     // Se establece el valor del token a nulo
     await this.prisma.users.updateMany({
       where: {
