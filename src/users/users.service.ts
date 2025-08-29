@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, user_role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
 import {
@@ -193,6 +193,11 @@ export class UsersService {
           },
         });
 
+        const role = user.role as Role;
+        if (role !== dto.role) {
+          await this.updateUser(user.id, { role: dto.role });
+        }
+
         return {
           ...user,
           role: user.role as Role,
@@ -211,6 +216,7 @@ export class UsersService {
         // Se crea la entrada para el usuario en la BD
         const user = await this.prisma.users.create({
           data: {
+            role: dto.role as user_role,
             password: await argon.hash(dto.password),
             name: dto.name,
             surname: dto.surname,
@@ -278,6 +284,7 @@ export class UsersService {
 
     // Se establecen las propiedades a actualizar
     const data = {
+      ...(dto.role !== undefined && { role: dto.role as user_role }),
       ...(dto.password !== undefined && {
         password: await argon.hash(dto.password),
       }),
@@ -312,7 +319,7 @@ export class UsersService {
 
         if (dto.role === Role.ADMIN) {
           // Si el rol nuevo es de administrador y no está almacenado, se crea la entrada en la tabla de administradores
-          if (isAdmin === undefined) {
+          if (isAdmin === null) {
             await this.prisma.admins.create({
               data: {
                 id: user.id,
@@ -332,7 +339,7 @@ export class UsersService {
               },
             });
           }
-        } else if (isAdmin !== undefined) {
+        } else if (isAdmin !== null) {
           // Si el rol nuevo es de usuario y está almacenado, se elimina la entrada de la tabla de administradores
           await this.prisma.admins.update({
             where: {
