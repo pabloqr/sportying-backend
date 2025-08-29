@@ -10,7 +10,7 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common';
-import { Public, Roles } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
 import { ComplexesService } from './complexes.service';
 import {
   CreateComplexDto,
@@ -24,7 +24,7 @@ import { Role } from '../auth/enums/role.enum';
 export class ComplexesController {
   constructor(private complexesService: ComplexesService) {}
 
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get()
   async getComplexes(
     @Query(new ValidationPipe({ skipMissingProperties: true }))
@@ -33,7 +33,7 @@ export class ComplexesController {
     return this.complexesService.getComplexes(query);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':complexId')
   async getComplex(@Param('complexId', ParseIntPipe) complexId: number) {
     return this.complexesService.getComplex(complexId);
@@ -45,7 +45,7 @@ export class ComplexesController {
     return this.complexesService.createComplex(dto);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Put(':complexId')
   async updateComplex(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -61,13 +61,13 @@ export class ComplexesController {
     return this.complexesService.deleteComplex(complexId);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':complexId/time')
   async getComplexTime(@Param('complexId', ParseIntPipe) complexId: number) {
     return this.complexesService.getComplexTime(complexId);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Post(':complexId/time')
   async setComplexTime(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -76,7 +76,7 @@ export class ComplexesController {
     return this.complexesService.setComplexTime(complexId, dto);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':complexId/availability')
   async getComplexAvailability(
     @Param('complexId', ParseIntPipe) complexId: number,
