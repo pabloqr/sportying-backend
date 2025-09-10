@@ -4,10 +4,10 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
 import { AccessControlService } from './access-control.service';
-import { UsersService } from '../users/users.service';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [JwtModule.register({})],
+  imports: [JwtModule.register({}), UsersModule],
   controllers: [AuthController],
   providers: [
     AuthService,
@@ -15,7 +15,6 @@ import { UsersService } from '../users/users.service';
     ApiKeyStrategy,
     RefreshJwtStrategy,
     AccessControlService,
-    UsersService,
   ],
   exports: [AuthService, AccessControlService],
 })

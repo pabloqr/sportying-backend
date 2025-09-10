@@ -1,4 +1,7 @@
 import {
+  BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -15,13 +18,15 @@ import {
 import { Role } from '../auth/enums/role.enum';
 import { ResponseUserDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
+import { ComplexesService } from 'src/complexes/complexes.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-  ) {}
+    private complexesService: ComplexesService,
+  ) { }
 
   /**
    * Retrieves a list of users based on the provided filters and ordering specifications.
@@ -45,7 +50,14 @@ export class UsersService {
 
       // Se establece la condición para obtener el rol
       ...(dto.role !== undefined && {
-        admins: dto.role === Role.ADMIN ? { some: {} } : { none: {} },
+        AND: [
+          { role: dto.role as user_role },
+          {
+            admins: (dto.role as Role) === Role.ADMIN
+              ? { some: { is_delete: false } }
+              : { none: { is_delete: false } },
+          }
+        ]
       }),
 
       // Se establecen las condiciones para los campos de tipo 'string'
@@ -160,6 +172,25 @@ export class UsersService {
     // En caso de no proporcionar una contraseña, se establece una por defecto
     if (!dto.password) {
       dto.password = '1234';
+    }
+
+    // Se verifica si es administrador para realizar algunas comprobaciones previas
+    const isAdmin = dto.role === Role.ADMIN;
+    if (isAdmin) {
+      if (!dto.complexId) {
+        throw new BadRequestException('Complex ID not included in request.');
+      }
+
+      try {
+        await this.complexesService.getComplex(dto.complexId);
+      } catch (error) {
+        this.errorsService.dbError(error, {
+          p2025:
+            `Complex with ID ${dto.complexId} not found.`,
+        });
+
+        throw error;
+      }
     }
 
     // Se verifica si hay un usuario con los datos proporcionados almacenado en la BD

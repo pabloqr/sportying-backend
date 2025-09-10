@@ -15,6 +15,10 @@ export class CreateUserDto {
   @IsNotEmpty()
   role: Role;
 
+  @IsNumber()
+  @IsOptional()
+  complexId?: number;
+
   @IsString()
   @IsNotEmpty()
   name: string;
