@@ -12,6 +12,7 @@ import {
   DEVICE_COURTS_ORDER_FIELD_MAP,
   DEVICE_ORDER_FIELD_MAP,
   DEVICE_TELEMETRY_ORDER_FIELD_MAP,
+  DeviceTelemetryOrderField,
   GetDeviceCourtsDto,
   GetDevicesDto,
   GetDeviceTelemetryDto,
@@ -28,6 +29,8 @@ import { ErrorsService } from '../common/errors.service';
 import { Prisma } from '@prisma/client';
 import { AuthService } from '../auth/auth.service';
 import { AnalysisService } from '../common/analysis.service';
+import { DeviceType } from './enum';
+import { OrderBy } from '../common/enums';
 
 @Injectable({})
 export class DevicesService {
@@ -56,15 +59,49 @@ export class DevicesService {
     // Se obtiene la información sobre el dispositivo actual
     const device = await this.getDevice(complexId, deviceId);
     // Se obtienen las pistas que tiene asignadas en dispositivo
-    const courts = (await this.getDeviceCourts(complexId, deviceId, {})).courts;
+    const courtIds = (await this.getDeviceCourts(complexId, deviceId, {}))
+      .courts;
+
     // Se procesa la telemetría para actualizar el estado del sistema
-    await this.analysisService.processDeviceTelemetry(
-      device.id,
-      device.type,
-      value,
-      timestamp,
-      courts,
-    );
+    if (!courtIds.length) return;
+    switch (device.type) {
+      case DeviceType.PRESENCE:
+        // Se procesan los datos
+        return await this.analysisService.processAvailabilityTelemetry(
+          !value,
+          timestamp,
+          courtIds[0],
+        );
+      case DeviceType.RAIN:
+        // Se obtiene la telemetría anterior del dispositivo
+        const deviceTelemetry = await this.getDeviceTelemetry(
+          complexId,
+          deviceId,
+          {
+            orderParams: [
+              {
+                field: DeviceTelemetryOrderField.CREATED_AT,
+                order: OrderBy.ASC,
+              },
+            ],
+          },
+        );
+
+        // Se trata de obtener la telemetría previa, o se establece una por defecto
+        const previousValue =
+          deviceTelemetry.telemetry.length >= 2
+            ? deviceTelemetry.telemetry[1].value
+            : 0;
+
+        // Se procesan los datos
+        return await this.analysisService.processRainTelemetry(
+          complexId,
+          deviceId,
+          previousValue,
+          value,
+          courtIds,
+        );
+    }
   }
 
   /**
@@ -361,8 +398,13 @@ export class DevicesService {
         },
       });
 
-      this.processDeviceTelemetry(complexId, deviceId, dto.value, telemetry.created_at).catch(
-        (error) => console.error('Error processing device telemetry:', error),
+      this.processDeviceTelemetry(
+        complexId,
+        deviceId,
+        dto.value,
+        telemetry.created_at,
+      ).catch((error) =>
+        console.error('Error processing device telemetry:', error),
       );
 
       return new ResponseDeviceTelemetryDto({

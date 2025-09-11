@@ -18,8 +18,13 @@ import {
 import { ResponseReservationDto } from '../common/dto';
 import { Prisma } from '@prisma/client';
 import { CourtsService } from '../courts/courts.service';
-import { ReservationStatus, ReservationTimeFilter } from './enums';
+import {
+  ReservationAvailabilityStatus,
+  ReservationStatus,
+  ReservationTimeFilter,
+} from './enums';
 import { ComplexesService } from '../complexes/complexes.service';
+import { CourtStatus } from '../courts/enums';
 
 @Injectable()
 export class ReservationsService {
@@ -142,7 +147,9 @@ export class ReservationsService {
       ...(dto.dateIni !== undefined && { date_ini: dto.dateIni }),
       ...(dto.dateEnd !== undefined && { date_end: dto.dateEnd }),
 
-      ...(dto.status !== undefined && { status: dto.status }),
+      ...(dto.availabilityStatus !== undefined && {
+        status: dto.availabilityStatus,
+      }),
     };
 
     // Se obtiene el filtro por momento de la reserva
@@ -188,12 +195,64 @@ export class ReservationsService {
       orderBy,
     });
 
-    return reservations.map(
-      (reservation) =>
-        new ResponseReservationDto({
+    let filteredReservations = reservations;
+    if (dto.status != null) {
+      switch (dto.status) {
+        case ReservationStatus.SCHEDULED:
+        case ReservationStatus.WEATHER:
+        case ReservationStatus.COMPLETED:
+          filteredReservations = reservations.filter(
+            (reservation) => reservation.status !== ReservationStatus.CANCELLED,
+          );
+          break;
+        case ReservationStatus.CANCELLED:
+          filteredReservations = reservations.filter(
+            (reservation) => reservation.status === ReservationStatus.CANCELLED,
+          );
+      }
+    }
+
+    return Promise.all(
+      filteredReservations.map(async (reservation) => {
+        const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
+
+        const courtStatus = (
+          await this.courtsService.getCourtStatus(
+            reservation.complex_id,
+            reservation.court_id,
+          )
+        ).status;
+
+        let status = ReservationStatus.SCHEDULED;
+        if (timeFilter === ReservationTimeFilter.UPCOMING) {
+          switch (courtStatus) {
+            case CourtStatus.OPEN:
+              break;
+            case CourtStatus.WEATHER:
+              status = ReservationStatus.WEATHER;
+              break;
+            case CourtStatus.BLOCKED:
+            case CourtStatus.MAINTENANCE:
+              status = ReservationStatus.CANCELLED;
+              break;
+          }
+        } else if (timeFilter === ReservationTimeFilter.PAST) {
+          switch (reservation.status) {
+            case ReservationAvailabilityStatus.CANCELLED:
+              status = ReservationStatus.CANCELLED;
+              break;
+            default:
+              status = ReservationStatus.COMPLETED;
+              break;
+          }
+        }
+
+        return new ResponseReservationDto({
           ...reservation,
-          time_filter: this.getTimeFilterFromDate(reservation.date_end),
-        }),
+          status,
+          time_filter: timeFilter,
+        });
+      }),
     );
   }
 
@@ -390,9 +449,16 @@ export class ReservationsService {
 
   //------------------------------------------------------------------------------------------------------------------//
 
+  /**
+   * Updates the status of a reservation.
+   *
+   * @param {number} reservationId - The unique identifier of the reservation to update.
+   * @param {ReservationAvailabilityStatus} status - The new status to be applied to the reservation.
+   * @return {Promise<ResponseReservationDto>} A promise that resolves with the updated reservation details.
+   */
   async setReservationStatus(
     reservationId: number,
-    status: ReservationStatus,
+    status: ReservationAvailabilityStatus,
   ): Promise<ResponseReservationDto> {
     try {
       const reservation = await this.prisma.reservations.update({

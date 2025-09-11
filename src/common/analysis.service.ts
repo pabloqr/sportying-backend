@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CourtsService } from '../courts/courts.service';
-import { DeviceType } from '../devices/enum';
 import { ReservationsService } from '../reservations/reservations.service';
 import { UtilitiesService } from './utilities.service';
-import { ReservationStatus } from '../reservations/enums';
+import { ReservationAvailabilityStatus } from '../reservations/enums';
+import { CourtStatus } from '../courts/enums';
 
 @Injectable({})
 export class AnalysisService {
@@ -13,7 +13,16 @@ export class AnalysisService {
     private reservationsService: ReservationsService,
   ) {}
 
-  private async processAvailabilityTelemetry(
+  /**
+   * Processes availability telemetry data by checking if a court is available at a given time
+   * and updating the reservation status accordingly.
+   *
+   * @param {boolean} available - Indicates whether the court is available.
+   * @param {Date} timestamp - The timestamp to check against current reservations.
+   * @param {number} court - The ID of the court to process availability for.
+   * @return {Promise<void>} A promise that resolves when the reservation status is updated.
+   */
+  async processAvailabilityTelemetry(
     available: boolean,
     timestamp: Date,
     court: number,
@@ -32,7 +41,7 @@ export class AnalysisService {
 
     if (!current) return;
 
-    let reservationStatus = ReservationStatus.OCCUPIED;
+    let reservationStatus = ReservationAvailabilityStatus.OCCUPIED;
     if (available) {
       if (
         !this.utilitiesService.dateIsEqualOrGreater(
@@ -44,7 +53,7 @@ export class AnalysisService {
         return;
       }
 
-      reservationStatus = ReservationStatus.CANCELLED;
+      reservationStatus = ReservationAvailabilityStatus.CANCELLED;
     }
 
     await this.reservationsService.setReservationStatus(
@@ -53,28 +62,25 @@ export class AnalysisService {
     );
   }
 
-  private async processRainTelemetry(
+  async processRainTelemetry(
+    complexId: number,
     deviceId: number,
+    previousRainIntensity: number,
     rainIntensity: number,
-    courts: number[],
-  ) {}
+    courtIds: number[],
+  ) {
+    for (const courtId of courtIds) {
+      const courtStatus =
+        rainIntensity > 0 || previousRainIntensity > 0
+          ? CourtStatus.WEATHER
+          : CourtStatus.OPEN;
 
-  async processDeviceTelemetry(
-    deviceId: number,
-    type: DeviceType,
-    value: number,
-    timestamp: Date,
-    courts: number[],
-  ): Promise<void> {
-    if (!courts.length) return;
-
-    switch (type) {
-      case DeviceType.PRESENCE:
-        await this.processAvailabilityTelemetry(!value, timestamp, courts[0]);
-        break;
-      case DeviceType.RAIN:
-        await this.processRainTelemetry(deviceId, value, courts);
-        break;
+      const court = await this.courtsService.getCourt(complexId, courtId);
+      if (court.status !== courtStatus) {
+        await this.courtsService.setCourtStatus(complexId, courtId, {
+          status: courtStatus,
+        });
+      }
     }
   }
 }

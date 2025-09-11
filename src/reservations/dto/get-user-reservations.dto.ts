@@ -8,7 +8,11 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
-import { ReservationStatus, ReservationTimeFilter } from '../enums';
+import {
+  ReservationAvailabilityStatus,
+  ReservationStatus,
+  ReservationTimeFilter,
+} from '../enums';
 import { OrderBy } from '../../common/enums';
 
 export enum ReservationOrderField {
@@ -68,6 +72,10 @@ export class GetUserReservationsDto {
   @IsDate()
   @IsOptional()
   dateEnd?: Date;
+
+  @IsEnum(ReservationAvailabilityStatus)
+  @IsOptional()
+  availabilityStatus?: ReservationAvailabilityStatus;
 
   @IsEnum(ReservationStatus)
   @IsOptional()
