@@ -27,14 +27,42 @@ import {
 import { ErrorsService } from '../common/errors.service';
 import { Prisma } from '@prisma/client';
 import { AuthService } from '../auth/auth.service';
+import { AnalysisService } from '../common/analysis.service';
 
 @Injectable({})
 export class DevicesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private analysisService: AnalysisService,
     private authService: AuthService,
   ) {}
+
+  /**
+   * Processes the telemetry data for a given device, updating the system state based on the provided information.
+   *
+   * @param {number} complexId - The ID of the complex to which the device belongs.
+   * @param {number} deviceId - The ID of the device for which telemetry is being processed.
+   * @param {number} value - The telemetry value to process and analyze.
+   * @return {Promise<void>} A promise that resolves once the telemetry data is processed.
+   */
+  private async processDeviceTelemetry(
+    complexId: number,
+    deviceId: number,
+    value: number,
+  ): Promise<void> {
+    // Se obtiene la información sobre el dispositivo actual
+    const device = await this.getDevice(complexId, deviceId);
+    // Se obtienen las pistas que tiene asignadas en dispositivo
+    const courts = (await this.getDeviceCourts(complexId, deviceId, {})).courts;
+    // Se procesa la telemetría para actualizar el estado del sistema
+    await this.analysisService.processDeviceTelemetry(
+      device.id,
+      device.type,
+      value,
+      courts,
+    );
+  }
 
   /**
    * Retrieves a list of devices based on the provided parameters.
@@ -329,6 +357,10 @@ export class DevicesService {
           value: dto.value,
         },
       });
+
+      this.processDeviceTelemetry(complexId, deviceId, dto.value).catch(
+        (error) => console.error('Error processing device telemetry:', error),
+      );
 
       return new ResponseDeviceTelemetryDto({
         deviceId,
