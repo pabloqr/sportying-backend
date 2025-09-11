@@ -10,6 +10,7 @@ import { CommonModule } from './common/common.module';
 import { ComplexesModule } from './complexes/complexes.module';
 import { CourtsModule } from './courts/courts.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ReservationsModule } from './reservations/reservations.module';
     ComplexesModule,
     CourtsModule,
     ReservationsModule,
+    NotificationsModule,
   ],
   providers: [
     {

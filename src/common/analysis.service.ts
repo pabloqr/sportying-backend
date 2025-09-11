@@ -4,6 +4,7 @@ import { ReservationsService } from '../reservations/reservations.service';
 import { UtilitiesService } from './utilities.service';
 import { ReservationAvailabilityStatus } from '../reservations/enums';
 import { CourtStatus } from '../courts/enums';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable({})
 export class AnalysisService {
@@ -11,6 +12,7 @@ export class AnalysisService {
     private utilitiesService: UtilitiesService,
     private courtsService: CourtsService,
     private reservationsService: ReservationsService,
+    private notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -60,11 +62,16 @@ export class AnalysisService {
       current.id,
       reservationStatus,
     );
+
+    this.notificationsService.notifyReservationChange(
+      current.complexId,
+      current.id,
+      reservationStatus,
+    );
   }
 
   async processRainTelemetry(
     complexId: number,
-    deviceId: number,
     previousRainIntensity: number,
     rainIntensity: number,
     courtIds: number[],
@@ -80,6 +87,12 @@ export class AnalysisService {
         await this.courtsService.setCourtStatus(complexId, courtId, {
           status: courtStatus,
         });
+
+        this.notificationsService.notifyCourtStatusChange(
+          complexId,
+          courtId,
+          courtStatus,
+        );
       }
     }
   }

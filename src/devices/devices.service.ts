@@ -96,7 +96,6 @@ export class DevicesService {
         // Se procesan los datos
         return await this.analysisService.processRainTelemetry(
           complexId,
-          deviceId,
           previousValue,
           value,
           courtIds,

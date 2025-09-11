@@ -4,10 +4,11 @@ import { UtilitiesService } from './utilities.service';
 import { AnalysisService } from './analysis.service';
 import { CourtsModule } from '../courts/courts.module';
 import { ReservationsModule } from '../reservations/reservations.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Global()
 @Module({
-  imports: [CourtsModule, ReservationsModule],
+  imports: [CourtsModule, ReservationsModule, NotificationsModule],
   providers: [ErrorsService, UtilitiesService, AnalysisService],
   exports: [ErrorsService, UtilitiesService, AnalysisService],
 })
