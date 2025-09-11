@@ -27,7 +27,8 @@ CREATE TYPE "device_status" AS ENUM (
 
 CREATE TYPE "reservation_status" AS ENUM (
   'EMPTY',
-  'OCCUPIED'
+  'OCCUPIED',
+  'CANCELLED'
 );
 
 CREATE TYPE "notification_severity" AS ENUM (

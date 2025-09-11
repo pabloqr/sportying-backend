@@ -18,7 +18,7 @@ import {
 import { ResponseReservationDto } from '../common/dto';
 import { Prisma } from '@prisma/client';
 import { CourtsService } from '../courts/courts.service';
-import { ReservationTimeFilter } from './enums';
+import { ReservationStatus, ReservationTimeFilter } from './enums';
 import { ComplexesService } from '../complexes/complexes.service';
 
 @Injectable()
@@ -379,6 +379,36 @@ export class ReservationsService {
       });
 
       return null;
+    } catch (error) {
+      this.errorsService.dbError(error, {
+        p2025: `Reservation with ID ${reservationId} not found.`,
+      });
+
+      throw error;
+    }
+  }
+
+  //------------------------------------------------------------------------------------------------------------------//
+
+  async setReservationStatus(
+    reservationId: number,
+    status: ReservationStatus,
+  ): Promise<ResponseReservationDto> {
+    try {
+      const reservation = await this.prisma.reservations.update({
+        where: {
+          id: reservationId,
+          is_delete: false,
+        },
+        data: {
+          status,
+        },
+      });
+
+      return new ResponseReservationDto({
+        ...reservation,
+        time_filter: this.getTimeFilterFromDate(reservation.date_end),
+      });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Reservation with ID ${reservationId} not found.`,

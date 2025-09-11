@@ -2,6 +2,19 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UtilitiesService {
+  public dateIsBetween(date: Date, start: Date, end: Date): boolean {
+    return date >= start && date <= end;
+  }
+
+  public dateIsEqualOrGreater(
+    minutes: number,
+    dateA: Date,
+    dateB: Date,
+  ): boolean {
+    const diff = Math.abs(dateA.getTime() - dateB.getTime());
+    return diff >= minutes * 60 * 1000;
+  }
+
   public stringToDate(dateString: string): Date {
     const [hoursString, minutesString] = dateString.split(':');
     const hours = parseInt(hoursString);

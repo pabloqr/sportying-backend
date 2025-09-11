@@ -44,12 +44,14 @@ export class DevicesService {
    * @param {number} complexId - The ID of the complex to which the device belongs.
    * @param {number} deviceId - The ID of the device for which telemetry is being processed.
    * @param {number} value - The telemetry value to process and analyze.
+   * @param {Date} timestamp - The timestamp associated with the telemetry data.
    * @return {Promise<void>} A promise that resolves once the telemetry data is processed.
    */
   private async processDeviceTelemetry(
     complexId: number,
     deviceId: number,
     value: number,
+    timestamp: Date,
   ): Promise<void> {
     // Se obtiene la información sobre el dispositivo actual
     const device = await this.getDevice(complexId, deviceId);
@@ -60,6 +62,7 @@ export class DevicesService {
       device.id,
       device.type,
       value,
+      timestamp,
       courts,
     );
   }
@@ -358,7 +361,7 @@ export class DevicesService {
         },
       });
 
-      this.processDeviceTelemetry(complexId, deviceId, dto.value).catch(
+      this.processDeviceTelemetry(complexId, deviceId, dto.value, telemetry.created_at).catch(
         (error) => console.error('Error processing device telemetry:', error),
       );
 

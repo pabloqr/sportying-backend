@@ -25,6 +25,7 @@ import { CourtStatus } from './enums';
 import { ReservationsService } from '../reservations/reservations.service';
 import { ReservationOrderField } from '../reservations/dto';
 import { UtilitiesService } from '../common/utilities.service';
+import { ReservationStatus } from '../reservations/enums';
 
 @Injectable()
 export class CourtsService {
@@ -398,9 +399,14 @@ export class CourtsService {
       ],
     });
 
+    // Se filtran las reservas para no procesar las canceladas
+    const filteredReservations = reservations.filter(
+      (reservation) => reservation.status !== ReservationStatus.CANCELLED,
+    );
+
     // Se agrupan las reservas en función del 'id' de la pista
     const groupedReservations = this.utilitiesService.groupArrayByField(
-      reservations,
+      filteredReservations,
       'courtId',
     );
 
