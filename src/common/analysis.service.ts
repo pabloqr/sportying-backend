@@ -16,13 +16,12 @@ export class AnalysisService {
   ) {}
 
   /**
-   * Processes availability telemetry data by checking if a court is available at a given time
-   * and updating the reservation status accordingly.
+   * Processes availability telemetry for a specified court and updates reservation statuses accordingly.
    *
-   * @param {boolean} available - Indicates whether the court is available.
-   * @param {Date} timestamp - The timestamp to check against current reservations.
-   * @param {number} court - The ID of the court to process availability for.
-   * @return {Promise<void>} A promise that resolves when the reservation status is updated.
+   * @param {boolean} available - Indicates whether the court is currently available or not.
+   * @param {Date} timestamp - The timestamp of the availability telemetry.
+   * @param {number} court - The unique identifier of the court for which telemetry is being processed.
+   * @return {Promise<void>} - A promise that resolves once the operation is completed.
    */
   async processAvailabilityTelemetry(
     available: boolean,
@@ -70,6 +69,16 @@ export class AnalysisService {
     );
   }
 
+  /**
+   * Processes rain telemetry data to update the status of courts and send notifications
+   * based on current and previous rain intensity.
+   *
+   * @param {number} complexId - The identifier for the complex containing the courts.
+   * @param {number} previousRainIntensity - The rain intensity recorded previously.
+   * @param {number} rainIntensity - The current rain intensity.
+   * @param {number[]} courtIds - An array of identifiers for the courts within the complex.
+   * @return {Promise<void>} A promise that resolves when the process is complete.
+   */
   async processRainTelemetry(
     complexId: number,
     previousRainIntensity: number,
