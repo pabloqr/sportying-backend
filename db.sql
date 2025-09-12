@@ -184,6 +184,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Trigger para la tabla "complexes"
 CREATE TRIGGER update_complexes_timestamp
 BEFORE UPDATE ON "complexes"
 FOR EACH ROW
@@ -219,26 +220,8 @@ BEFORE UPDATE ON "devices"
 FOR EACH ROW
 EXECUTE FUNCTION update_timestamp();
 
--- Trigger para la tabla "devices_telemetry"
-CREATE TRIGGER update_device_telemetry_timestamp
-BEFORE UPDATE ON "devices_telemetry"
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
-
 -- Trigger para la tabla "reservations"
 CREATE TRIGGER update_reservations_timestamp
 BEFORE UPDATE ON "reservations"
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
-
--- Trigger para la tabla "courts_status"
-CREATE TRIGGER update_courts_status_timestamp
-BEFORE UPDATE ON "courts_status"
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
-
--- Trigger para la tabla "courts_devices"
-CREATE TRIGGER update_courts_devices_timestamp
-BEFORE UPDATE ON "courts_devices"
 FOR EACH ROW
 EXECUTE FUNCTION update_timestamp();

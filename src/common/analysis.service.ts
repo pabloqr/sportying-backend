@@ -84,7 +84,7 @@ export class AnalysisService {
     previousRainIntensity: number,
     rainIntensity: number,
     courtIds: number[],
-  ) {
+  ): Promise<void> {
     for (const courtId of courtIds) {
       const courtStatus =
         rainIntensity > 0 || previousRainIntensity > 0

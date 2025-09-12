@@ -17,6 +17,7 @@ import {
   GetCourtsDto,
   UpdateCourtDto,
 } from './dto';
+import { GetCourtDevicesDto } from './dto';
 
 @Controller('complexes')
 export class CourtsController {
@@ -99,5 +100,15 @@ export class CourtsController {
       courtId,
       groupAvailability,
     );
+  }
+
+  @Public()
+  @Get(':complexId/courts/:courtId/devices')
+  async getCourtDevices(
+    @Param('complexId', ParseIntPipe) complexId: number,
+    @Param('courtId', ParseIntPipe) courtId: number,
+    @Query() query: GetCourtDevicesDto,
+  ) {
+    return this.courtsService.getCourtDevices(complexId, courtId, query);
   }
 }
