@@ -23,10 +23,14 @@ import {
   GetDeviceTelemetryDto,
   UpdateDeviceDto,
 } from './dto';
+import { CourtsService } from '../courts/courts.service';
 
 @Controller('complexes')
 export class DevicesController {
-  constructor(private devicesService: DevicesService) {}
+  constructor(
+    private devicesService: DevicesService,
+    private courtsService: CourtsService,
+  ) {}
 
   @Public()
   @Get(':complexId/devices')
@@ -92,7 +96,12 @@ export class DevicesController {
     @Param('deviceId', ParseIntPipe) deviceId: number,
     @Body() body: CreateDeviceTelemetryDto,
   ) {
-    return this.devicesService.setDeviceTelemetry(complexId, deviceId, body);
+    return this.devicesService.setDeviceTelemetry(
+      complexId,
+      deviceId,
+      body,
+      this.courtsService.getCourt.bind(this.courtsService),
+    );
   }
 
   @Public()
@@ -122,7 +131,12 @@ export class DevicesController {
     @Param('deviceId', ParseIntPipe) deviceId: number,
     @Query() query: GetDeviceCourtsDto,
   ) {
-    return this.devicesService.getDeviceCourts(complexId, deviceId, query);
+    return this.devicesService.getDeviceCourts(
+      complexId,
+      deviceId,
+      query,
+      this.courtsService.getCourt.bind(this.courtsService),
+    );
   }
 
   @Public()
@@ -132,6 +146,11 @@ export class DevicesController {
     @Param('deviceId', ParseIntPipe) deviceId: number,
     @Body() body: CreateDeviceCourtsDto,
   ) {
-    return this.devicesService.setDeviceCourts(complexId, deviceId, body);
+    return this.devicesService.setDeviceCourts(
+      complexId,
+      deviceId,
+      body,
+      this.courtsService.getCourt.bind(this.courtsService),
+    );
   }
 }

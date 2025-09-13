@@ -11,6 +11,7 @@ import { ComplexesModule } from './complexes/complexes.module';
 import { CourtsModule } from './courts/courts.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { CourtsDevicesModule } from './courts-devices/court-devices.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     PrismaModule,
     CommonModule,
     AuthModule,
+    CourtsDevicesModule,
     DevicesModule,
     UsersModule,
     ComplexesModule,

@@ -8,10 +8,10 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ErrorsService } from '../common/errors.service';
 import {
-  COURT_DEVICES_ORDER_FIELD_MAP,
   COURT_ORDER_FIELD_MAP,
   CreateCourtDto,
   CreateCourtStatusDto,
+  GetCourtDevicesDto,
   GetCourtsDto,
   UpdateCourtDto,
 } from './dto';
@@ -28,7 +28,7 @@ import { ReservationsService } from '../reservations/reservations.service';
 import { ReservationOrderField } from '../reservations/dto';
 import { UtilitiesService } from '../common/utilities.service';
 import { ReservationAvailabilityStatus } from '../reservations/enums';
-import { GetCourtDevicesDto } from './dto';
+import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 
 @Injectable()
 export class CourtsService {
@@ -36,6 +36,7 @@ export class CourtsService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
+    private courtsDevicesService: CourtsDevicesService,
     @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
   ) {}
@@ -507,10 +508,12 @@ export class CourtsService {
 
   /**
    * Fetches court devices based on the provided parameters and conditions.
+   * This method delegates to the CourtsDevicesService to handle the relationship logic.
    *
    * @param {number} complexId - The ID of the sports complex where the court resides.
    * @param {number} courtId - The ID of the court whose devices are being retrieved.
    * @param {GetCourtDevicesDto} dto - Data transfer object containing filtering and ordering parameters.
+   * @param {Function} getDevice - Function to get device details by complexId and deviceId.
    * @param {boolean} [checkDeleted=false] - If true, includes devices marked as deleted; otherwise, excludes them.
    * @return {Promise<ResponseCourtDevicesDto>} A promise that resolves to a ResponseCourtDevicesDto containing the
    * court devices data.
@@ -519,40 +522,15 @@ export class CourtsService {
     complexId: number,
     courtId: number,
     dto: GetCourtDevicesDto,
+    getDevice: (complexId: number, deviceId: number) => Promise<any>,
     checkDeleted: boolean = false,
   ): Promise<ResponseCourtDevicesDto> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
-    const where: Prisma.courts_devicesWhereInput = {
-      // Se evita obtener las pistas eliminados
-      ...(!checkDeleted && { is_delete: false }),
-
-      // Se obtienen solo las relaciones del dispositivo actual
-      ...{ court_id: courtId },
-
-      ...(dto.deviceId !== undefined && { device_id: dto.deviceId }),
-    };
-
-    // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
-      dto.orderParams.forEach((orderParam) => {
-        const field = COURT_DEVICES_ORDER_FIELD_MAP[orderParam.field];
-        orderBy.push({
-          [field]: orderParam.order,
-        });
-      });
-    }
-
-    // Se obtienen todas las entradas en las que se relacione un dispositivo con la pista dada
-    const courtDevices = await this.prisma.courts_devices.findMany({
-      where,
-      orderBy,
-    });
-
-    return new ResponseCourtDevicesDto({
-      courtId,
+    return this.courtsDevicesService.getCourtDevices(
       complexId,
-      devices: courtDevices.map((dc) => dc.device_id),
-    });
+      courtId,
+      dto,
+      getDevice,
+      checkDeleted,
+    );
   }
 }

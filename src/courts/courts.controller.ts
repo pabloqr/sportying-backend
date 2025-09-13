@@ -18,10 +18,14 @@ import {
   UpdateCourtDto,
 } from './dto';
 import { GetCourtDevicesDto } from './dto';
+import { DevicesService } from '../devices/devices.service';
 
 @Controller('complexes')
 export class CourtsController {
-  constructor(private courtsService: CourtsService) {}
+  constructor(
+    private courtsService: CourtsService,
+    private devicesService: DevicesService,
+  ) {}
 
   @Public()
   @Get(':complexId/courts')
@@ -109,6 +113,11 @@ export class CourtsController {
     @Param('courtId', ParseIntPipe) courtId: number,
     @Query() query: GetCourtDevicesDto,
   ) {
-    return this.courtsService.getCourtDevices(complexId, courtId, query);
+    return this.courtsService.getCourtDevices(
+      complexId,
+      courtId,
+      query,
+      this.devicesService.getDevice.bind(this.devicesService),
+    );
   }
 }

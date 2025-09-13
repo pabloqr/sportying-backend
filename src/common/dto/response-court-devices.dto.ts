@@ -1,5 +1,6 @@
 ﻿import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber } from 'class-validator';
+import { ResponseDeviceDto } from './response-device.dto';
 
 export class ResponseCourtDevicesDto {
   @Type(() => Number)
@@ -14,7 +15,7 @@ export class ResponseCourtDevicesDto {
 
   @IsArray()
   @IsNotEmpty()
-  devices: number[];
+  devices: ResponseDeviceDto[];
 
   constructor(courtDevices: any) {
     this.id = courtDevices.device_id ?? courtDevices.deviceId;
