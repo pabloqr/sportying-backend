@@ -98,7 +98,12 @@ export class ReservationsService {
   ): Promise<void> {
     if (
       dto.courtId !== undefined &&
-      !(await this.courtsService.isValidCourt(complexId, dto.courtId))
+      dto.dateIni !== undefined &&
+      !(await this.courtsService.isValidCourt(
+        complexId,
+        dto.courtId,
+        dto.dateIni,
+      ))
     ) {
       throw new BadRequestException('Requested court is not valid.');
     }

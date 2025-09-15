@@ -97,15 +97,15 @@ export class DevicesService {
         );
 
         // Se trata de obtener la telemetría previa, o se establece una por defecto
-        const previousValue =
+        const previousTelemetry =
           deviceTelemetry.telemetry.length >= 2
-            ? deviceTelemetry.telemetry[1].value
-            : 0;
+            ? deviceTelemetry.telemetry[1]
+            : null;
 
         // Se procesan los datos
         return await this.analysisService.processRainTelemetry(
           complexId,
-          previousValue,
+          previousTelemetry,
           value,
           courtIds.map((court) => court.id),
         );

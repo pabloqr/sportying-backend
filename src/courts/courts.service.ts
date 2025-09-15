@@ -27,7 +27,10 @@ import { CourtStatus } from './enums';
 import { ReservationsService } from '../reservations/reservations.service';
 import { ReservationOrderField } from '../reservations/dto';
 import { UtilitiesService } from '../common/utilities.service';
-import { ReservationAvailabilityStatus } from '../reservations/enums';
+import {
+  ReservationAvailabilityStatus,
+  ReservationStatus,
+} from '../reservations/enums';
 import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 
 @Injectable()
@@ -46,11 +49,13 @@ export class CourtsService {
    *
    * @param {number} complexId - The ID of the complex to check.
    * @param {number} courtId - The ID of the court to validate.
+   * @param dateIni - The initial date of the reservation.
    * @return {Promise<boolean>} A promise that resolves to `true` if the court ID is valid and open; otherwise, `false`.
    */
   public async isValidCourt(
     complexId: number,
     courtId: number,
+    dateIni: Date,
   ): Promise<boolean> {
     // Se obtienen las pistas del complejo
     const courts = await this.getCourts(complexId, {});
@@ -61,7 +66,12 @@ export class CourtsService {
 
     // Se obtiene la posición del 'id' de la pista en el array (si no se encuentra devuelve -1)
     const index = courtIds.indexOf(courtId);
-    return index !== -1 && courtStatuses[index] === CourtStatus.OPEN;
+    return (
+      index !== -1 &&
+      (courtStatuses[index] === CourtStatus.OPEN ||
+        (courtStatuses[index] === CourtStatus.WEATHER &&
+          this.utilitiesService.dateIsEqualOrGreater(120, dateIni, new Date())))
+    );
   }
 
   //------------------------------------------------------------------------------------------------------------------//
@@ -406,8 +416,10 @@ export class CourtsService {
     // Se filtran las reservas para no procesar las canceladas
     const filteredReservations = reservations.filter(
       (reservation) =>
-        reservation.status !==
-        ReservationAvailabilityStatus.CANCELLED,
+        reservation.status !== ReservationAvailabilityStatus.CANCELLED &&
+        reservation.reservationStatus !== ReservationStatus.COMPLETED &&
+        reservation.reservationStatus !== ReservationStatus.CANCELLED &&
+        reservation.dateIni > new Date(),
     );
 
     // Se agrupan las reservas en función del 'id' de la pista

@@ -5,6 +5,7 @@ import { UtilitiesService } from './utilities.service';
 import { ReservationAvailabilityStatus } from '../reservations/enums';
 import { CourtStatus } from '../courts/enums';
 import { NotificationsService } from '../notifications/notifications.service';
+import { DeviceTelemetrySlotDto } from './dto';
 
 @Injectable({})
 export class AnalysisService {
@@ -74,22 +75,36 @@ export class AnalysisService {
    * based on current and previous rain intensity.
    *
    * @param {number} complexId - The identifier for the complex containing the courts.
-   * @param {number} previousRainIntensity - The rain intensity recorded previously.
+   * @param {number} previousTelemetry - The rain intensity recorded previously.
    * @param {number} rainIntensity - The current rain intensity.
    * @param {number[]} courtIds - An array of identifiers for the courts within the complex.
    * @return {Promise<void>} A promise that resolves when the process is complete.
    */
   async processRainTelemetry(
     complexId: number,
-    previousRainIntensity: number,
+    previousTelemetry: DeviceTelemetrySlotDto | null,
     rainIntensity: number,
     courtIds: number[],
   ): Promise<void> {
     for (const courtId of courtIds) {
-      const courtStatus =
-        rainIntensity > 0 || previousRainIntensity > 0
-          ? CourtStatus.WEATHER
-          : CourtStatus.OPEN;
+      let courtStatus = CourtStatus.OPEN;
+      if (
+        rainIntensity >= 2.5 ||
+        (previousTelemetry !== null && previousTelemetry.value > 0.0)
+      ) {
+        courtStatus = CourtStatus.WEATHER;
+      } else if (
+        previousTelemetry !== null &&
+        (previousTelemetry.value == 0.0 ||
+          (previousTelemetry.value <= 2.5 &&
+            this.utilitiesService.dateIsEqualOrGreater(
+              30,
+              previousTelemetry.createdAt,
+              new Date(),
+            )))
+      ) {
+        courtStatus = CourtStatus.OPEN;
+      }
 
       const court = await this.courtsService.getCourt(complexId, courtId);
       if (court.status !== courtStatus) {

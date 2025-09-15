@@ -6,6 +6,15 @@ export class UtilitiesService {
     return date >= start && date <= end;
   }
 
+  public dateIsEqualOrLower(
+    minutes: number,
+    dateA: Date,
+    dateB: Date,
+  ): boolean {
+    const diff = Math.abs(dateA.getTime() - dateB.getTime());
+    return diff <= minutes * 60 * 1000;
+  }
+
   public dateIsEqualOrGreater(
     minutes: number,
     dateA: Date,
