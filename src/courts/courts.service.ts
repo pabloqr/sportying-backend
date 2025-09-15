@@ -74,6 +74,47 @@ export class CourtsService {
     );
   }
 
+  private insertBlock(
+    availability: CourtAvailabilitySlotDto[],
+    candidate: { dateIni: Date; dateEnd: Date },
+  ): CourtAvailabilitySlotDto[] {
+    let { dateIni, dateEnd } = candidate;
+
+    for (const slot of availability) {
+      // Caso 1: candidate completamente dentro de un bloque
+      if (dateIni >= slot.dateIni && dateEnd <= slot.dateEnd) {
+        return availability;
+      }
+
+      // Caso 2: solapamiento por la izquierda
+      if (dateIni < slot.dateEnd && dateEnd > slot.dateEnd) {
+        dateIni = new Date(slot.dateEnd);
+      }
+
+      // Caso 3: solapamiento por la derecha
+      if (dateEnd > slot.dateIni && dateIni < slot.dateIni) {
+        dateEnd = new Date(slot.dateIni);
+      }
+    }
+
+    if (dateIni >= dateEnd) {
+      return availability;
+    }
+
+    const newSlot = { dateIni, dateEnd };
+
+    // --- Insertar ordenadamente ---
+
+    return [
+      ...availability,
+      new CourtAvailabilitySlotDto({
+        dateIni: newSlot.dateIni,
+        dateEnd: newSlot.dateEnd,
+        availability: false,
+      }),
+    ].sort((a, b) => a.dateIni.getTime() - b.dateEnd.getTime());
+  }
+
   //------------------------------------------------------------------------------------------------------------------//
 
   /**
@@ -429,68 +470,80 @@ export class CourtsService {
     );
 
     // Se crea el array de disponibilidad con los datos de las reservas
-    return Array.from(groupedReservations.entries()).map(([key, value]) => {
-      // Se formatean las reservas para que tengan la estructura correcta
-      const formattedReservations = value.map(
-        (reservation) =>
-          new CourtAvailabilitySlotDto({
-            ...reservation,
-            available: false,
-          }),
-      );
+    return Promise.all(
+      Array.from(groupedReservations.entries()).map(async ([key, value]) => {
+        // Se formatean las reservas para que tengan la estructura correcta
+        let formattedReservations = value.map(
+          (reservation) =>
+            new CourtAvailabilitySlotDto({
+              ...reservation,
+              available: false,
+            }),
+        );
 
-      // Si no se quiere agrupar la disponibilidad, se devuelve
-      if (!groupAvailability) {
+        const courtStatus = (await this.getCourt(complexId, key as number))
+          .status;
+        if (courtStatus === CourtStatus.WEATHER) {
+          const timeBlock = this.utilitiesService.getTimeBlock();
+          formattedReservations = this.insertBlock(
+            formattedReservations,
+            timeBlock,
+          );
+        }
+
+        // Si no se quiere agrupar la disponibilidad, se devuelve
+        if (!groupAvailability) {
+          return new ResponseCourtAvailabilityDto({
+            court_id: key,
+            complex_id: complexId,
+            availability: formattedReservations,
+          });
+        }
+
+        // Disponibilidad por intervalos
+        const groupedAvailability: CourtAvailabilitySlotDto[] = [];
+        if (formattedReservations.length > 0) {
+          // Intervalo actual
+          let currentAvailability: CourtAvailabilitySlotDto | undefined =
+            undefined;
+
+          formattedReservations.forEach((reservation) => {
+            // Si el intervalo actual es indefinido, se actualiza y se devuelve
+            if (currentAvailability === undefined) {
+              currentAvailability = new CourtAvailabilitySlotDto(reservation);
+              return;
+            }
+
+            // Se establecen las condiciones para verificar si los intervalos son contiguos
+            const equalEdgeDates =
+              currentAvailability.dateEnd.getTime() ===
+              reservation.dateIni.getTime();
+            const equalAvailability =
+              currentAvailability.available === reservation.available;
+
+            if (equalEdgeDates && equalAvailability) {
+              // Si son contiguos, se extiende el intervalo
+              currentAvailability.dateEnd = reservation.dateEnd;
+            } else {
+              // Si no son contiguos, se añade el intervalo actual al array y se actualiza
+              groupedAvailability.push(currentAvailability);
+              currentAvailability = new CourtAvailabilitySlotDto(reservation);
+            }
+          });
+
+          // Se añade el intervalo final al array
+          if (currentAvailability !== undefined) {
+            groupedAvailability.push(currentAvailability);
+          }
+        }
+
         return new ResponseCourtAvailabilityDto({
           court_id: key,
           complex_id: complexId,
-          availability: formattedReservations,
+          availability: groupedAvailability,
         });
-      }
-
-      // Disponibilidad por intervalos
-      const groupedAvailability: CourtAvailabilitySlotDto[] = [];
-      if (formattedReservations.length > 0) {
-        // Intervalo actual
-        let currentAvailability: CourtAvailabilitySlotDto | undefined =
-          undefined;
-
-        formattedReservations.forEach((reservation) => {
-          // Si el intervalo actual es indefinido, se actualiza y se devuelve
-          if (currentAvailability === undefined) {
-            currentAvailability = new CourtAvailabilitySlotDto(reservation);
-            return;
-          }
-
-          // Se establecen las condiciones para verificar si los intervalos son contiguos
-          const equalEdgeDates =
-            currentAvailability.dateEnd.getTime() ===
-            reservation.dateIni.getTime();
-          const equalAvailability =
-            currentAvailability.available === reservation.available;
-
-          if (equalEdgeDates && equalAvailability) {
-            // Si son contiguos, se extiende el intervalo
-            currentAvailability.dateEnd = reservation.dateEnd;
-          } else {
-            // Si no son contiguos, se añade el intervalo actual al array y se actualiza
-            groupedAvailability.push(currentAvailability);
-            currentAvailability = new CourtAvailabilitySlotDto(reservation);
-          }
-        });
-
-        // Se añade el intervalo final al array
-        if (currentAvailability !== undefined) {
-          groupedAvailability.push(currentAvailability);
-        }
-      }
-
-      return new ResponseCourtAvailabilityDto({
-        court_id: key,
-        complex_id: complexId,
-        availability: groupedAvailability,
-      });
-    });
+      }),
+    );
   }
 
   /**

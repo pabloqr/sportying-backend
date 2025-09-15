@@ -35,6 +35,23 @@ export class UtilitiesService {
     return date;
   }
 
+  public getTimeBlock(): { dateIni: Date; dateEnd: Date } {
+    const now = new Date();
+
+    const dateIni = new Date(now);
+    dateIni.setMinutes(now.getMinutes() < 30 ? 0 : 30, 0, 0);
+
+    const minEnd = new Date(now.getTime() + 60 * 60 * 1000);
+
+    const dateEnd = new Date(minEnd);
+    dateEnd.setMinutes(minEnd.getMinutes() < 30 ? 30 : 0, 0, 0);
+    if (minEnd.getMinutes() >= 30) {
+      dateEnd.setHours(dateEnd.getHours() + 1);
+    }
+
+    return { dateIni, dateEnd };
+  }
+
   public groupArrayByField<T>(
     array: T[],
     field: keyof T,
