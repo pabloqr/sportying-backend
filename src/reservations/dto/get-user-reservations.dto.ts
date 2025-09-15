@@ -22,6 +22,8 @@ export enum ReservationOrderField {
   DATE_INI = 'dateIni',
   DATE_END = 'dateEnd',
   STATUS = 'status',
+  RESERVATION_STATUS = 'reservationStatus',
+  TIME_FILTER = 'timeFilter',
   CREATED_AT = 'createdAt',
   UPDATED_AT = 'updatedAt',
 }
@@ -33,6 +35,8 @@ export const RESERVATION_ORDER_FIELD_MAP: Record<string, string> = {
   dateIni: 'date_ini',
   dateEnd: 'date_end',
   status: 'status',
+  reservationStatus: 'reservation_status',
+  timeFilter: 'time_filter',
   createdAt: 'created_at',
   updatedAt: 'updated_at',
 };
@@ -75,11 +79,11 @@ export class GetUserReservationsDto {
 
   @IsEnum(ReservationAvailabilityStatus)
   @IsOptional()
-  availabilityStatus?: ReservationAvailabilityStatus;
+  status?: ReservationAvailabilityStatus;
 
   @IsEnum(ReservationStatus)
   @IsOptional()
-  status?: ReservationStatus;
+  reservationStatus?: ReservationStatus;
 
   @IsEnum(ReservationTimeFilter)
   @IsOptional()

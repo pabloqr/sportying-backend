@@ -38,11 +38,11 @@ export class ResponseReservationDto {
 
   @IsEnum(ReservationAvailabilityStatus)
   @IsNotEmpty()
-  availabilityStatus: ReservationAvailabilityStatus;
+  status: ReservationAvailabilityStatus;
 
   @IsEnum(ReservationStatus)
   @IsNotEmpty()
-  status: ReservationStatus;
+  reservationStatus: ReservationStatus;
 
   @IsEnum(ReservationTimeFilter)
   @IsOptional()
@@ -63,9 +63,9 @@ export class ResponseReservationDto {
     this.courtId = reservation.court_id ?? reservation.courtId;
     this.dateIni = new Date(reservation.date_ini ?? reservation.dateIni);
     this.dateEnd = new Date(reservation.date_end ?? reservation.dateEnd);
-    this.availabilityStatus =
-      reservation.availability_status ?? reservation.availabilityStatus;
-    this.status = reservation.status;
+    this.status = reservation.status ?? reservation.status;
+    this.reservationStatus =
+      reservation.reservation_status ?? reservation.reservationStatus;
     this.timeFilter = reservation.time_filter ?? reservation.timeFilter;
     this.createdAt = new Date(reservation.created_at ?? reservation.createdAt);
     this.updatedAt = new Date(reservation.updated_at ?? reservation.updatedAt);

@@ -406,7 +406,7 @@ export class CourtsService {
     // Se filtran las reservas para no procesar las canceladas
     const filteredReservations = reservations.filter(
       (reservation) =>
-        reservation.availabilityStatus !==
+        reservation.status !==
         ReservationAvailabilityStatus.CANCELLED,
     );
 

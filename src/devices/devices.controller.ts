@@ -8,10 +8,8 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { DevicesService } from './devices.service';
-import { ApiKeyGuard } from '../auth/guard';
 import { Public } from 'src/auth/decorator';
 import {
   CreateDeviceCourtsDto,
@@ -89,7 +87,7 @@ export class DevicesController {
   }
 
   @Public()
-  @UseGuards(ApiKeyGuard)
+  // @UseGuards(ApiKeyGuard)
   @Post(':complexId/devices/:deviceId/telemetry')
   async setDeviceTelemetry(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -114,7 +112,7 @@ export class DevicesController {
   }
 
   @Public()
-  @UseGuards(ApiKeyGuard)
+  // @UseGuards(ApiKeyGuard)
   @Post(':complexId/devices/:deviceId/status')
   async setDeviceStatus(
     @Param('complexId', ParseIntPipe) complexId: number,

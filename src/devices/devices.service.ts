@@ -368,6 +368,8 @@ export class DevicesService {
       });
     }
 
+    const device = await this.getDevice(complexId, deviceId);
+
     // Se obtiene la telemetría del dispositivo dado con las condiciones especificadas
     const telemetry = await this.prisma.devices_telemetry.findMany({
       where,
@@ -379,7 +381,9 @@ export class DevicesService {
     return new ResponseDeviceTelemetryDto({
       deviceId,
       complexId,
-      telemetry: telemetry.map((t) => new DeviceTelemetrySlotDto(t)),
+      telemetry: telemetry.map(
+        (t) => new DeviceTelemetrySlotDto({ ...t, type: device.type }),
+      ),
     });
   }
 

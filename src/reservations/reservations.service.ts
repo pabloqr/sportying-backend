@@ -50,6 +50,38 @@ export class ReservationsService {
       : ReservationTimeFilter.UPCOMING;
   }
 
+  private getReservationStatus(
+    status: ReservationAvailabilityStatus,
+    courtStatus: CourtStatus,
+    timeFilter: ReservationTimeFilter,
+  ): ReservationStatus {
+    let reservationStatus = ReservationStatus.SCHEDULED;
+    if (timeFilter === ReservationTimeFilter.UPCOMING) {
+      switch (courtStatus) {
+        case CourtStatus.OPEN:
+          break;
+        case CourtStatus.WEATHER:
+          reservationStatus = ReservationStatus.WEATHER;
+          break;
+        case CourtStatus.BLOCKED:
+        case CourtStatus.MAINTENANCE:
+          reservationStatus = ReservationStatus.CANCELLED;
+          break;
+      }
+    } else if (timeFilter === ReservationTimeFilter.PAST) {
+      switch (status) {
+        case ReservationAvailabilityStatus.CANCELLED:
+          reservationStatus = ReservationStatus.CANCELLED;
+          break;
+        default:
+          reservationStatus = ReservationStatus.COMPLETED;
+          break;
+      }
+    }
+
+    return reservationStatus;
+  }
+
   /**
    * Validates the reservation data provided in the DTO. Checks the validity of the court ID
    * and ensures the initial and final dates are valid.
@@ -147,8 +179,8 @@ export class ReservationsService {
       ...(dto.dateIni !== undefined && { date_ini: dto.dateIni }),
       ...(dto.dateEnd !== undefined && { date_end: dto.dateEnd }),
 
-      ...(dto.availabilityStatus !== undefined && {
-        status: dto.availabilityStatus,
+      ...(dto.status !== undefined && {
+        status: dto.status,
       }),
     };
 
@@ -196,8 +228,8 @@ export class ReservationsService {
     });
 
     let filteredReservations = reservations;
-    if (dto.status != null) {
-      switch (dto.status) {
+    if (dto.reservationStatus != null) {
+      switch (dto.reservationStatus) {
         case ReservationStatus.SCHEDULED:
         case ReservationStatus.WEATHER:
         case ReservationStatus.COMPLETED:
@@ -223,34 +255,14 @@ export class ReservationsService {
           )
         ).status;
 
-        let status = ReservationStatus.SCHEDULED;
-        if (timeFilter === ReservationTimeFilter.UPCOMING) {
-          switch (courtStatus) {
-            case CourtStatus.OPEN:
-              break;
-            case CourtStatus.WEATHER:
-              status = ReservationStatus.WEATHER;
-              break;
-            case CourtStatus.BLOCKED:
-            case CourtStatus.MAINTENANCE:
-              status = ReservationStatus.CANCELLED;
-              break;
-          }
-        } else if (timeFilter === ReservationTimeFilter.PAST) {
-          switch (reservation.status) {
-            case ReservationAvailabilityStatus.CANCELLED:
-              status = ReservationStatus.CANCELLED;
-              break;
-            default:
-              status = ReservationStatus.COMPLETED;
-              break;
-          }
-        }
-
         return new ResponseReservationDto({
           ...reservation,
-          status,
-          time_filter: timeFilter,
+          reservationStatus: this.getReservationStatus(
+            reservation.status as ReservationAvailabilityStatus,
+            courtStatus,
+            timeFilter,
+          ),
+          timeFilter,
         });
       }),
     );
@@ -359,7 +371,8 @@ export class ReservationsService {
 
       return new ResponseReservationDto({
         ...reservation,
-        time_filter: this.getTimeFilterFromDate(reservation.date_end),
+        reservationStatus: ReservationStatus.SCHEDULED,
+        timeFilter: this.getTimeFilterFromDate(reservation.date_end),
       });
     } catch (error) {
       this.errorsService.dbError(error, {
@@ -409,9 +422,23 @@ export class ReservationsService {
         data,
       });
 
+      const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
+
+      const courtStatus = (
+        await this.courtsService.getCourtStatus(
+          reservation.complex_id,
+          reservation.court_id,
+        )
+      ).status;
+
       return new ResponseReservationDto({
         ...reservation,
-        time_filter: this.getTimeFilterFromDate(reservation.date_end),
+        reservationStatus: this.getReservationStatus(
+          reservation.status as ReservationAvailabilityStatus,
+          courtStatus,
+          timeFilter,
+        ),
+        timeFilter,
       });
     } catch (error) {
       this.errorsService.dbError(error, {
@@ -471,9 +498,23 @@ export class ReservationsService {
         },
       });
 
+      const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
+
+      const courtStatus = (
+        await this.courtsService.getCourtStatus(
+          reservation.complex_id,
+          reservation.court_id,
+        )
+      ).status;
+
       return new ResponseReservationDto({
         ...reservation,
-        time_filter: this.getTimeFilterFromDate(reservation.date_end),
+        reservationStatus: this.getReservationStatus(
+          reservation.status as ReservationAvailabilityStatus,
+          courtStatus,
+          timeFilter,
+        ),
+        timeFilter,
       });
     } catch (error) {
       this.errorsService.dbError(error, {
