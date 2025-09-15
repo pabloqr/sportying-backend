@@ -78,6 +78,7 @@ export class CourtsService {
     availability: CourtAvailabilitySlotDto[],
     candidate: { dateIni: Date; dateEnd: Date },
   ): CourtAvailabilitySlotDto[] {
+    console.log(availability, candidate);
     let { dateIni, dateEnd } = candidate;
 
     for (const slot of availability) {
@@ -103,16 +104,14 @@ export class CourtsService {
 
     const newSlot = { dateIni, dateEnd };
 
-    // --- Insertar ordenadamente ---
-
     return [
       ...availability,
       new CourtAvailabilitySlotDto({
         dateIni: newSlot.dateIni,
         dateEnd: newSlot.dateEnd,
-        availability: false,
+        available: false,
       }),
-    ].sort((a, b) => a.dateIni.getTime() - b.dateEnd.getTime());
+    ].sort((a, b) => a.dateIni.getTime() - b.dateIni.getTime());
   }
 
   //------------------------------------------------------------------------------------------------------------------//
@@ -469,45 +468,59 @@ export class CourtsService {
       'courtId',
     );
 
+    // Se formatean las reservas para que tengan la estructura correcta
+    const formattedReservations = new Map<number, CourtAvailabilitySlotDto[]>();
+    for (const [courtId, reservations] of groupedReservations.entries()) {
+      const slots = reservations.map(
+        (reservation) =>
+          new CourtAvailabilitySlotDto({
+            ...reservation,
+            available: false,
+          }),
+      );
+      formattedReservations.set(courtId as number, slots);
+    }
+
+    const courts = await this.getCourts(complexId, {});
+    for (const court of courts) {
+      const courtStatus = (await this.getCourt(complexId, court.id)).status;
+      if (courtStatus === CourtStatus.WEATHER) {
+        const timeBlock = this.utilitiesService.getTimeBlock();
+        console.log(timeBlock);
+
+        // Obtener los slots existentes para esta pista
+        const existingSlots = formattedReservations.get(court.id) ?? [];
+
+        // Insertar el bloque de tiempo en los slots existentes
+        const updatedSlots = this.insertBlock(existingSlots, timeBlock);
+
+        // Actualizar el mapa con los slots actualizados
+        formattedReservations.set(court.id, updatedSlots);
+      }
+    }
+
     // Se crea el array de disponibilidad con los datos de las reservas
     return Promise.all(
-      Array.from(groupedReservations.entries()).map(async ([key, value]) => {
-        // Se formatean las reservas para que tengan la estructura correcta
-        let formattedReservations = value.map(
-          (reservation) =>
-            new CourtAvailabilitySlotDto({
-              ...reservation,
-              available: false,
-            }),
-        );
-
-        const courtStatus = (await this.getCourt(complexId, key as number))
-          .status;
-        if (courtStatus === CourtStatus.WEATHER) {
-          const timeBlock = this.utilitiesService.getTimeBlock();
-          formattedReservations = this.insertBlock(
-            formattedReservations,
-            timeBlock,
-          );
-        }
+      Array.from(formattedReservations.entries()).map(async ([key, value]) => {
+        const reservations = value;
 
         // Si no se quiere agrupar la disponibilidad, se devuelve
         if (!groupAvailability) {
           return new ResponseCourtAvailabilityDto({
             court_id: key,
             complex_id: complexId,
-            availability: formattedReservations,
+            availability: reservations,
           });
         }
 
         // Disponibilidad por intervalos
         const groupedAvailability: CourtAvailabilitySlotDto[] = [];
-        if (formattedReservations.length > 0) {
+        if (reservations.length > 0) {
           // Intervalo actual
           let currentAvailability: CourtAvailabilitySlotDto | undefined =
             undefined;
 
-          formattedReservations.forEach((reservation) => {
+          reservations.forEach((reservation) => {
             // Si el intervalo actual es indefinido, se actualiza y se devuelve
             if (currentAvailability === undefined) {
               currentAvailability = new CourtAvailabilitySlotDto(reservation);
