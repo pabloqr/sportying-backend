@@ -449,10 +449,6 @@ export class DevicesService {
   ): Promise<ResponseDeviceStatusDto> {
     // Se obtienen todos los datos del dispositivo
     const device = await this.getDevice(complexId, deviceId);
-    console.log({
-      ...device,
-      created_at: device.updatedAt,
-    });
     // Se devuelven los datos apropiados
     return new ResponseDeviceStatusDto({
       ...device,

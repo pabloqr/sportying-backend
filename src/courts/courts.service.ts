@@ -78,7 +78,6 @@ export class CourtsService {
     availability: CourtAvailabilitySlotDto[],
     candidate: { dateIni: Date; dateEnd: Date },
   ): CourtAvailabilitySlotDto[] {
-    console.log(availability, candidate);
     let { dateIni, dateEnd } = candidate;
 
     for (const slot of availability) {
@@ -486,7 +485,6 @@ export class CourtsService {
       const courtStatus = (await this.getCourt(complexId, court.id)).status;
       if (courtStatus === CourtStatus.WEATHER) {
         const timeBlock = this.utilitiesService.getTimeBlock();
-        console.log(timeBlock);
 
         // Obtener los slots existentes para esta pista
         const existingSlots = formattedReservations.get(court.id) ?? [];
