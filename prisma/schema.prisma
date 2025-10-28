@@ -1,0 +1,193 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model admins {
+  id         Int
+  complex_id Int
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?  @default(false)
+  complex    complexes @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       users     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, complex_id])
+}
+
+model courts {
+  id           Int              @id @default(autoincrement())
+  complex_id   Int
+  sport        String           @db.VarChar
+  name         String           @db.VarChar
+  description  String?          @db.VarChar
+  max_people   Int
+  created_at   DateTime         @default(now()) @db.Timestamp(6)
+  updated_at   DateTime         @default(now()) @db.Timestamp(6)
+  is_delete    Boolean?         @default(false)
+  complex      complexes        @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  devices      courts_devices[]
+  status       courts_status[]
+  reservations reservations[]
+
+  @@unique([complex_id, sport, name])
+}
+
+model courts_devices {
+  court_id  Int
+  device_id Int
+  is_delete Boolean? @default(false)
+  court     courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  device    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([court_id, device_id])
+}
+
+model courts_status {
+  court_id   Int
+  status     court_status @default(OPEN)
+  created_at DateTime     @default(now()) @db.Timestamp(6)
+  court      courts       @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([court_id, created_at])
+}
+
+model devices {
+  id         Int                 @id @default(autoincrement())
+  id_key     String?             @unique @db.Uuid
+  api_key    String?             @db.VarChar
+  complex_id Int
+  type       device_type
+  status     device_status       @default(NORMAL)
+  created_at DateTime            @default(now()) @db.Timestamp(6)
+  updated_at DateTime            @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?            @default(false)
+  courts     courts_devices[]
+  complex    complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  telemetry  devices_telemetry[]
+}
+
+model notifications {
+  id         Int                   @default(autoincrement())
+  user_id    Int
+  title      String                @db.VarChar
+  body       String                @db.VarChar
+  severity   notification_severity
+  type       notification_type
+  related_id Int?
+  created_at DateTime              @default(now()) @db.Timestamp(6)
+  updated_at DateTime              @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?              @default(false)
+  user       users                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, user_id, created_at])
+}
+
+model reservations {
+  id         Int                     @id @default(autoincrement())
+  user_id    Int
+  complex_id Int
+  court_id   Int
+  date_ini   DateTime                @db.Timestamp(6)
+  date_end   DateTime                @db.Timestamp(6)
+  date_range Unsupported("tsrange")? @default(dbgenerated("tsrange(date_ini, date_end, '[)'::text)"))
+  status     reservation_status      @default(EMPTY)
+  created_at DateTime                @default(now()) @db.Timestamp(6)
+  updated_at DateTime                @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?                @default(false)
+  complexes  complexes               @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  court      courts                  @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       users                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([complex_id, court_id, date_ini])
+}
+
+model users {
+  id            Int             @id @default(autoincrement())
+  password      String          @db.VarChar
+  refresh_token String?         @db.VarChar
+  role          user_role       @default(CLIENT)
+  name          String          @db.VarChar
+  surname       String?         @db.VarChar
+  mail          String          @unique @db.VarChar
+  phone_prefix  Int
+  phone_number  Int
+  created_at    DateTime        @default(now()) @db.Timestamp(6)
+  updated_at    DateTime        @default(now()) @db.Timestamp(6)
+  is_delete     Boolean?        @default(false)
+  admins        admins[]
+  notifications notifications[]
+  reservations  reservations[]
+
+  @@unique([phone_prefix, phone_number])
+}
+
+model complexes {
+  id            Int            @id @default(autoincrement())
+  complex_name  String         @db.VarChar
+  time_ini      String         @db.VarChar(5)
+  time_end      String         @db.VarChar(5)
+  loc_longitude Float?
+  loc_latitude  Float?
+  created_at    DateTime       @default(now()) @db.Timestamp(6)
+  updated_at    DateTime       @default(now()) @db.Timestamp(6)
+  is_delete     Boolean?       @default(false)
+  admins        admins[]
+  courts        courts[]
+  devices       devices[]
+  reservations  reservations[]
+}
+
+model devices_telemetry {
+  device_id  Int
+  value      Float
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  devices    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([device_id, created_at])
+}
+
+enum user_role {
+  SUPERADMIN
+  ADMIN
+  CLIENT
+}
+
+enum court_status {
+  OPEN
+  MAINTENANCE
+  BLOCKED
+  WEATHER
+}
+
+enum device_status {
+  NORMAL
+  OFF
+  BATTERY
+  ERROR
+}
+
+enum device_type {
+  PRESENCE
+  RAIN
+}
+
+enum notification_severity {
+  INFO
+  WARNING
+}
+
+enum notification_type {
+  DEVICE
+  RESERVATION
+}
+
+enum reservation_status {
+  EMPTY
+  OCCUPIED
+  CANCELLED
+}
