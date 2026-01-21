@@ -26,7 +26,7 @@ export class ComplexesService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private courtsService: CourtsService,
-  ) {}
+  ) { }
 
   /**
    * Retrieves a list of complexes based on the provided filters and conditions.
@@ -94,7 +94,14 @@ export class ComplexesService {
     });
 
     // Se devuelve la lista modificando los elementos obtenidos
-    return complexes.map((complex) => new ResponseComplexDto(complex));
+    return Promise.all(complexes.map(async (complex) => {
+      // Se obtienen las pistas asociadas al complejo actual
+      const courts = await this.courtsService.getCourts(complex.id, {});
+      // Se filtran los deportes
+      const sports = [...new Set(courts.map((court) => court.sport))];
+
+      return new ResponseComplexDto({ ...complex, sports });
+    }));
   }
 
   /**

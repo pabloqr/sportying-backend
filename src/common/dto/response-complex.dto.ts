@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDate,
   IsNotEmpty,
   IsNumber,
@@ -10,6 +11,7 @@ import {
   Min,
 } from 'class-validator';
 import { Coordinates } from '../validators';
+import { Sport } from 'src/courts/enums';
 
 export class ResponseComplexDto {
   @Type(() => Number)
@@ -51,6 +53,10 @@ export class ResponseComplexDto {
   @IsOptional()
   locLatitude: number | null;
 
+  @IsArray()
+  @IsNotEmpty()
+  sports: Sport[]
+
   @IsDate()
   @IsNotEmpty()
   createdAt: Date;
@@ -66,6 +72,7 @@ export class ResponseComplexDto {
     this.timeEnd = complex.time_end ?? complex.timeEnd;
     this.locLongitude = complex.loc_longitude ?? complex.locLongitude;
     this.locLatitude = complex.loc_latitude ?? complex.locLatitude;
+    this.sports = complex.sports;
     this.createdAt = new Date(complex.created_at ?? complex.createdAt);
     this.updatedAt = new Date(complex.updated_at ?? complex.updatedAt);
   }
