@@ -1,3 +1,4 @@
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEmail,
@@ -10,8 +11,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Role } from '../../auth/enums/role.enum';
-import { Transform, Type } from 'class-transformer';
+import { Role } from '../../auth/enums';
 import { OrderBy } from '../../common/enums';
 
 export enum UserOrderField {

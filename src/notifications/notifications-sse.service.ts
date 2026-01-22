@@ -2,10 +2,10 @@ import { filter, Observable, Subject } from 'rxjs';
 
 interface NotificationEvent {
   type:
-    | 'courtStatus'
-    | 'reservationChange'
-    | 'deviceTelemetry'
-    | 'deviceStatus';
+  | 'courtStatus'
+  | 'reservationChange'
+  | 'deviceTelemetry'
+  | 'deviceStatus';
   complexId: number;
   data: any;
 }

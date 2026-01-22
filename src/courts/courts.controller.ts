@@ -10,22 +10,22 @@ import {
   Query,
 } from '@nestjs/common';
 import { Public } from 'src/auth/decorator';
+import { DevicesService } from '../devices/devices.service';
 import { CourtsService } from './courts.service';
 import {
   CreateCourtDto,
   CreateCourtStatusDto,
+  GetCourtDevicesDto,
   GetCourtsDto,
   UpdateCourtDto,
 } from './dto';
-import { GetCourtDevicesDto } from './dto';
-import { DevicesService } from '../devices/devices.service';
 
 @Controller('complexes')
 export class CourtsController {
   constructor(
     private courtsService: CourtsService,
     private devicesService: DevicesService,
-  ) {}
+  ) { }
 
   @Public()
   @Get(':complexId/courts')

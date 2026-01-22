@@ -3,7 +3,20 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'src/prisma.service';
+import { Prisma } from '../../prisma/generated/client';
+import { AuthService } from '../auth/auth.service';
+import { AnalysisService } from '../common/analysis.service';
+import {
+  DeviceTelemetrySlotDto,
+  ResponseDeviceCourtsDto,
+  ResponseDeviceDto,
+  ResponseDeviceStatusDto,
+  ResponseDeviceTelemetryDto,
+} from '../common/dto';
+import { OrderBy } from '../common/enums';
+import { ErrorsService } from '../common/errors.service';
+import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 import {
   CreateDeviceCourtsDto,
   CreateDeviceDto,
@@ -17,20 +30,7 @@ import {
   GetDeviceTelemetryDto,
   UpdateDeviceDto,
 } from './dto';
-import {
-  DeviceTelemetrySlotDto,
-  ResponseDeviceCourtsDto,
-  ResponseDeviceDto,
-  ResponseDeviceStatusDto,
-  ResponseDeviceTelemetryDto,
-} from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
-import { Prisma } from '@prisma/client';
-import { AuthService } from '../auth/auth.service';
-import { AnalysisService } from '../common/analysis.service';
 import { DeviceType } from './enum';
-import { OrderBy } from '../common/enums';
-import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 
 @Injectable({})
 export class DevicesService {
@@ -40,7 +40,7 @@ export class DevicesService {
     private analysisService: AnalysisService,
     private authService: AuthService,
     private courtsDevicesService: CourtsDevicesService,
-  ) {}
+  ) { }
 
   /**
    * Processes the telemetry data for a given device, updating the system state based on the provided information.

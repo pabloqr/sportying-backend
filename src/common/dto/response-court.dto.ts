@@ -6,7 +6,7 @@ import {
   IsNumber,
   IsString,
 } from 'class-validator';
-import { Sport, CourtStatus } from '../../courts/enums';
+import { CourtStatus, Sport } from '../../courts/enums';
 
 export class ResponseCourtDto {
   @Type(() => Number)

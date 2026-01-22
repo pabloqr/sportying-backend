@@ -10,8 +10,8 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { Coordinates } from '../validators';
 import { Sport } from 'src/courts/enums';
+import { Coordinates } from '../validators';
 
 export class ResponseComplexDto {
   @Type(() => Number)

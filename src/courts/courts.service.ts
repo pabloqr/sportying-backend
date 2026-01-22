@@ -5,8 +5,24 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'src/prisma.service';
+import { Prisma } from '../../prisma/generated/client';
+import {
+  CourtAvailabilitySlotDto,
+  ResponseCourtAvailabilityDto,
+  ResponseCourtDevicesDto,
+  ResponseCourtDto,
+  ResponseCourtStatusDto,
+} from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
+import { UtilitiesService } from '../common/utilities.service';
+import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
+import { ReservationOrderField } from '../reservations/dto';
+import {
+  ReservationAvailabilityStatus,
+  ReservationStatus,
+} from '../reservations/enums';
+import { ReservationsService } from '../reservations/reservations.service';
 import {
   COURT_ORDER_FIELD_MAP,
   CreateCourtDto,
@@ -15,23 +31,7 @@ import {
   GetCourtsDto,
   UpdateCourtDto,
 } from './dto';
-import { Prisma } from '@prisma/client';
-import {
-  CourtAvailabilitySlotDto,
-  ResponseCourtAvailabilityDto,
-  ResponseCourtDevicesDto,
-  ResponseCourtDto,
-  ResponseCourtStatusDto,
-} from '../common/dto';
 import { CourtStatus } from './enums';
-import { ReservationsService } from '../reservations/reservations.service';
-import { ReservationOrderField } from '../reservations/dto';
-import { UtilitiesService } from '../common/utilities.service';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-} from '../reservations/enums';
-import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 
 @Injectable()
 export class CourtsService {
@@ -42,7 +42,7 @@ export class CourtsService {
     private courtsDevicesService: CourtsDevicesService,
     @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
-  ) {}
+  ) { }
 
   /**
    * Validates if the given court ID is valid and currently open in the specified complex.

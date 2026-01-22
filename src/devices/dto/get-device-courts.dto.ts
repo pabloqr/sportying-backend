@@ -1,3 +1,4 @@
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -6,7 +7,6 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
 import { OrderBy } from '../../common/enums';
 
 export enum DeviceCourtsOrderField {

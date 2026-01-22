@@ -1,13 +1,13 @@
 ﻿import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { ErrorsService } from '../common/errors.service';
-import { Prisma } from '@prisma/client';
+import { PrismaService } from 'src/prisma.service';
+import { Prisma } from '../../prisma/generated/client';
 import {
   ResponseCourtDevicesDto,
   ResponseCourtDto,
   ResponseDeviceCourtsDto,
   ResponseDeviceDto,
 } from '../common/dto';
+import { ErrorsService } from '../common/errors.service';
 import {
   COURT_DEVICES_ORDER_FIELD_MAP,
   GetCourtDevicesDto,
@@ -23,7 +23,7 @@ export class CourtsDevicesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-  ) {}
+  ) { }
 
   /**
    * Fetches court devices based on the provided parameters and conditions.

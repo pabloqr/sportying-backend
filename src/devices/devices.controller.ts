@@ -9,8 +9,9 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { DevicesService } from './devices.service';
 import { Public } from 'src/auth/decorator';
+import { CourtsService } from '../courts/courts.service';
+import { DevicesService } from './devices.service';
 import {
   CreateDeviceCourtsDto,
   CreateDeviceDto,
@@ -21,14 +22,13 @@ import {
   GetDeviceTelemetryDto,
   UpdateDeviceDto,
 } from './dto';
-import { CourtsService } from '../courts/courts.service';
 
 @Controller('complexes')
 export class DevicesController {
   constructor(
     private devicesService: DevicesService,
     private courtsService: CourtsService,
-  ) {}
+  ) { }
 
   @Public()
   @Get(':complexId/devices')

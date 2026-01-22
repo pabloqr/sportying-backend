@@ -1,15 +1,19 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, forwardRef } from '@nestjs/common';
+import { CourtsModule } from '../courts/courts.module';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { ReservationsModule } from '../reservations/reservations.module';
+import { AnalysisService } from './analysis.service';
 import { ErrorsService } from './errors.service';
 import { UtilitiesService } from './utilities.service';
-import { AnalysisService } from './analysis.service';
-import { CourtsModule } from '../courts/courts.module';
-import { ReservationsModule } from '../reservations/reservations.module';
-import { NotificationsModule } from '../notifications/notifications.module';
 
 @Global()
 @Module({
-  imports: [CourtsModule, ReservationsModule, NotificationsModule],
+  imports: [
+    forwardRef(() => CourtsModule),
+    forwardRef(() => ReservationsModule),
+    forwardRef(() => NotificationsModule),
+  ],
   providers: [ErrorsService, UtilitiesService, AnalysisService],
   exports: [ErrorsService, UtilitiesService, AnalysisService],
 })
-export class CommonModule {}
+export class CommonModule { }

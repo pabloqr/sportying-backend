@@ -5,14 +5,14 @@ import {
   ParseIntPipe,
   Sse,
 } from '@nestjs/common';
-import { NotificationsSseService } from './notifications-sse.service';
 import { map, Observable } from 'rxjs';
+import { NotificationsSseService } from './notifications-sse.service';
 
 @Controller('notifications')
 export class NotificationsController {
   constructor(
     private readonly notificationsSseService: NotificationsSseService,
-  ) {}
+  ) { }
 
   @Sse(':complexId')
   streamNotifications(

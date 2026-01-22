@@ -1,3 +1,4 @@
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -10,9 +11,8 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Coordinates } from '../../common/validators';
-import { Transform, Type } from 'class-transformer';
 import { OrderBy } from '../../common/enums';
+import { Coordinates } from '../../common/validators';
 
 export enum ComplexOrderField {
   ID = 'id',

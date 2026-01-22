@@ -8,8 +8,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { CourtStatus, Sport } from '../enums';
 import { OrderBy } from '../../common/enums';
+import { CourtStatus, Sport } from '../enums';
 
 export enum CourtOrderField {
   ID = 'id',

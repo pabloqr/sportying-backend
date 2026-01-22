@@ -8,12 +8,12 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
+import { OrderBy } from '../../common/enums';
 import {
   ReservationAvailabilityStatus,
   ReservationStatus,
   ReservationTimeFilter,
 } from '../enums';
-import { OrderBy } from '../../common/enums';
 
 export enum ReservationOrderField {
   ID = 'id',

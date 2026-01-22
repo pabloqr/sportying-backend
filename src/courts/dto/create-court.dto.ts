@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Sport, CourtStatus } from '../enums';
+import { CourtStatus, Sport } from '../enums';
 
 export class CreateCourtDto {
   @IsEnum(Sport)

@@ -1,16 +1,18 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PrismaService } from 'src/prisma.service';
+import { UsersModule } from 'src/users/users.module';
+import { AccessControlService } from './access-control.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtModule } from '@nestjs/jwt';
 import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
-import { AccessControlService } from './access-control.service';
-import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [JwtModule.register({}), UsersModule],
+  imports: [JwtModule.register({}), forwardRef(() => UsersModule)],
   controllers: [AuthController],
   providers: [
     AuthService,
+    PrismaService,
     JwtStrategy,
     ApiKeyStrategy,
     RefreshJwtStrategy,
@@ -18,4 +20,4 @@ import { UsersModule } from 'src/users/users.module';
   ],
   exports: [AuthService, AccessControlService],
 })
-export class AuthModule {}
+export class AuthModule { }

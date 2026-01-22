@@ -6,8 +6,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'src/prisma.service';
+import { Prisma } from '../../prisma/generated/client';
+import { ResponseReservationDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
+import { ComplexesService } from '../complexes/complexes.service';
+import { CourtsService } from '../courts/courts.service';
+import { CourtStatus } from '../courts/enums';
 import {
   CreateReservationDto,
   GetReservationsDto,
@@ -15,16 +20,11 @@ import {
   RESERVATION_ORDER_FIELD_MAP,
   UpdateReservationDto,
 } from './dto';
-import { ResponseReservationDto } from '../common/dto';
-import { Prisma } from '@prisma/client';
-import { CourtsService } from '../courts/courts.service';
 import {
   ReservationAvailabilityStatus,
   ReservationStatus,
   ReservationTimeFilter,
 } from './enums';
-import { ComplexesService } from '../complexes/complexes.service';
-import { CourtStatus } from '../courts/enums';
 
 @Injectable()
 export class ReservationsService {
@@ -35,7 +35,7 @@ export class ReservationsService {
     private complexesService: ComplexesService,
     @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
-  ) {}
+  ) { }
 
   /**
    * Determines the reservation time filter based on the provided date.

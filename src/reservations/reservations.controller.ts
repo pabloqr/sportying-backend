@@ -10,12 +10,12 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Public } from 'src/auth/decorator';
-import { ReservationsService } from './reservations.service';
 import { GetReservationsDto, UpdateReservationDto } from './dto';
+import { ReservationsService } from './reservations.service';
 
 @Controller('reservations')
 export class ReservationsController {
-  constructor(private reservationsService: ReservationsService) {}
+  constructor(private reservationsService: ReservationsService) { }
 
   @Public()
   @Get()

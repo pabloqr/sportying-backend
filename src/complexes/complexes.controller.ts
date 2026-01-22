@@ -10,7 +10,7 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
+import { Public, Roles } from 'src/auth/decorator';
 import { ComplexesService } from './complexes.service';
 import {
   CreateComplexDto,
@@ -18,13 +18,14 @@ import {
   UpdateComplexDto,
   UpdateComplexTimeDto,
 } from './dto';
-import { Role } from '../auth/enums/role.enum';
+import { Role } from '../auth/enums';
 
 @Controller('complexes')
 export class ComplexesController {
-  constructor(private complexesService: ComplexesService) {}
+  constructor(private complexesService: ComplexesService) { }
 
-  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get()
   async getComplexes(
     @Query(new ValidationPipe({ skipMissingProperties: true }))
@@ -33,19 +34,22 @@ export class ComplexesController {
     return this.complexesService.getComplexes(query);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':complexId')
   async getComplex(@Param('complexId', ParseIntPipe) complexId: number) {
     return this.complexesService.getComplex(complexId);
   }
 
-  @Roles(Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.SUPERADMIN)
   @Post()
   async createComplex(@Body() dto: CreateComplexDto) {
     return this.complexesService.createComplex(dto);
   }
 
-  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Put(':complexId')
   async updateComplex(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -55,19 +59,22 @@ export class ComplexesController {
     return this.complexesService.updateComplex(complexId, dto);
   }
 
-  @Roles(Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.SUPERADMIN)
   @Delete(':complexId')
   async deleteComplex(@Param('complexId', ParseIntPipe) complexId: number) {
     return this.complexesService.deleteComplex(complexId);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':complexId/time')
   async getComplexTime(@Param('complexId', ParseIntPipe) complexId: number) {
     return this.complexesService.getComplexTime(complexId);
   }
 
-  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Post(':complexId/time')
   async setComplexTime(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -76,7 +83,8 @@ export class ComplexesController {
     return this.complexesService.setComplexTime(complexId, dto);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
+  @Public()
+  //   @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
   @Get(':complexId/availability')
   async getComplexAvailability(
     @Param('complexId', ParseIntPipe) complexId: number,

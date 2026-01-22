@@ -1,8 +1,19 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
+import { Prisma } from '../../prisma/generated/client';
+import {
+  ResponseComplexDto,
+  ResponseComplexTimeDto,
+  ResponseCourtAvailabilityDto,
+} from '../common/dto';
+import { ErrorsService } from '../common/errors.service';
+import { CourtsService } from '../courts/courts.service';
 import {
   COMPLEX_ORDER_FIELD_MAP,
   CreateComplexDto,
@@ -10,21 +21,13 @@ import {
   UpdateComplexDto,
   UpdateComplexTimeDto,
 } from './dto';
-import {
-  ResponseComplexDto,
-  ResponseComplexTimeDto,
-  ResponseCourtAvailabilityDto,
-} from '../common/dto';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { ErrorsService } from '../common/errors.service';
-import { CourtsService } from '../courts/courts.service';
 
 @Injectable()
 export class ComplexesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
   ) { }
 

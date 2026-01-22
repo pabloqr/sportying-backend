@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CourtsService } from '../courts/courts.service';
-import { ReservationsService } from '../reservations/reservations.service';
-import { UtilitiesService } from './utilities.service';
-import { ReservationAvailabilityStatus } from '../reservations/enums';
 import { CourtStatus } from '../courts/enums';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ReservationAvailabilityStatus } from '../reservations/enums';
+import { ReservationsService } from '../reservations/reservations.service';
 import { DeviceTelemetrySlotDto } from './dto';
+import { UtilitiesService } from './utilities.service';
 
 @Injectable({})
 export class AnalysisService {
@@ -14,7 +14,7 @@ export class AnalysisService {
     private courtsService: CourtsService,
     private reservationsService: ReservationsService,
     private notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   /**
    * Processes availability telemetry for a specified court and updates reservation statuses accordingly.

@@ -7,13 +7,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ReservationsService } from './reservations.service';
 import { Public } from 'src/auth/decorator';
 import { CreateReservationDto, GetReservationsDto } from './dto';
+import { ReservationsService } from './reservations.service';
 
 @Controller('complexes')
 export class ComplexReservationsController {
-  constructor(private reservationsService: ReservationsService) {}
+  constructor(private reservationsService: ReservationsService) { }
 
   @Public()
   @Get(':complexId/reservations')

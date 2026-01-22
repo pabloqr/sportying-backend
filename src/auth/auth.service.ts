@@ -3,16 +3,16 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import * as argon from 'argon2';
-import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto';
-import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { Role } from './enums/role.enum';
-import { UsersService } from '../users/users.service';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
+import * as argon from 'argon2';
+import { PrismaService } from 'src/prisma.service';
 import { v4 as uuidV4 } from 'uuid';
 import { ResponseDeviceDto, ResponseUserDto } from '../common/dto';
+import { UsersService } from '../users/users.service';
+import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { Role } from './enums';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +21,7 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigService,
     private usersService: UsersService,
-  ) {}
+  ) { }
 
   /**
    * Verifies the provided JWT token and decodes its payload.

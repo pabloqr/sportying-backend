@@ -5,7 +5,7 @@ import { NotificationsSseService } from './notifications-sse.service';
 export class NotificationsService {
   constructor(
     private readonly notificationsSseService: NotificationsSseService,
-  ) {}
+  ) { }
 
   notifyCourtStatusChange(
     complexId: number,
