@@ -151,6 +151,17 @@ model devices_telemetry {
   @@id([device_id, created_at])
 }
 
+model weather {
+  geohash            String   @db.VarChar(5)
+  temperature        Float
+  precip_intensity   Float
+  precip_probability Float
+  cloud_cover        String   @db.VarChar
+  created_at         DateTime @default(now()) @db.Timestamp(6)
+
+  @@id([geohash, created_at])
+}
+
 enum user_role {
   SUPERADMIN
   ADMIN
