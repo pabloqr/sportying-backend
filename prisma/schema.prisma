@@ -129,8 +129,8 @@ model users {
 model complexes {
   id            Int            @id @default(autoincrement())
   complex_name  String         @db.VarChar
-  time_ini      DateTime       @db.Timetz(6)
-  time_end      DateTime       @db.Timetz(6)
+  time_ini      DateTime       @db.Time(6)
+  time_end      DateTime       @db.Time(6)
   loc_longitude Float
   loc_latitude  Float
   created_at    DateTime       @default(now()) @db.Timestamp(6)
@@ -153,10 +153,10 @@ model devices_telemetry {
 
 model weather {
   geohash            String   @db.VarChar(5)
-  temperature        Float
-  precip_intensity   Float
-  precip_probability Float
-  cloud_cover        String   @db.VarChar
+  temperature        Float?
+  precip_intensity   Float?
+  precip_probability Float?
+  cloud_cover        String?  @db.VarChar
   created_at         DateTime @default(now()) @db.Timestamp(6)
 
   @@id([geohash, created_at])
