@@ -36,19 +36,24 @@ export class UtilitiesService {
   }
 
   public getTimeBlock(): { dateIni: Date; dateEnd: Date } {
+    // Obtener el instante de tiempo actual
     const now = new Date();
 
+    // Redondear a la media hora previa al instante actual
     const dateIni = new Date(now);
     dateIni.setMinutes(now.getMinutes() < 30 ? 0 : 30, 0, 0);
 
+    // Calcular el instante final que se encuentra a 1h del actual
     const minEnd = new Date(now.getTime() + 60 * 60 * 1000);
 
+    // Redondear a la media hora posterior al instante final calculado
     const dateEnd = new Date(minEnd);
     dateEnd.setMinutes(minEnd.getMinutes() < 30 ? 30 : 0, 0, 0);
     if (minEnd.getMinutes() >= 30) {
       dateEnd.setHours(dateEnd.getHours() + 1);
     }
 
+    // Devolver la franja calculada, de 90 minutos
     return { dateIni, dateEnd };
   }
 
