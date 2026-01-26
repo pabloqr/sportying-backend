@@ -58,7 +58,7 @@ CREATE TABLE "weather" (
   "temperature" double precision,
   "precip_intensity" double precision,            -- mm/h
   "precip_probability" double precision,          -- %
-  "cloud_cover" varchar,                          -- %
+  "cloud_cover" double precision,                 -- %
   "created_at" timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY ("geohash", "created_at")
 );
