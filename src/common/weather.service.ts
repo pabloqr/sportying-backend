@@ -11,6 +11,28 @@ export class WeatherService implements OnModuleInit {
     private prisma: PrismaService,
   ) { }
 
+  /**
+   * Fetches and transforms weather data for a given geohash into a WeatherDataDto.
+   *
+   * Decodes the provided geohash to latitude/longitude, calls the Open-Meteo
+   * forecast endpoint (via fetchWeatherApi) requesting hourly precipitation and
+   * precipitation probability, current temperature/precipitation/cloud cover, and
+   * a 1-day past/forecast window. Uses the first location response returned by
+   * the API.
+   *
+   * Notes:
+   * - Time comparisons are performed in UTC; the "current" instant is rounded
+   *   down to the nearest hour (UTC) before matching to the hourly array.
+   * - Default/fallback sentinel values (-1 or -1.0) are used when hourly indices
+   *   are out of range to indicate unavailable data.
+   *
+   * @param geohash - Geohash string identifying the location to query.
+   * @returns Promise that resolves to a WeatherDataDto containing the mapped
+   *          current and surrounding hourly weather values.
+   * @throws {Error} if geohash decoding fails, the fetchWeatherApi call fails,
+   *                 the API response is empty, or required current/hourly data
+   *                 structures are missing or malformed.
+   */
   private async fetchWeather(geohash: string): Promise<WeatherDataDto> {
     const loc = ngeohash.decode(geohash);
 
@@ -48,10 +70,12 @@ export class WeatherService implements OnModuleInit {
     // Obtener la posición de la hora actual en el array de horas
     const currIndex = hours.findIndex((hour) => hour.getTime() === now.getTime());
 
+    // Calcular la validez de los índices buscados
     const prevValidIndex = currIndex - 1 >= 0 && currIndex - 1 < hours.length;
     const currValidIndex = currIndex >= 0 && currIndex < hours.length;
     const nextValidIndex = currIndex + 1 >= 0 && currIndex + 1 < hours.length;
 
+    // Devolver los datos obteniéndolos de la respuesta proporcionada por la API
     return new WeatherDataDto({
       temperature: current.variables(0)!.value(),
       precip_intensity_prev: prevValidIndex ? hourly.variables(1)!.valuesArray()[currIndex - 1] : -1.0,
@@ -62,6 +86,19 @@ export class WeatherService implements OnModuleInit {
     });
   }
 
+  /**
+   * Actualiza la tabla de weather para los complejos activos en un intervalo próximo.
+   *
+   * Toma el instante actual (en UTC) y lo normaliza sobre la fecha base 1970 para coincidir con campos TIME;
+   * calcula un instante inicial (ahora +20 minutos) y un instante final (ahora +60 minutos), consulta los
+   * complejos cuya apertura/cierre cubren ese rango, genera geohashes únicos (precisión 5 ≈ 4.9km) de sus
+   * coordenadas, solicita los datos meteorológicos para cada geohash y crea registros en la base de datos.
+   *
+   * Nota: Si no se encuentran complejos activos la ejecución termina sin cambios. Cualquier fallo al obtener
+   * datos externos o al insertar en la BD lanza una InternalServerErrorException para el geohash afectado.
+   *
+   * @throws {InternalServerErrorException} Cuando la obtención de datos meteorológicos o la inserción en BD falla.
+   */
   private async updateWeatherLogic() {
     const now = new Date();
 
