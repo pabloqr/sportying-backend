@@ -152,12 +152,14 @@ model devices_telemetry {
 }
 
 model weather {
-  geohash            String   @db.VarChar(5)
-  temperature        Float?
-  precip_intensity   Float?
-  precip_probability Float?
-  cloud_cover        Float?
-  created_at         DateTime @default(now()) @db.Timestamp(6)
+  geohash                 String   @db.VarChar(5)
+  temperature             Float?
+  precip_intensity        Float?
+  precip_probability_curr Float?
+  cloud_cover             Float?
+  created_at              DateTime @default(now()) @db.Timestamp(6)
+  precip_probability_prev Float?
+  precip_probability_next Float?
 
   @@id([geohash, created_at])
 }
