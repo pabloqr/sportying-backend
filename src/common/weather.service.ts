@@ -17,9 +17,10 @@ export class WeatherService implements OnModuleInit {
     const params = {
       latitude: loc.latitude,
       longitude: loc.longitude,
-      hourly: "precipitation_probability",
+      hourly: ["precipitation_probability", "precipitation"],
       current: ["temperature_2m", "precipitation", "cloud_cover"],
-      timezone: "auto",
+      past_days: 1,
+      forecast_days: 1,
     };
     const url = "https://api.open-meteo.com/v1/forecast";
     const responses = await fetchWeatherApi(url, params);
@@ -53,8 +54,8 @@ export class WeatherService implements OnModuleInit {
 
     return new WeatherDataDto({
       temperature: current.variables(0)!.value(),
-      precip_intensity: current.variables(1)!.value(),
-      precip_probability_prev: prevValidIndex ? hourly.variables(0)!.valuesArray()[currIndex - 1] : -1,
+      precip_intensity_prev: prevValidIndex ? hourly.variables(1)!.valuesArray()[currIndex - 1] : -1.0,
+      precip_intensity_curr: current.variables(1)!.value(),
       precip_probability_curr: currValidIndex ? hourly.variables(0)!.valuesArray()[currIndex] : -1,
       precip_probability_next: nextValidIndex ? hourly.variables(0)!.valuesArray()[currIndex + 1] : -1,
       cloud_cover: current.variables(2)!.value(),
@@ -106,8 +107,8 @@ export class WeatherService implements OnModuleInit {
           data: {
             geohash,
             temperature: weather.temperature,
-            precip_intensity: weather.precip_intensity,
-            precip_probability_prev: weather.precip_probability_prev,
+            precip_intensity_prev: weather.precip_intensity_prev,
+            precip_intensity_curr: weather.precip_intensity_curr,
             precip_probability_curr: weather.precip_probability_curr,
             precip_probability_next: weather.precip_probability_next,
             cloud_cover: weather.cloud_cover
