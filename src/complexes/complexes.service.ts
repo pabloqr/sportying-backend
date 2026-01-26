@@ -5,6 +5,9 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import * as ngeohash from 'ngeohash';
+import { WeatherDataDto } from 'src/common/dto/weather-data.dto';
+import { WeatherService } from 'src/common/weather.service';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import {
@@ -27,6 +30,7 @@ export class ComplexesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private weatherService: WeatherService,
     @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
   ) { }
@@ -47,19 +51,19 @@ export class ComplexesService {
     dto: GetComplexesDto,
     checkDeleted: boolean = false,
   ): Promise<Array<ResponseComplexDto>> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.complexesWhereInput = {
-      // Se evita obtener los complejos eliminados
+      // Evitar obtener los complejos eliminados
       ...(!checkDeleted && { is_delete: false }),
 
       ...(dto.id !== undefined && { id: dto.id }),
 
-      // Se establecen las condiciones para los campos de tipo 'string'
+      // Establecer las condiciones para los campos de tipo 'string'
       ...(dto.complexName !== undefined && {
         complex_name: { contains: dto.complexName, mode: 'insensitive' },
       }),
 
-      // Se establecen las condiciones para los campos de tipo 'Date'
+      // Establecer las condiciones para los campos de tipo 'Date'
       ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
       ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
 
@@ -69,7 +73,7 @@ export class ComplexesService {
       ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
+    // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.complexesOrderByWithRelationInput[] = [];
     if (dto.orderParams !== undefined) {
       dto.orderParams.forEach((orderParam) => {
@@ -80,7 +84,7 @@ export class ComplexesService {
       });
     }
 
-    // Se realiza la consulta seleccionando las columnas que se quieren devolver
+    // Realizar la consulta seleccionando las columnas que se quieren devolver
     const complexes = await this.prisma.complexes.findMany({
       where,
       select: {
@@ -96,14 +100,21 @@ export class ComplexesService {
       orderBy,
     });
 
-    // Se devuelve la lista modificando los elementos obtenidos
+    const weatherData: Map<string, WeatherDataDto> = new Map<string, WeatherDataDto>();
+
+    // Devolver la lista modificando los elementos obtenidos
     return Promise.all(complexes.map(async (complex) => {
-      // Se obtienen las pistas asociadas al complejo actual
+      // Obtener las pistas asociadas al complejo actual
       const courts = await this.courtsService.getCourts(complex.id, {});
-      // Se filtran los deportes
+      // Filtrar los deportes
       const sports = [...new Set(courts.map((court) => court.sport))];
 
-      return new ResponseComplexDto({ ...complex, sports });
+      // Obtener el geohash de las coordenadas dadas
+      const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);
+      // Obtener la meteorología si no existe previamente
+      if (!weatherData.has(geohash)) weatherData[geohash] = await this.weatherService.getWeather(geohash);
+
+      return new ResponseComplexDto({ ...complex, sports, weather: weatherData[geohash] });
     }));
   }
 

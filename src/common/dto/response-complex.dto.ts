@@ -9,9 +9,11 @@ import {
   Matches,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { Sport } from 'src/courts/enums';
 import { Coordinates } from '../validators';
+import { WeatherDataDto } from './weather-data.dto';
 
 export class ResponseComplexDto {
   @Type(() => Number)
@@ -57,6 +59,11 @@ export class ResponseComplexDto {
   @IsNotEmpty()
   sports: Sport[]
 
+  @Type(() => WeatherDataDto)
+  @ValidateNested()
+  @IsNotEmpty()
+  weather: WeatherDataDto;
+
   @IsDate()
   @IsNotEmpty()
   createdAt: Date;
@@ -73,6 +80,7 @@ export class ResponseComplexDto {
     this.locLongitude = complex.loc_longitude ?? complex.locLongitude;
     this.locLatitude = complex.loc_latitude ?? complex.locLatitude;
     this.sports = complex.sports;
+    this.weather = complex.weather;
     this.createdAt = new Date(complex.created_at ?? complex.createdAt);
     this.updatedAt = new Date(complex.updated_at ?? complex.updatedAt);
   }
