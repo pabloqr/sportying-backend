@@ -6,7 +6,7 @@ info:
     - Administradores: gestión de instalaciones, dispositivos y usuarios.
     - Clientes: gestión del perfil y reserva de instalaciones.
   contact:
-    email: pabloq02@correo.ugr.es
+    email: pabloquesadarojo@gmail.com
   version: "1.3.0"
 servers:
   - url: https://api.server.test/
