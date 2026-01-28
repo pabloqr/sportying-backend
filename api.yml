@@ -113,7 +113,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /auth/logout:
+  /auth/signout:
     post:
       tags:
         - authentication
@@ -1274,6 +1274,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /complexes/{complexId}/courts/{courtId}/devices:
+    parameters:
+      - $ref: "#/components/parameters/complexId"
+      - $ref: "#/components/parameters/courtId"
+    get:
+      tags:
+        - courts
+      summary: Obtiene una lista de pistas del sistema.
+      description: Obtiene una lista de pistas del sistema que puede estar filtrada en función de una serie de parámetros.
+      operationId: getCourtDevices
+      x-security-roles:
+        - ADMIN
+      responses:
+        "200":
+          description: Se devuelve correctamente la lista de pistas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CourtInfo"
+        "400":
+          description: Petición incorrecta.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No se ha podido autenticar al usuario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "402":
+          description: Sin permisos para realizar la operación.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /complexes/{complexId}/devices:
     parameters:
       - $ref: "#/components/parameters/complexId"
@@ -2136,6 +2181,25 @@ components:
         error:
           type: string
           description: Tipo de error (ej. Bad Request, Unauthorized).
+    WeatherData:
+      type: object
+      properties:
+        temperature:
+          type: number
+          description: Temperatura actual.
+        precip_intensity_prev:
+          type: number
+          description: Precipitación registrada en la hora previa.
+        precip_intensity_curr:
+          type: number
+          description: Precipitación actual.
+        precip_probability_curr:
+          type: integer
+          description: Probabilidad de precipitación actual.
+        precip_probability_next:
+          type: integer
+          description: Probabilidad de precipitación para la próxima hora.
+      description: Datos meteorológicos obtenidos de la API de OpenMeteo.
     DeviceType:
       type: string
       enum:
