@@ -6,7 +6,6 @@ import { ReservationsModule } from '../reservations/reservations.module';
 import { AnalysisService } from './analysis.service';
 import { ErrorsService } from './errors.service';
 import { UtilitiesService } from './utilities.service';
-import { WeatherService } from './weather.service';
 
 @Global()
 @Module({
@@ -15,7 +14,7 @@ import { WeatherService } from './weather.service';
     forwardRef(() => ReservationsModule),
     forwardRef(() => NotificationsModule),
   ],
-  providers: [PrismaService, ErrorsService, UtilitiesService, AnalysisService, WeatherService],
-  exports: [ErrorsService, UtilitiesService, AnalysisService, WeatherService],
+  providers: [PrismaService, ErrorsService, UtilitiesService, AnalysisService],
+  exports: [ErrorsService, UtilitiesService, AnalysisService],
 })
 export class CommonModule { }

@@ -1,14 +1,18 @@
-import { Injectable, InternalServerErrorException, OnModuleInit } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, InternalServerErrorException, OnModuleInit } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from "openmeteo";
+import { ResponseComplexWeatherDto } from "src/common/dto";
+import { ComplexesService } from "src/complexes/complexes.service";
 import { PrismaService } from "src/prisma.service";
-import { WeatherDataDto } from "./dto/weather-data.dto";
+import { WeatherDataDto } from "./dto";
 
 @Injectable({})
 export class WeatherService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => ComplexesService))
+    private complexesService: ComplexesService
   ) { }
 
   /**
@@ -168,8 +172,23 @@ export class WeatherService implements OnModuleInit {
 
   async getWeather(geohash: string): Promise<WeatherDataDto> {
     // Obtener la información meteorológica almacenada en la BD
-    const weather = await this.prisma.weather.findFirst({ where: { geohash } });
+    const weather = await this.prisma.weather.findFirst({
+      where: { geohash },
+      orderBy: { created_at: 'desc' }
+    });
 
     return new WeatherDataDto({ ...weather });
+  }
+
+  async getComplexWeather(complexId: number): Promise<ResponseComplexWeatherDto> {
+    // Obtener los datos del complejo pedido
+    const complex = await this.complexesService.getComplex(complexId);
+
+    // Obtener el geohash de las coordenadas del complejo
+    const geohash = ngeohash.encode(complex.locLatitude, complex.locLongitude, 5);
+    // Obtener los datos meteorológicos del complejo
+    const weather = await this.getWeather(geohash);
+
+    return new ResponseComplexWeatherDto({ id: complex.id, weather });
   }
 }

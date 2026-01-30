@@ -1,6 +1,7 @@
 export * from './court-availability-slot.dto';
 export * from './device-telemetry-slot.dto';
 export * from './response-complex-time.dto';
+export * from './response-complex-weather.dto';
 export * from './response-complex.dto';
 export * from './response-court-availability.dto';
 export * from './response-court-devices.dto';
@@ -12,3 +13,4 @@ export * from './response-device-telemetry.dto';
 export * from './response-device.dto';
 export * from './response-reservation.dto';
 export * from './response-user.dto';
+

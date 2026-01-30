@@ -6,9 +6,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
-import { WeatherDataDto } from 'src/common/dto/weather-data.dto';
-import { WeatherService } from 'src/common/weather.service';
 import { PrismaService } from 'src/prisma.service';
+import { WeatherDataDto } from 'src/weather/dto';
+import { WeatherService } from 'src/weather/weather.service';
 import { Prisma } from '../../prisma/generated/client';
 import {
   ResponseComplexDto,
@@ -30,6 +30,7 @@ export class ComplexesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
     @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
@@ -121,21 +122,21 @@ export class ComplexesService {
   /**
    * Retrieves a complex entity by its unique identifier.
    *
-   * @param {number} id - The unique identifier of the complex to retrieve.
+   * @param {number} complexId - The unique identifier of the complex to retrieve.
    * @return {Promise<ResponseComplexDto>} A promise that resolves to the retrieved complex entity.
    * @throws {NotFoundException} If no complex is found with the specified ID.
    * @throws {InternalServerErrorException} If multiple complexes are found with the specified ID.
    */
-  async getComplex(id: number): Promise<ResponseComplexDto> {
+  async getComplex(complexId: number): Promise<ResponseComplexDto> {
     // Se trata de obtener el complejo con el 'id' dado
-    const result = await this.getComplexes({ id });
+    const result = await this.getComplexes({ id: complexId });
 
     // Se verifican los elementos obtenidos
     if (result.length === 0) {
-      throw new NotFoundException(`Complex with ID ${id} not found.`);
+      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
     } else if (result.length > 1) {
       throw new InternalServerErrorException(
-        `Multiple complexes found with ID ${id}.`,
+        `Multiple complexes found with ID ${complexId}.`,
       );
     }
 

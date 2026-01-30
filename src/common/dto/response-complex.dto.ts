@@ -12,8 +12,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Sport } from 'src/courts/enums';
+import { WeatherDataDto } from '../../weather/dto';
 import { Coordinates } from '../validators';
-import { WeatherDataDto } from './weather-data.dto';
 
 export class ResponseComplexDto {
   @Type(() => Number)
