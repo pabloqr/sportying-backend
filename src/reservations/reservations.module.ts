@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { ComplexesModule } from 'src/complexes/complexes.module';
-import { PrismaService } from 'src/prisma.service';
 import { CourtsDevicesModule } from '../courts-devices/court-devices.module';
 import { CourtsModule } from '../courts/courts.module';
 import { ComplexReservationsController } from './complex-reservations.controller';
@@ -15,7 +14,7 @@ import { UserReservationsController } from './user-reservations.controller';
     UserReservationsController,
     ComplexReservationsController,
   ],
-  providers: [ReservationsService, PrismaService],
+  providers: [ReservationsService],
   exports: [ReservationsService],
 })
 export class ReservationsModule { }

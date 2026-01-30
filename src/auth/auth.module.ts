@@ -1,6 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma.service';
 import { UsersModule } from 'src/users/users.module';
 import { AccessControlService } from './access-control.service';
 import { AuthController } from './auth.controller';
@@ -12,7 +11,6 @@ import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
   controllers: [AuthController],
   providers: [
     AuthService,
-    PrismaService,
     JwtStrategy,
     ApiKeyStrategy,
     RefreshJwtStrategy,

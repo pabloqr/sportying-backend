@@ -1,5 +1,5 @@
 import { Global, Module, forwardRef } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CourtsModule } from '../courts/courts.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ReservationsModule } from '../reservations/reservations.module';

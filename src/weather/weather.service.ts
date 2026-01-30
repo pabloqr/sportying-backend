@@ -4,7 +4,7 @@ import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from "openmeteo";
 import { ResponseComplexWeatherDto } from "src/common/dto";
 import { ComplexesService } from "src/complexes/complexes.service";
-import { PrismaService } from "src/prisma.service";
+import { PrismaService } from "src/prisma/prisma.service";
 import { WeatherDataDto } from "./dto";
 
 @Injectable({})

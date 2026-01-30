@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { WeatherDataDto } from 'src/weather/dto';
 import { WeatherService } from 'src/weather/weather.service';
 import { Prisma } from '../../prisma/generated/client';

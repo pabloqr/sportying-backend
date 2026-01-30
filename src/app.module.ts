@@ -13,6 +13,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { UsersModule } from './users/users.module';
 import { WeatherModule } from './weather/weather.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { WeatherModule } from './weather/weather.module';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    PrismaModule,
     CommonModule,
     AuthModule,
     CourtsDevicesModule,
