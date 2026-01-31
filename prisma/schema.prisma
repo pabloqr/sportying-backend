@@ -162,6 +162,7 @@ model weather {
   precip_probability_next Float?
 
   @@id([geohash, created_at])
+  @@index([geohash, created_at(sort: Desc)], map: "index_weather_geohash_created_at_desc")
 }
 
 enum user_role {
