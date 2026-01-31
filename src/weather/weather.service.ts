@@ -9,6 +9,8 @@ import { WeatherDataDto } from "./dto";
 
 @Injectable({})
 export class WeatherService implements OnModuleInit {
+  private activeRequests = new Map<string, Promise<WeatherDataDto>>();
+
   constructor(
     private prisma: PrismaService,
     @Inject(forwardRef(() => ComplexesService))
@@ -18,24 +20,21 @@ export class WeatherService implements OnModuleInit {
   /**
    * Fetches and transforms weather data for a given geohash into a WeatherDataDto.
    *
-   * Decodes the provided geohash to latitude/longitude, calls the Open-Meteo
-   * forecast endpoint (via fetchWeatherApi) requesting hourly precipitation and
-   * precipitation probability, current temperature/precipitation/cloud cover, and
-   * a 1-day past/forecast window. Uses the first location response returned by
-   * the API.
+   * Decodes the provided geohash to latitude/longitude, calls the Open-Meteo forecast endpoint (via fetchWeatherApi)
+   * requesting hourly precipitation and precipitation probability, current temperature/precipitation/cloud cover, and
+   * a 1-day past/forecast window. Uses the first location response returned by the API.
    *
    * Notes:
-   * - Time comparisons are performed in UTC; the "current" instant is rounded
-   *   down to the nearest hour (UTC) before matching to the hourly array.
-   * - Default/fallback sentinel values (-1 or -1.0) are used when hourly indices
-   *   are out of range to indicate unavailable data.
+   * - Time comparisons are performed in UTC; the "current" instant is rounded down to the nearest hour (UTC) before
+   *   matching to the hourly array.
+   * - Default/fallback sentinel values (-1 or -1.0) are used when hourly indices are out of range to indicate
+   *   unavailable data.
    *
    * @param geohash - Geohash string identifying the location to query.
-   * @returns Promise that resolves to a WeatherDataDto containing the mapped
-   *          current and surrounding hourly weather values.
-   * @throws {Error} if geohash decoding fails, the fetchWeatherApi call fails,
-   *                 the API response is empty, or required current/hourly data
-   *                 structures are missing or malformed.
+   * @returns Promise that resolves to a WeatherDataDto containing the mapped current and surrounding hourly weather
+   *          values.
+   * @throws {Error} if geohash decoding fails, the fetchWeatherApi call fails, the API response is empty, or required
+   *                 current/hourly data structures are missing or malformed.
    */
   private async fetchWeather(geohash: string): Promise<WeatherDataDto> {
     const loc = ngeohash.decode(geohash);
@@ -90,18 +89,34 @@ export class WeatherService implements OnModuleInit {
     });
   }
 
+  private async updateWeather(geohash: string): Promise<WeatherDataDto> {
+    try {
+      // Obtener los datos de la API
+      const weather = await this.fetchWeather(geohash);
+
+      // Crear la entrada en la BD
+      await this.prisma.weather.create({
+        data: { geohash, ...weather },
+      });
+
+      return new WeatherDataDto({ ...weather });
+    } catch (error) {
+      throw new InternalServerErrorException(`Error actualizando geohash ${geohash}:`, error.message);
+    }
+  }
+
   /**
-   * Actualiza la tabla de weather para los complejos activos en un intervalo próximo.
+   * Updates the weather table for active complexes at a near interval.
    *
-   * Toma el instante actual (en UTC) y lo normaliza sobre la fecha base 1970 para coincidir con campos TIME;
-   * calcula un instante inicial (ahora +20 minutos) y un instante final (ahora +60 minutos), consulta los
-   * complejos cuya apertura/cierre cubren ese rango, genera geohashes únicos (precisión 5 ≈ 4.9km) de sus
-   * coordenadas, solicita los datos meteorológicos para cada geohash y crea registros en la base de datos.
+   * Takes the current instant (in UTC) and normalizes it on the base date 1970 to coincide with TIME fields; calculates
+   * an initial instant (now +20 minutes) and a final instant (now +60 minutes), gets the complexes whose
+   * opening/closing covers that range, generates unique geohashes (accuracy 5 ≈ 4.9km) of its coordinates, requests the
+   * meteorological data for each geohash and creates records in the database.
    *
-   * Nota: Si no se encuentran complejos activos la ejecución termina sin cambios. Cualquier fallo al obtener
-   * datos externos o al insertar en la BD lanza una InternalServerErrorException para el geohash afectado.
+   * Note: If no active complexes are found the execution ends unchanged. Any failure to obtain external data or insert
+   * into the database launches an InternalServerErrorException for the affected geohash.
    *
-   * @throws {InternalServerErrorException} Cuando la obtención de datos meteorológicos o la inserción en BD falla.
+   * @throws {InternalServerErrorException} When obtaining weather data or inserting into BD fails.
    */
   private async updateWeatherLogic() {
     const now = new Date();
@@ -137,28 +152,8 @@ export class WeatherService implements OnModuleInit {
       activeComplexes.map(complex => ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5))
     );
 
-    // Procesar los geohashes para obtener los datos de la API y actualizar BD
-    for (const geohash of geohashes) {
-      try {
-        // Obtener los datos de la API
-        const weather = await this.fetchWeather(geohash);
-
-        // Crear la entrada en la BD
-        await this.prisma.weather.create({
-          data: {
-            geohash,
-            temperature: weather.temperature,
-            precip_intensity_prev: weather.precip_intensity_prev,
-            precip_intensity_curr: weather.precip_intensity_curr,
-            precip_probability_curr: weather.precip_probability_curr,
-            precip_probability_next: weather.precip_probability_next,
-            cloud_cover: weather.cloud_cover
-          },
-        });
-      } catch (error) {
-        throw new InternalServerErrorException(`Error actualizando geohash ${geohash}:`, error.message);
-      }
-    }
+    // Procesar los geohashes para obtener los datos de la API y actualizar la BD
+    for (const geohash of geohashes) await this.updateWeather(geohash);
   }
 
   async onModuleInit() {
@@ -174,12 +169,45 @@ export class WeatherService implements OnModuleInit {
     // Obtener la información meteorológica almacenada en la BD
     const weather = await this.prisma.weather.findFirst({
       where: { geohash },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      select: {
+        temperature: true,
+        precip_intensity_prev: true,
+        precip_intensity_curr: true,
+        precip_probability_curr: true,
+        precip_probability_next: true,
+        cloud_cover: true,
+      }
     });
 
-    return new WeatherDataDto({ ...weather });
+    // Si se ha obtenido una entrada, devolver los datos
+    if (weather !== undefined) return new WeatherDataDto({ ...weather });
+
+    // Si no se ha obtenido ninguna entrada, verificar si ya hay un proceso de actualización
+    if (this.activeRequests.has(geohash)) return this.activeRequests[geohash];
+
+    // Si no hay ningún proceso de actualización, iniciarlo (en este caso no hay bloqueo porque no hay await)
+    const weatherUpdate = this.updateWeather(geohash).finally(() => {
+      // Eliminar la entrada para el geohash actual
+      this.activeRequests.delete(geohash);
+    });
+
+    // Crear la entrada para el geohash actual
+    this.activeRequests.set(geohash, weatherUpdate);
+
+    return weatherUpdate;
   }
 
+  /**
+   * Retrieves weather information for a specific complex.
+   *
+   * Loads the complex by its id, encodes its latitude and longitude into a geohash with precision 5, fetches weather
+   * data for that geohash, and returns a DTO containing the complex id and the retrieved weather.
+   *
+   * @param complexId - The identifier of the complex to retrieve weather for.
+   * @returns A Promise that resolves to a ResponseComplexWeatherDto containing the complex id and weather data.
+   * @throws If the complex cannot be found or if the weather retrieval fails.
+   */
   async getComplexWeather(complexId: number): Promise<ResponseComplexWeatherDto> {
     // Obtener los datos del complejo pedido
     const complex = await this.complexesService.getComplex(complexId);
