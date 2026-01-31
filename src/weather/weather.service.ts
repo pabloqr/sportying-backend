@@ -101,7 +101,7 @@ export class WeatherService implements OnModuleInit {
 
       return new WeatherDataDto({ ...weather });
     } catch (error) {
-      throw new InternalServerErrorException(`Error actualizando geohash ${geohash}:`, error.message);
+      throw new InternalServerErrorException(`Error updating data for geohash ${geohash}:`, error.message);
     }
   }
 
@@ -156,13 +156,36 @@ export class WeatherService implements OnModuleInit {
     for (const geohash of geohashes) await this.updateWeather(geohash);
   }
 
+  private async purgeWeatherLogic() {
+    try {
+      // Calcular la fecha límite (1 semana)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() - 7);
+      // expirationData.setHours(expirationDate.getHours - 48);
+
+      // Eliminar las entradas de la BD más antiguas que la fecha límite
+      await this.prisma.weather.deleteMany({
+        where: { created_at: { lt: expirationDate } },
+      });
+
+    } catch (error) {
+      throw new InternalServerErrorException(`Error deleting old weather data:`, error.message);
+    }
+  }
+
   async onModuleInit() {
+    await this.purgeWeatherLogic();
     await this.updateWeatherLogic();
   }
 
   @Cron('0 */20 * * * *')
   async handleWeatherUpdate() {
     await this.updateWeatherLogic();
+  }
+
+  @Cron('0 0 4 * * *')
+  async handleWeatherPurge() {
+    await this.purgeWeatherLogic();
   }
 
   async getWeather(geohash: string): Promise<WeatherDataDto> {
