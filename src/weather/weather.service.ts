@@ -6,6 +6,7 @@ import { ResponseComplexWeatherDto } from "src/common/dto";
 import { ComplexesService } from "src/complexes/complexes.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { WeatherDataDto } from "./dto";
+import { AnalysisService } from "src/common/analysis.service";
 
 @Injectable({})
 export class WeatherService implements OnModuleInit {
@@ -13,6 +14,7 @@ export class WeatherService implements OnModuleInit {
 
   constructor(
     private prisma: PrismaService,
+    private analysisService: AnalysisService,
     @Inject(forwardRef(() => ComplexesService))
     private complexesService: ComplexesService
   ) { }
@@ -43,9 +45,34 @@ export class WeatherService implements OnModuleInit {
       latitude: loc.latitude,
       longitude: loc.longitude,
       hourly: ["precipitation_probability", "precipitation"],
-      current: ["temperature_2m", "precipitation", "cloud_cover"],
+      current: [
+        "temperature_2m",
+        "precipitation",
+        "cloud_cover",
+        "relative_humidity_2m",
+        "wind_speed_10m",
+        "wind_direction_10m",
+        "wind_gusts_10m",
+        "rain",
+        "showers",
+        "snowfall",
+        "apparent_temperature"
+      ],
+      minutely_15: [
+        "temperature_2m",
+        "rain",
+        "snowfall",
+        "precipitation",
+        "relative_humidity_2m",
+        "wind_speed_10m",
+        "wind_direction_10m",
+        "wind_gusts_10m",
+        "visibility"
+      ],
       past_days: 1,
       forecast_days: 1,
+      past_minutely_15: 4,
+      forecast_minutely_15: 4,
     };
     const url = "https://api.open-meteo.com/v1/forecast";
     const responses = await fetchWeatherApi(url, params);
@@ -93,6 +120,9 @@ export class WeatherService implements OnModuleInit {
     try {
       // Obtener los datos de la API
       const weather = await this.fetchWeather(geohash);
+
+      // Procesar los datos en el módulo de análisis para actualizar el estado de las pistas y las reservas
+      // await this.analysisService.processWeatherData({});
 
       // Crear la entrada en la BD
       await this.prisma.weather.create({
