@@ -55,12 +55,14 @@ CREATE TABLE "complexes" (
 
 CREATE TABLE "weather" (
   "geohash" varchar(5) PRIMARY KEY,
-  "temperature" double precision,
-  "precip_intensity_prev" double precision,     -- mm/h
+  "temperature_curr" double precision,
+  "relative_humidity_curr" double precision,
+  "cloud_cover_curr" double precision,               -- %
+  "wind_speed_curr" double precision,
+  "wind_direction_curr" double precision,
   "precip_intensity_curr" double precision,     -- mm/h
   "precip_probability_curr" double precision,   -- %
   "precip_probability_next" double precision,   -- %
-  "cloud_cover" double precision,               -- %
   "created_at" timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY ("geohash", "created_at")
 );
