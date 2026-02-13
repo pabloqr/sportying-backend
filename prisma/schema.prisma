@@ -94,7 +94,6 @@ model reservations {
   court_id   Int
   date_ini   DateTime                @db.Timestamp(6)
   date_end   DateTime                @db.Timestamp(6)
-  date_range Unsupported("tsrange")? @default(dbgenerated("tsrange(date_ini, date_end, '[)'::text)"))
   status     reservation_status      @default(EMPTY)
   created_at DateTime                @default(now()) @db.Timestamp(6)
   updated_at DateTime                @default(now()) @db.Timestamp(6)
@@ -153,13 +152,15 @@ model devices_telemetry {
 
 model weather {
   geohash                 String   @db.VarChar(5)
-  temperature             Float?
-  precip_intensity_curr   Float?
-  precip_probability_curr Float?
-  cloud_cover             Float?
+  temperature             Float
+  relative_humidity_curr  Float
+  cloud_cover_curr        Float
+  wind_speed_curr         Float
+  wind_direction_curr     Float
+  precip_intensity_curr   Float
+  precip_probability_curr Float
+  precip_probability_next Float
   created_at              DateTime @default(now()) @db.Timestamp(6)
-  precip_intensity_prev   Float?
-  precip_probability_next Float?
 
   @@id([geohash, created_at])
   @@index([geohash, created_at(sort: Desc)], map: "index_weather_geohash_created_at_desc")

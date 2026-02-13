@@ -125,9 +125,9 @@ export class WeatherService implements OnModuleInit {
       // await this.analysisService.processWeatherData({});
 
       // Crear la entrada en la BD
-      await this.prisma.weather.create({
-        data: { geohash, ...weather },
-      });
+      // await this.prisma.weather.create({
+      //   data: { geohash, ...weather },
+      // });
 
       return new WeatherDataDto({ ...weather });
     } catch (error) {
@@ -225,11 +225,13 @@ export class WeatherService implements OnModuleInit {
       orderBy: { created_at: 'desc' },
       select: {
         temperature: true,
-        precip_intensity_prev: true,
+        relative_humidity_curr: true,
+        cloud_cover_curr: true,
+        wind_speed_curr: true,
+        wind_direction_curr: true,
         precip_intensity_curr: true,
         precip_probability_curr: true,
         precip_probability_next: true,
-        cloud_cover: true,
       }
     });
 
