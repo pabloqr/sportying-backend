@@ -2,11 +2,31 @@ import { forwardRef, Inject, Injectable, InternalServerErrorException, OnModuleI
 import { Cron } from "@nestjs/schedule";
 import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from "openmeteo";
+import { AnalysisService, WeatherData } from "src/common/analysis.service";
 import { ResponseComplexWeatherDto } from "src/common/dto";
 import { ComplexesService } from "src/complexes/complexes.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { WeatherDataDto } from "./dto";
-import { AnalysisService } from "src/common/analysis.service";
+
+interface RawWeatherData {
+  // Datos actuales (current)
+  temperature_2m: number;
+  relative_humidity_2m: number;
+  cloud_cover: number;
+  wind_speed_10m: number;
+  wind_direction_10m: number;
+  wind_gusts_10m: number;
+  rain: number;
+  showers: number;
+  // Datos horarios (hourly)
+  precip_probability_prev: number;
+  precip_probability_curr: number;
+  precip_probability_next: number;
+  precip_intensity_prev: number;
+  // Datos de 15 minutos (minutely_15)
+  rain_15min: number[];
+  precipitation_15min: number[];
+}
 
 @Injectable({})
 export class WeatherService implements OnModuleInit {
@@ -20,25 +40,67 @@ export class WeatherService implements OnModuleInit {
   ) { }
 
   /**
-   * Fetches and transforms weather data for a given geohash into a WeatherDataDto.
+   * Transforms raw weather API data into a WeatherDataDto for database persistence.
+   * Maps the raw API response fields to their corresponding DTO properties.
+   *
+   * @param raw - RawWeatherData object containing API response fields.
+   * @returns A new WeatherDataDto instance with mapped weather values.
+   */
+  private toWeatherDataDto(raw: RawWeatherData): WeatherDataDto {
+    return new WeatherDataDto({
+      temperature_curr: raw.temperature_2m,
+      relative_humidity_curr: raw.relative_humidity_2m,
+      cloud_cover_curr: raw.cloud_cover,
+      wind_speed_curr: raw.wind_speed_10m,
+      wind_direction_curr: raw.wind_direction_10m,
+      precip_intensity_curr: raw.rain,
+      precip_probability_curr: raw.precip_probability_curr,
+      precip_probability_next: raw.precip_probability_next,
+    });
+  }
+
+  /**
+   * Transforms raw weather API data into a WeatherData object for analysis processing.
+   * Maps raw API fields to camelCase properties used by the analysis service.
+   *
+   * @param raw - RawWeatherData object containing API response fields.
+   * @returns A WeatherData object with camelCase field names ready for analysis processing.
+   */
+  private toWeatherData(raw: RawWeatherData): WeatherData {
+    return {
+      temperatureCurr: raw.temperature_2m,
+      relativeHumidityCurr: raw.relative_humidity_2m,
+      cloudCoverCurr: raw.cloud_cover,
+      windSpeedCurr: raw.wind_speed_10m,
+      windGustsCurr: raw.wind_gusts_10m,
+      rainCurr: raw.rain,
+      showersCurr: raw.showers,
+      rain15Min: raw.rain_15min,
+      precipitation15Min: raw.precipitation_15min,
+      surfaceWaterPrev: 0,
+    };
+  }
+
+  /**
+   * Fetches and transforms weather data for a given geohash into RawWeatherData.
    *
    * Decodes the provided geohash to latitude/longitude, calls the Open-Meteo forecast endpoint (via fetchWeatherApi)
-   * requesting hourly precipitation and precipitation probability, current temperature/precipitation/cloud cover, and
-   * a 1-day past/forecast window. Uses the first location response returned by the API.
+   * requesting hourly precipitation and precipitation probability, current temperature/precipitation/cloud cover,
+   * 15-minute minutely data, and a 1-day past/forecast window. Uses the first location response returned by the API.
    *
    * Notes:
    * - Time comparisons are performed in UTC; the "current" instant is rounded down to the nearest hour (UTC) before
    *   matching to the hourly array.
    * - Default/fallback sentinel values (-1 or -1.0) are used when hourly indices are out of range to indicate
    *   unavailable data.
+   * - 15-minute data is extracted for the last 1 hour (past 4 slots) to support precipitation analysis.
    *
    * @param geohash - Geohash string identifying the location to query.
-   * @returns Promise that resolves to a WeatherDataDto containing the mapped current and surrounding hourly weather
-   *          values.
+   * @returns Promise that resolves to raw weather data containing current and surrounding hourly/minutely values.
    * @throws {Error} if geohash decoding fails, the fetchWeatherApi call fails, the API response is empty, or required
    *                 current/hourly data structures are missing or malformed.
    */
-  private async fetchWeather(geohash: string): Promise<WeatherDataDto> {
+  private async fetchWeather(geohash: string): Promise<RawWeatherData> {
     const loc = ngeohash.decode(geohash);
 
     const params = {
@@ -80,9 +142,10 @@ export class WeatherService implements OnModuleInit {
     // Obtener la primera ubicación
     const response = responses[0];
 
-    // Obtener los datos meteorológicos actuales y por horas
+    // Obtener los datos meteorológicos actuales, por horas y cada 15 minutos
     const current = response.current()!;
     const hourly = response.hourly()!;
+    const minutely15 = response.minutely15()!;
 
     // Calcular el array de horas proporcionado en la respuesta
     const hours = Array.from(
@@ -105,31 +168,71 @@ export class WeatherService implements OnModuleInit {
     const currValidIndex = currIndex >= 0 && currIndex < hours.length;
     const nextValidIndex = currIndex + 1 >= 0 && currIndex + 1 < hours.length;
 
-    // Devolver los datos obteniéndolos de la respuesta proporcionada por la API
-    return new WeatherDataDto({
-      temperature: current.variables(0)!.value(),
-      precip_intensity_prev: prevValidIndex ? hourly.variables(1)!.valuesArray()[currIndex - 1] : -1.0,
-      precip_intensity_curr: current.variables(1)!.value(),
+    // Extraer datos de 15 minutos (últimos 4 slots = 1 hora)
+    const rain15minArray = Array.from(minutely15.variables(1)!.valuesArray());
+    const precipitation15minArray = Array.from(minutely15.variables(3)!.valuesArray());
+
+    // Devolver los datos extraídos de la API
+    return {
+      temperature_2m: current.variables(0)!.value(),
+      relative_humidity_2m: current.variables(5)!.value(),
+      cloud_cover: current.variables(2)!.value(),
+      wind_speed_10m: current.variables(3)!.value(),
+      wind_direction_10m: current.variables(4)!.value(),
+      wind_gusts_10m: current.variables(6)!.value(),
+      rain: current.variables(7)!.value(),
+      showers: current.variables(8)!.value(),
+      precip_probability_prev: prevValidIndex ? hourly.variables(0)!.valuesArray()[currIndex - 1] : -1,
       precip_probability_curr: currValidIndex ? hourly.variables(0)!.valuesArray()[currIndex] : -1,
       precip_probability_next: nextValidIndex ? hourly.variables(0)!.valuesArray()[currIndex + 1] : -1,
-      cloud_cover: current.variables(2)!.value(),
-    });
+      precip_intensity_prev: prevValidIndex ? hourly.variables(1)!.valuesArray()[currIndex - 1] : -1.0,
+      rain_15min: rain15minArray,
+      precipitation_15min: precipitation15minArray,
+    };
   }
 
+  /**
+   * Updates weather data for a specific geohash location.
+   *
+   * Fetches raw weather data from the Open-Meteo API, transforms it into a persisted DTO format,
+   * retrieves the previous surface water value from the database, transforms the raw data into
+   * analysis format, processes it through the analysis service to update court states, and finally
+   * creates a new weather entry in the database.
+   *
+   * @param geohash - Geohash string identifying the location to update weather for.
+   * @returns Promise that resolves to the created WeatherDataDto.
+   * @throws {InternalServerErrorException} When API fetch fails or database operations fail.
+   */
   private async updateWeather(geohash: string): Promise<WeatherDataDto> {
     try {
-      // Obtener los datos de la API
-      const weather = await this.fetchWeather(geohash);
+      // Obtener todos los datos crudos del API en una sola llamada
+      const rawWeather = await this.fetchWeather(geohash);
 
-      // Procesar los datos en el módulo de análisis para actualizar el estado de las pistas y las reservas
-      // await this.analysisService.processWeatherData({});
+      // Transformar a WeatherDataDto para persistencia
+      const weatherDto = this.toWeatherDataDto(rawWeather);
 
-      // Crear la entrada en la BD
-      // await this.prisma.weather.create({
-      //   data: { geohash, ...weather },
-      // });
+      // Obtener la cantidad de agua en superficie previa para el procesamiento de datos
+      const weather = await this.prisma.weather.findFirst({
+        where: { geohash },
+        orderBy: { created_at: 'desc' },
+        select: {
+          surface_water_prev: true,
+        }
+      });
 
-      return new WeatherDataDto({ ...weather });
+      // Transformar a WeatherData y actualizar la cantidad de agua en superficie previa
+      const weatherData = this.toWeatherData(rawWeather);
+      weatherData.surfaceWaterPrev = weather.surface_water_prev ?? 0;
+
+      // Procesar los datos en el módulo de análisis para actualizar el estado de las pistas
+      await this.analysisService.processWeatherData(weatherData);
+
+      // Crear la nueva entrada en la BD
+      await this.prisma.weather.create({
+        data: { geohash, ...weatherDto },
+      });
+
+      return weatherDto;
     } catch (error) {
       throw new InternalServerErrorException(`Error updating data for geohash ${geohash}:`, error.message);
     }
@@ -186,6 +289,12 @@ export class WeatherService implements OnModuleInit {
     for (const geohash of geohashes) await this.updateWeather(geohash);
   }
 
+  /**
+   * Purges expired weather data from the database.
+   * Deletes all weather records older than 7 days, keeping only recent weather history.
+   *
+   * @throws {InternalServerErrorException} When the database deletion fails.
+   */
   private async purgeWeatherLogic() {
     try {
       // Calcular la fecha límite (1 semana)
@@ -203,28 +312,50 @@ export class WeatherService implements OnModuleInit {
     }
   }
 
+  /**
+   * Lifecycle hook called after the module is initialized.
+   * Purges expired weather data and performs the initial weather update for active complexes.
+   */
   async onModuleInit() {
     await this.purgeWeatherLogic();
     await this.updateWeatherLogic();
   }
 
+  /**
+   * Scheduled task that updates weather data every 20 minutes.
+   */
   @Cron('0 */20 * * * *')
   async handleWeatherUpdate() {
     await this.updateWeatherLogic();
   }
 
+  /**
+   * Scheduled task that purges expired weather data daily at 4:00 AM UTC.
+   */
   @Cron('0 0 4 * * *')
   async handleWeatherPurge() {
     await this.purgeWeatherLogic();
   }
 
+  /**
+   * Retrieves weather data for a specific geohash location.
+   *
+   * Attempts to fetch the most recent weather record from the database. If found, returns it immediately.
+   * If not found, checks if an update is already in progress. If an update is already running, returns
+   * the existing promise to avoid duplicate requests. If no update is in progress, initiates a new one
+   * and caches the promise in activeRequests to handle concurrent requests efficiently.
+   *
+   * @param geohash - Geohash string identifying the location to retrieve weather for.
+   * @returns Promise that resolves to the WeatherDataDto for the specified location.
+   * @throws {InternalServerErrorException} When weather data cannot be fetched or created.
+   */
   async getWeather(geohash: string): Promise<WeatherDataDto> {
     // Obtener la información meteorológica almacenada en la BD
     const weather = await this.prisma.weather.findFirst({
       where: { geohash },
       orderBy: { created_at: 'desc' },
       select: {
-        temperature: true,
+        temperature_curr: true,
         relative_humidity_curr: true,
         cloud_cover_curr: true,
         wind_speed_curr: true,
@@ -256,12 +387,12 @@ export class WeatherService implements OnModuleInit {
   /**
    * Retrieves weather information for a specific complex.
    *
-   * Loads the complex by its id, encodes its latitude and longitude into a geohash with precision 5, fetches weather
-   * data for that geohash, and returns a DTO containing the complex id and the retrieved weather.
+   * Loads the complex by its id, encodes its latitude and longitude into a geohash with precision 5 (~4.9km accuracy),
+   * fetches weather data for that geohash, and returns a DTO containing the complex id and the retrieved weather.
    *
    * @param complexId - The identifier of the complex to retrieve weather for.
    * @returns A Promise that resolves to a ResponseComplexWeatherDto containing the complex id and weather data.
-   * @throws If the complex cannot be found or if the weather retrieval fails.
+   * @throws {Error} If the complex cannot be found or if the weather retrieval fails.
    */
   async getComplexWeather(complexId: number): Promise<ResponseComplexWeatherDto> {
     // Obtener los datos del complejo pedido

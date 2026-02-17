@@ -88,19 +88,19 @@ model notifications {
 }
 
 model reservations {
-  id         Int                     @id @default(autoincrement())
+  id         Int                @id @default(autoincrement())
   user_id    Int
   complex_id Int
   court_id   Int
-  date_ini   DateTime                @db.Timestamp(6)
-  date_end   DateTime                @db.Timestamp(6)
-  status     reservation_status      @default(EMPTY)
-  created_at DateTime                @default(now()) @db.Timestamp(6)
-  updated_at DateTime                @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?                @default(false)
-  complexes  complexes               @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  court      courts                  @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       users                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  date_ini   DateTime           @db.Timestamp(6)
+  date_end   DateTime           @db.Timestamp(6)
+  status     reservation_status @default(EMPTY)
+  created_at DateTime           @default(now()) @db.Timestamp(6)
+  updated_at DateTime           @default(now()) @db.Timestamp(6)
+  is_delete  Boolean?           @default(false)
+  complexes  complexes          @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  court      courts             @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([complex_id, court_id, date_ini])
 }
@@ -152,7 +152,7 @@ model devices_telemetry {
 
 model weather {
   geohash                 String   @db.VarChar(5)
-  temperature             Float
+  temperature_curr        Float
   relative_humidity_curr  Float
   cloud_cover_curr        Float
   wind_speed_curr         Float
@@ -160,6 +160,7 @@ model weather {
   precip_intensity_curr   Float
   precip_probability_curr Float
   precip_probability_next Float
+  surface_water_prev      Float    @default(0)
   created_at              DateTime @default(now()) @db.Timestamp(6)
 
   @@id([geohash, created_at])

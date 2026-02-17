@@ -73,6 +73,13 @@ export class AnalysisService {
     private notificationsService: NotificationsService,
   ) { }
 
+  /**
+   * Calculates a drying rate factor based on relative humidity.
+   * Lower humidity values produce higher factors (faster drying), with a minimum floor.
+   *
+   * @param relativeHumidity - Relative humidity as a percentage (0-100).
+   * @returns A factor between 0.15 and 1.0 affecting drying rate.
+   */
   private calculateHumidityFactor(relativeHumidity: number): number {
     // Parámetros:
     // Peso de la humedad relativa sobre la tasa de secado
@@ -83,6 +90,13 @@ export class AnalysisService {
     return clamp(Math.pow(1 - relativeHumidity / 100, wHumidity), fHumidityMin, 1);
   }
 
+  /**
+   * Calculates a drying rate factor based on temperature.
+   * Uses hyperbolic tangent to model temperature effects on drying rate.
+   *
+   * @param temperature - Air temperature in degrees Celsius.
+   * @returns A factor multiplying the base drying rate.
+   */
   private calculateTemperatureFactor(temperature: number): number {
     // Parámetros:
     // Peso de la temperatura sobre la tasa de secado --> [0.3, 0.6]
@@ -99,6 +113,14 @@ export class AnalysisService {
       * 1 - Math.min(1, temperature / surfaceWaterSaturation);
   }
 
+  /**
+   * Calculates a drying rate factor based on wind speed and gusts.
+   * Combines sustained wind and gust values logarithmically.
+   *
+   * @param windSpeed - Sustained wind speed at 10 meters in km/h.
+   * @param windGusts - Maximum wind gusts in km/h.
+   * @returns A factor multiplying the base drying rate.
+   */
   private calculateWindFactor(windSpeed: number, windGusts: number): number {
     // Parámetros:
     // Peso de las ráfagas --> [0.2, 0.4]
@@ -114,6 +136,13 @@ export class AnalysisService {
     return 1 + wWind * (Math.log(1 + windIntensity) / Math.log(1 + windThreshold));
   }
 
+  /**
+   * Calculates a drying rate factor based on cloud cover.
+   * Clear skies produce maximum factor, complete cloud cover produces factor of 1.0.
+   *
+   * @param cloudCover - Cloud cover as a fraction (0.0 = clear, 1.0 = fully cloudy).
+   * @returns A factor between 1.0 and 1.2 affecting drying rate.
+   */
   private calculateCloudCoverFactor(cloudCover: number): number {
     // Parámetros:
     // Peso de la nubosidad sobre la tasa de secado --> [0.1, 0.3]
@@ -122,6 +151,23 @@ export class AnalysisService {
     return 1 + wCloudCover * (1 - cloudCover);
   }
 
+  /**
+   * Processes weather data to calculate court closure duration due to moisture and precipitation.
+   *
+   * Implements a sophisticated weather analysis algorithm that:
+   * 1. Checks if current rain/shower intensity exceeds immediate closure threshold
+   * 2. If not, evaluates precipitation accumulated over the past hour
+   * 3. If accumulated precipitation exceeds threshold, calculates blocking durations:
+   *    - tLock: Safety lock preventing re-opening due to recent rain
+   *    - tDry: Physical drying time based on weather conditions and accumulated water
+   * 4. Takes maximum of both durations and clamps to [tMin, tMax] range
+   *
+   * Drying rate uses four environmental factors: humidity, temperature, wind, and cloud cover.
+   *
+   * @param weather - WeatherData object containing current and historical weather measurements.
+   * @returns Promise that resolves once the calculation is complete.
+   * @note The calculated blocking time is currently computed but not persisted in this implementation.
+   */
   async processWeatherData(weather: WeatherData): Promise<void> {
     // Parámetros generales:
     // Tiempo mínimo de bloqueo (min)
