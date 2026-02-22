@@ -272,8 +272,8 @@ export class WeatherService implements OnModuleInit {
         },
       },
       select: {
-        loc_longitude: true,
         loc_latitude: true,
+        loc_longitude: true,
       },
     });
 

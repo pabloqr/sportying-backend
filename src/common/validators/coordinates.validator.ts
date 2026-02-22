@@ -12,20 +12,16 @@ export class CoordinatesValidator implements ValidatorConstraintInterface {
     validationArguments?: ValidationArguments,
   ): Promise<boolean> | boolean {
     const dto = validationArguments?.object as any;
-    const { locLongitude, locLatitude } = dto;
+    const { locLatitude, locLongitude  } = dto;
 
-    const isLongitudeDefined =
-      locLongitude !== undefined && locLongitude !== null;
     const isLatitudeDefined = locLatitude !== undefined && locLatitude !== null;
+    const isLongitudeDefined = locLongitude !== undefined && locLongitude !== null;
 
-    return (
-      (isLongitudeDefined && isLatitudeDefined) ||
-      (!isLongitudeDefined && !isLatitudeDefined)
-    );
+    return ((isLatitudeDefined && isLongitudeDefined) || (!isLatitudeDefined && !isLongitudeDefined));
   }
 
   defaultMessage(validationArguments?: ValidationArguments): string {
-    return 'Must provide both longitude and latitude';
+    return 'Must provide both latitude and longitude';
   }
 }
 

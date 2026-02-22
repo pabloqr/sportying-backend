@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
+import { UtilitiesService } from 'src/common/utilities.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { WeatherDataDto } from 'src/weather/dto';
 import { WeatherService } from 'src/weather/weather.service';
@@ -30,6 +31,7 @@ export class ComplexesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private utilitiesService: UtilitiesService,
     @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
     @Inject(forwardRef(() => CourtsService))
@@ -68,10 +70,8 @@ export class ComplexesService {
       ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
       ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
 
-      ...(dto.locLongitude !== undefined && {
-        loc_longitude: dto.locLongitude,
-      }),
       ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
+      ...(dto.locLongitude !== undefined && { loc_longitude: dto.locLongitude }),
     };
 
     // Obtener el modo de ordenación de los elementos
@@ -93,8 +93,8 @@ export class ComplexesService {
         complex_name: true,
         time_ini: true,
         time_end: true,
-        loc_longitude: true,
         loc_latitude: true,
+        loc_longitude: true,
         created_at: true,
         updated_at: true,
       },
@@ -154,21 +154,33 @@ export class ComplexesService {
   async createComplex(dto: CreateComplexDto): Promise<ResponseComplexDto> {
     try {
       // Se crea la entrada para el complejo en la BD
-      const complex = await this.prisma.complexes.create({
-        data: {
+      const complex = await this.prisma.complexes.upsert({
+        where: {
+          loc_latitude_loc_longitude: {
+            loc_latitude: dto.locLatitude,
+            loc_longitude: dto.locLongitude,
+          }
+        },
+        create: {
           complex_name: dto.complexName,
-          time_ini: dto.timeIni,
-          time_end: dto.timeEnd,
-          loc_longitude: dto.locLongitude,
+          time_ini: this.utilitiesService.stringToDate(dto.timeIni),
+          time_end: this.utilitiesService.stringToDate(dto.timeEnd),
           loc_latitude: dto.locLatitude,
+          loc_longitude: dto.locLongitude,
+        },
+        update: {
+          complex_name: dto.complexName,
+          time_ini: this.utilitiesService.stringToDate(dto.timeIni),
+          time_end: this.utilitiesService.stringToDate(dto.timeEnd),
+          is_delete: false,
         },
         select: {
           id: true,
           complex_name: true,
           time_ini: true,
           time_end: true,
-          loc_longitude: true,
           loc_latitude: true,
+          loc_longitude: true,
           created_at: true,
           updated_at: true,
         },
@@ -202,12 +214,10 @@ export class ComplexesService {
     // Se establecen las propiedades a actualizar
     const data = {
       ...(dto.complexName !== undefined && { complex_name: dto.complexName }),
-      ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
-      ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
-      ...(dto.locLongitude !== undefined && {
-        loc_longitude: dto.locLongitude,
-      }),
+      ...(dto.timeIni !== undefined && { time_ini: this.utilitiesService.stringToDate(dto.timeIni) }),
+      ...(dto.timeEnd !== undefined && { time_end: this.utilitiesService.stringToDate(dto.timeEnd) }),
       ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
+      ...(dto.locLongitude !== undefined && { loc_longitude: dto.locLongitude }),
     };
 
     try {

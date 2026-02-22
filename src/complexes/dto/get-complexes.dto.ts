@@ -19,8 +19,8 @@ export enum ComplexOrderField {
   COMPLEX_NAME = 'complexId',
   TIME_INI = 'timeIni',
   TIME_END = 'timeEnd',
-  LOC_LONGITUDE = 'locLongitude',
   LOC_LATITUDE = 'locLatitude',
+  LOC_LONGITUDE = 'locLongitude',
   CREATED_AT = 'createdAt',
   UPDATED_AT = 'updatedAt',
 }
@@ -30,8 +30,8 @@ export const COMPLEX_ORDER_FIELD_MAP: Record<string, string> = {
   complexName: 'complex_name',
   timeIni: 'time_ini',
   timeEnd: 'time_end',
-  locLongitude: 'loc_longitude',
   locLatitude: 'loc_latitude',
+  locLongitude: 'loc_longitude',
   createdAt: 'created_at',
   updatedAt: 'updated_at',
 };
@@ -75,18 +75,18 @@ export class GetComplexesDto {
   @Type(() => Number)
   @IsNumber()
   @Coordinates()
-  @Min(-180)
-  @Max(180)
-  @IsOptional()
-  locLongitude?: number;
-
-  @Type(() => Number)
-  @IsNumber()
-  @Coordinates()
   @Min(-90)
   @Max(90)
   @IsOptional()
   locLatitude?: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Coordinates()
+  @Min(-180)
+  @Max(180)
+  @IsOptional()
+  locLongitude?: number;
 
   @Transform(({ value }) => {
     // Si no se ha proporcionado un valor o es indefinido, se devuelve

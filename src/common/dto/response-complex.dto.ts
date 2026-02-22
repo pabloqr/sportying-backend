@@ -42,18 +42,18 @@ export class ResponseComplexDto {
   @Type(() => Number)
   @IsNumber()
   @Coordinates()
-  @Min(-180)
-  @Max(180)
-  @IsOptional()
-  locLongitude: number | null;
-
-  @Type(() => Number)
-  @IsNumber()
-  @Coordinates()
   @Min(-90)
   @Max(90)
   @IsOptional()
   locLatitude: number | null;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Coordinates()
+  @Min(-180)
+  @Max(180)
+  @IsOptional()
+  locLongitude: number | null;
 
   @IsArray()
   @IsNotEmpty()
@@ -77,8 +77,8 @@ export class ResponseComplexDto {
     this.complexName = complex.complex_name ?? complex.complexName;
     this.timeIni = complex.time_ini ?? complex.timeIni;
     this.timeEnd = complex.time_end ?? complex.timeEnd;
-    this.locLongitude = complex.loc_longitude ?? complex.locLongitude;
     this.locLatitude = complex.loc_latitude ?? complex.locLatitude;
+    this.locLongitude = complex.loc_longitude ?? complex.locLongitude;
     this.sports = complex.sports;
     this.weather = complex.weather;
     this.createdAt = new Date(complex.created_at ?? complex.createdAt);

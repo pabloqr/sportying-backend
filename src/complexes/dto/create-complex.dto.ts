@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Matches, Max, Min } from 'class-validator';
 import { Coordinates } from '../../common/validators';
 
 export class CreateComplexDto {
@@ -24,16 +24,16 @@ export class CreateComplexDto {
   @Type(() => Number)
   @IsNumber()
   @Coordinates()
-  @Min(-180)
-  @Max(180)
-  @IsOptional()
-  locLongitude?: number;
+  @Min(-90)
+  @Max(90)
+  @IsNotEmpty()
+  locLatitude: number;
 
   @Type(() => Number)
   @IsNumber()
   @Coordinates()
-  @Min(-90)
-  @Max(90)
-  @IsOptional()
-  locLatitude?: number;
+  @Min(-180)
+  @Max(180)
+  @IsNotEmpty()
+  locLongitude: number;
 }
