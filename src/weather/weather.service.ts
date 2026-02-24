@@ -222,7 +222,7 @@ export class WeatherService implements OnModuleInit {
 
       // Transformar a WeatherData y actualizar la cantidad de agua en superficie previa
       const weatherData = this.toWeatherData(rawWeather);
-      weatherData.surfaceWaterPrev = weather.surface_water_prev ?? 0;
+      weatherData.surfaceWaterPrev = weather !== null ? weather.surface_water_prev : 0;
 
       // Procesar los datos en el módulo de análisis para actualizar el estado de las pistas
       await this.analysisService.processWeatherData(weatherData);
@@ -270,6 +270,7 @@ export class WeatherService implements OnModuleInit {
         time_end: {
           gte: targetTimeEnd,
         },
+        is_delete: false,
       },
       select: {
         loc_latitude: true,
@@ -349,7 +350,7 @@ export class WeatherService implements OnModuleInit {
    * @returns Promise that resolves to the WeatherDataDto for the specified location.
    * @throws {InternalServerErrorException} When weather data cannot be fetched or created.
    */
-  async getWeather(geohash: string): Promise<WeatherDataDto> {
+  async getWeatherFromGeohash(geohash: string): Promise<WeatherDataDto> {
     // Obtener la información meteorológica almacenada en la BD
     const weather = await this.prisma.weather.findFirst({
       where: { geohash },
@@ -367,7 +368,7 @@ export class WeatherService implements OnModuleInit {
     });
 
     // Si se ha obtenido una entrada, devolver los datos
-    if (weather !== undefined) return new WeatherDataDto({ ...weather });
+    if (weather !== null) return new WeatherDataDto({ ...weather });
 
     // Si no se ha obtenido ninguna entrada, verificar si ya hay un proceso de actualización
     if (this.activeRequests.has(geohash)) return this.activeRequests[geohash];
@@ -384,6 +385,13 @@ export class WeatherService implements OnModuleInit {
     return weatherUpdate;
   }
 
+  async getWeatherFromCoordinates(locLatitude: number, locLongitude: number): Promise<WeatherDataDto> {
+    // Obtener el geohash de las coordenadas del complejo
+    const geohash = ngeohash.encode(locLatitude, locLongitude, 5);
+    // Obtener los datos meteorológicos del complejo
+    return this.getWeatherFromGeohash(geohash);
+  }
+
   /**
    * Retrieves weather information for a specific complex.
    *
@@ -394,14 +402,12 @@ export class WeatherService implements OnModuleInit {
    * @returns A Promise that resolves to a ResponseComplexWeatherDto containing the complex id and weather data.
    * @throws {Error} If the complex cannot be found or if the weather retrieval fails.
    */
-  async getComplexWeather(complexId: number): Promise<ResponseComplexWeatherDto> {
+  async getWeatherFromId(complexId: number): Promise<ResponseComplexWeatherDto> {
     // Obtener los datos del complejo pedido
     const complex = await this.complexesService.getComplex(complexId);
 
-    // Obtener el geohash de las coordenadas del complejo
-    const geohash = ngeohash.encode(complex.locLatitude, complex.locLongitude, 5);
     // Obtener los datos meteorológicos del complejo
-    const weather = await this.getWeather(geohash);
+    const weather = await this.getWeatherFromCoordinates(complex.locLatitude, complex.locLongitude);
 
     return new ResponseComplexWeatherDto({ id: complex.id, weather });
   }

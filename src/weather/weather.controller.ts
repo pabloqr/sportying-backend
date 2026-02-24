@@ -9,6 +9,6 @@ export class WeatherController {
   @Public()
   @Get(':complexId/weather')
   async getComplexWeather(@Param('complexId', ParseIntPipe) complexId: number) {
-    return this.weatherService.getComplexWeather(complexId);
+    return this.weatherService.getWeatherFromId(complexId);
   }
 }

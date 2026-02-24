@@ -113,7 +113,7 @@ export class ComplexesService {
       // Obtener el geohash de las coordenadas dadas
       const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);
       // Obtener la meteorología si no existe previamente
-      if (!weatherData.has(geohash)) weatherData[geohash] = await this.weatherService.getWeather(geohash);
+      if (!weatherData.has(geohash)) weatherData[geohash] = await this.weatherService.getWeatherFromGeohash(geohash);
 
       return new ResponseComplexDto({ ...complex, sports, weather: weatherData[geohash] });
     }));
@@ -153,7 +153,7 @@ export class ComplexesService {
    */
   async createComplex(dto: CreateComplexDto): Promise<ResponseComplexDto> {
     try {
-      // Se crea la entrada para el complejo en la BD
+      // Crear la entrada para el complejo en la BD, o se actualiza una existente, obteniendo los datos de este
       const complex = await this.prisma.complexes.upsert({
         where: {
           loc_latitude_loc_longitude: {
@@ -186,7 +186,10 @@ export class ComplexesService {
         },
       });
 
-      return new ResponseComplexDto(complex);
+      // Obtener los datos meteorológicos del complejo
+      const weather = await this.weatherService.getWeatherFromCoordinates(complex.loc_latitude, complex.loc_longitude);
+
+      return new ResponseComplexDto({ ...complex, weather });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: 'Complex already exists.',
@@ -208,10 +211,10 @@ export class ComplexesService {
     complexId: number,
     dto: UpdateComplexDto,
   ): Promise<ResponseComplexDto> {
-    // Se verifica que el cuerpo contiene elementos
+    // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
-    // Se establecen las propiedades a actualizar
+    // Establecer las propiedades a actualizar
     const data = {
       ...(dto.complexName !== undefined && { complex_name: dto.complexName }),
       ...(dto.timeIni !== undefined && { time_ini: this.utilitiesService.stringToDate(dto.timeIni) }),
@@ -221,7 +224,7 @@ export class ComplexesService {
     };
 
     try {
-      // Se actualiza la entrada del complejo
+      // Actualizar la entrada del complejo
       const complex = await this.prisma.complexes.update({
         where: {
           id: complexId,
@@ -230,7 +233,10 @@ export class ComplexesService {
         data,
       });
 
-      return new ResponseComplexDto(complex);
+      // Obtener los datos meteorológicos del complejo
+      const weather = await this.weatherService.getWeatherFromCoordinates(complex.loc_latitude, complex.loc_longitude);
+
+      return new ResponseComplexDto({ ...complex, weather });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Complex with ID ${complexId} not found.`,
