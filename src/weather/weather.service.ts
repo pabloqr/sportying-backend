@@ -175,10 +175,10 @@ export class WeatherService implements OnModuleInit {
     // Devolver los datos extraídos de la API
     return {
       temperature_2m: current.variables(0)!.value(),
-      relative_humidity_2m: current.variables(5)!.value(),
+      relative_humidity_2m: current.variables(3)!.value(),
       cloud_cover: current.variables(2)!.value(),
-      wind_speed_10m: current.variables(3)!.value(),
-      wind_direction_10m: current.variables(4)!.value(),
+      wind_speed_10m: current.variables(4)!.value(),
+      wind_direction_10m: current.variables(5)!.value(),
       wind_gusts_10m: current.variables(6)!.value(),
       rain: current.variables(7)!.value(),
       showers: current.variables(8)!.value(),
