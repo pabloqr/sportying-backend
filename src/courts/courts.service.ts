@@ -272,6 +272,7 @@ export class CourtsService {
       return new ResponseCourtDto({ ...court, status: status.status });
     } catch (error) {
       this.errorsService.dbError(error, {
+        p2003: `Cannot assign court to complex with ID ${complexId}. Complex not found.`,
         p2025: 'Court already exists.',
       });
 
