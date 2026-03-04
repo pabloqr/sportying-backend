@@ -182,6 +182,7 @@ export class AuthService {
       },
       data: {
         refresh_token: hash,
+        updated_at: new Date(),
       },
     });
   }
@@ -284,6 +285,7 @@ export class AuthService {
       },
       data: {
         refresh_token: null,
+        updated_at: new Date(),
       },
     });
   }

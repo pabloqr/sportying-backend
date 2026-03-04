@@ -208,6 +208,7 @@ export class UsersService {
             surname: dto.surname,
             phone_prefix: dto.phonePrefix,
             phone_number: dto.phoneNumber,
+            updated_at: new Date(),
           },
           select: {
             id: true,
@@ -331,7 +332,7 @@ export class UsersService {
           id: userId,
           is_delete: false,
         },
-        data,
+        data: { ...data, updated_at: new Date() },
       });
 
       // Se verifica el rol del usuario
@@ -365,6 +366,7 @@ export class UsersService {
               },
               data: {
                 is_delete: false,
+                updated_at: new Date(),
               },
             });
           }
@@ -379,6 +381,7 @@ export class UsersService {
             },
             data: {
               is_delete: true,
+              updated_at: new Date(),
             },
           });
         }
@@ -409,12 +412,12 @@ export class UsersService {
     try {
       await this.prisma.users.update({
         where: { id: userId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       await this.prisma.admins.updateMany({
         where: { id: userId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;

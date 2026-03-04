@@ -352,7 +352,7 @@ export class CourtsService {
       // Actualizar la entrada de la pista
       const court = await this.prisma.courts.update({
         where: { id: courtId },
-        data,
+        data: { ...data, updated_at: new Date() },
       });
 
       // Obtener el estado actual de la pista
@@ -393,7 +393,7 @@ export class CourtsService {
       // Se marca la pista como eliminada
       await this.prisma.courts.update({
         where: { id: courtId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;

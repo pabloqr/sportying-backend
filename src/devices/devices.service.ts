@@ -273,7 +273,7 @@ export class DevicesService {
           complex_id: complexId,
           is_delete: false,
         },
-        data,
+        data: { ...data, updated_at: new Date() },
         select: {
           id: true,
           complex_id: true,
@@ -306,7 +306,7 @@ export class DevicesService {
     try {
       await this.prisma.devices.update({
         where: { id: deviceId, complex_id: complexId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;
@@ -478,6 +478,7 @@ export class DevicesService {
         },
         data: {
           status: dto.status,
+          updated_at: new Date(),
         },
         select: {
           status: true,

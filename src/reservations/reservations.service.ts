@@ -424,7 +424,7 @@ export class ReservationsService {
           id: reservationId,
           is_delete: false,
         },
-        data,
+        data: { ...data, updated_at: new Date() },
       });
 
       const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
@@ -466,7 +466,7 @@ export class ReservationsService {
       // Se marca la reserva como eliminada
       await this.prisma.reservations.update({
         where: { id: reservationId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;
@@ -500,6 +500,7 @@ export class ReservationsService {
         },
         data: {
           status,
+          updated_at: new Date(),
         },
       });
 

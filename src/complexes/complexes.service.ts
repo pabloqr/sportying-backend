@@ -173,6 +173,7 @@ export class ComplexesService {
           time_ini: this.utilitiesService.stringToDate(dto.timeIni),
           time_end: this.utilitiesService.stringToDate(dto.timeEnd),
           is_delete: false,
+          updated_at: new Date(),
         },
         select: {
           id: true,
@@ -230,7 +231,7 @@ export class ComplexesService {
           id: complexId,
           is_delete: false,
         },
-        data,
+        data: { ...data, updated_at: new Date() },
       });
 
       // Obtener los datos meteorológicos del complejo
@@ -257,7 +258,7 @@ export class ComplexesService {
     try {
       await this.prisma.complexes.update({
         where: { id: complexId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;
