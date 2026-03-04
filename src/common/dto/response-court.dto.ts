@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -10,14 +11,19 @@ import { CourtStatus, Sport } from '../../courts/enums';
 
 export class ResponseCourtDto {
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   id: number;
 
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   complexId: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsNotEmpty()
+  number: number;
 
   @IsEnum(Sport)
   @IsNotEmpty()
@@ -25,14 +31,10 @@ export class ResponseCourtDto {
 
   @IsString()
   @IsNotEmpty()
-  name: string;
-
-  @IsString()
-  @IsNotEmpty()
   description: string;
 
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   maxPeople: number;
 
@@ -51,8 +53,8 @@ export class ResponseCourtDto {
   constructor(court: any) {
     this.id = court.id;
     this.complexId = court.complex_id ?? court.complexId;
+    this.number = court.number;
     this.sport = court.sport;
-    this.name = court.name;
     this.description = court.description;
     this.maxPeople = court.max_people ?? court.maxPeople;
     this.status = court.status;

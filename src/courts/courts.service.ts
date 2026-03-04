@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   forwardRef,
   Inject,
   Injectable,
@@ -31,7 +32,7 @@ import {
   GetCourtsDto,
   UpdateCourtDto,
 } from './dto';
-import { CourtStatus } from './enums';
+import { CourtStatus, Sport } from './enums';
 
 @Injectable()
 export class CourtsService {
@@ -72,6 +73,36 @@ export class CourtsService {
         (courtStatuses[index] === CourtStatus.WEATHER &&
           this.utilitiesService.dateIsEqualOrGreater(120, dateIni, new Date())))
     );
+  }
+
+  private async calculateCourtNumber(complexId: number, sport: Sport): Promise<number> {
+    // Obtener el máximo para el complejo y deporte dados
+    const aggregate = await this.prisma.courts.aggregate({
+      _max: { number: true },
+      where: { complex_id: complexId, sport, is_delete: false },
+    });
+
+    // Calcular el número de pista a asignar
+    return (aggregate._max.number || 0) + 1;
+  }
+
+  private async checkExistingCourtNumber(complexId: number, number: number, sport: Sport) {
+    // Obtener una pista existente para el número dado y la combinación complejo-deporte
+    const exists = await this.prisma.courts.findFirst({
+      where: {
+        complex_id: complexId,
+        number,
+        sport: sport,
+        is_delete: false
+      }
+    });
+
+    // Si existe, lanzar un error de conflicto
+    if (exists) {
+      throw new ConflictException(
+        `Court number ${number} alerady exists in complex with ID ${complexId} for sport ${sport}`
+      );
+    }
   }
 
   private insertBlock(
@@ -143,10 +174,8 @@ export class CourtsService {
       ...(dto.sport !== undefined && {
         sport: { contains: dto.sport, mode: 'insensitive' },
       }),
-      ...(dto.name !== undefined && {
-        name: { contains: dto.name, mode: 'insensitive' },
-      }),
 
+      ...(dto.number !== undefined && { name: dto.number }),
       ...(dto.maxPeople !== undefined && { max_people: dto.maxPeople }),
     };
 
@@ -168,7 +197,7 @@ export class CourtsService {
         id: true,
         complex_id: true,
         sport: true,
-        name: true,
+        number: true,
         description: true,
         max_people: true,
         created_at: true,
@@ -213,9 +242,10 @@ export class CourtsService {
   async getCourt(
     complexId: number,
     courtId: number,
+    checkDeleted: boolean = false,
   ): Promise<ResponseCourtDto> {
     // Se trata de obtener la pista con el 'id' dado
-    const result = await this.getCourts(complexId, { id: courtId });
+    const result = await this.getCourts(complexId, { id: courtId }, checkDeleted);
 
     // Se verifican los elementos obtenidos
     if (result.length === 0) {
@@ -243,12 +273,18 @@ export class CourtsService {
     dto: CreateCourtDto,
   ): Promise<ResponseCourtDto> {
     try {
-      // Se crea la entrada para la pista en la BD
+      // Obtener de la petición o calcular el número de pista para la combinación complejo-deporte
+      const number = dto.number ?? (await this.calculateCourtNumber(complexId, dto.sport));
+
+      // Verificar si hay una pista existente para el número dado y la combinación complejo-deporte
+      await this.checkExistingCourtNumber(complexId, number, dto.sport);
+
+      // Crear la entrada para la pista en la BD
       const court = await this.prisma.courts.create({
         data: {
           complex_id: complexId,
           sport: dto.sport,
-          name: dto.name,
+          number,
           description: dto.description,
           max_people: dto.maxPeople,
         },
@@ -256,7 +292,7 @@ export class CourtsService {
           id: true,
           complex_id: true,
           sport: true,
-          name: true,
+          number: true,
           description: true,
           max_people: true,
           created_at: true,
@@ -264,7 +300,7 @@ export class CourtsService {
         },
       });
 
-      // Se establece el estatus de la pista con el dado o uno por defecto
+      // Establecer el estatus de la pista con el dado o uno por defecto
       const status = await this.setCourtStatus(complexId, court.id, {
         status: dto.status ?? CourtStatus.OPEN,
       });
@@ -294,32 +330,36 @@ export class CourtsService {
     courtId: number,
     dto: UpdateCourtDto,
   ): Promise<ResponseCourtDto> {
-    // Se verifica que el cuerpo contiene elementos
+    // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
-    // Se establecen las propiedades a actualizar
+    // Establecer las propiedades a actualizar
     const data: Prisma.courtsUpdateInput = {
-      ...(dto.sport !== undefined && { sport: dto.sport }),
-      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.number !== undefined && { number: dto.number }),
+      // ...(dto.sport !== undefined && { sport: dto.sport }),
       ...(dto.description !== undefined && { description: dto.description }),
       ...(dto.maxPeople !== undefined && { max_people: dto.maxPeople }),
+      ...(dto.isDelete !== undefined && { is_delete: dto.isDelete }),
     };
 
     try {
-      // Se actualiza la entrada de la pista
+      // Obtener el deporte asignado a la pista
+      const storedCourt = await this.getCourt(complexId, courtId, true);
+
+      // Verificar si hay una pista existente para el número dado y la combinación complejo-deporte
+      await this.checkExistingCourtNumber(complexId, dto.number ?? storedCourt.number, storedCourt.sport);
+
+      // Actualizar la entrada de la pista
       const court = await this.prisma.courts.update({
-        where: {
-          id: courtId,
-          is_delete: false,
-        },
+        where: { id: courtId },
         data,
       });
 
-      // Se obtiene el estatus actual de la pista
+      // Obtener el estado actual de la pista
       const currentStatus = await this.getCourtStatus(complexId, courtId);
 
-      // Si está definido, se actualiza el estatus
-      let status;
+      // Si está definido, actualizar el estado
+      let status: ResponseCourtStatusDto;
       if (dto.status !== undefined && dto.status !== currentStatus.status) {
         status = await this.setCourtStatus(complexId, court.id, {
           status: dto.status,

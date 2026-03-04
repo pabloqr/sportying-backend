@@ -14,7 +14,7 @@ import { CourtStatus, Sport } from '../enums';
 export enum CourtOrderField {
   ID = 'id',
   SPORT = 'sport',
-  NAME = 'name',
+  NUMBER = 'number',
   MAX_PEOPLE = 'maxPeople',
   STATUS = 'status',
   CREATED_AT = 'createdAt',
@@ -24,7 +24,7 @@ export enum CourtOrderField {
 export const COURT_ORDER_FIELD_MAP: Record<string, string> = {
   id: 'id',
   sport: 'sport',
-  name: 'name',
+  number: 'number',
   maxPeople: 'max_people',
   status: 'status',
   createdAt: 'created_at',
@@ -55,7 +55,7 @@ export class GetCourtsDto {
 
   @IsString()
   @IsOptional()
-  name?: string;
+  number?: string;
 
   @Type(() => Number)
   @IsNumber()

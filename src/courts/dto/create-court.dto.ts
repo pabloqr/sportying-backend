@@ -1,26 +1,29 @@
+import { Type } from 'class-transformer';
 import {
   IsEnum,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
-  IsString,
+  IsString
 } from 'class-validator';
 import { CourtStatus, Sport } from '../enums';
 
 export class CreateCourtDto {
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  number?: number;
+
   @IsEnum(Sport)
   @IsNotEmpty()
   sport: Sport;
 
   @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsString()
   @IsOptional()
   description?: string;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
   maxPeople: number;
 

@@ -12,7 +12,7 @@ model admins {
   complex_id Int
   created_at DateTime  @default(now()) @db.Timestamp(6)
   updated_at DateTime  @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
+  is_delete  Boolean   @default(false)
   complex    complexes @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user       users     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -22,27 +22,25 @@ model admins {
 model courts {
   id           Int              @id @default(autoincrement())
   complex_id   Int
+  number       Int
   sport        String           @db.VarChar
-  name         String           @db.VarChar
   description  String?          @db.VarChar
   max_people   Int
   created_at   DateTime         @default(now()) @db.Timestamp(6)
   updated_at   DateTime         @default(now()) @db.Timestamp(6)
-  is_delete    Boolean?         @default(false)
+  is_delete    Boolean          @default(false)
   complex      complexes        @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   devices      courts_devices[]
   status       courts_status[]
   reservations reservations[]
-
-  @@unique([complex_id, sport, name])
 }
 
 model courts_devices {
   court_id  Int
   device_id Int
-  is_delete Boolean? @default(false)
-  court     courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  device    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  is_delete Boolean @default(false)
+  court     courts  @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  device    devices @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, device_id])
 }
@@ -65,7 +63,7 @@ model devices {
   status     device_status       @default(NORMAL)
   created_at DateTime            @default(now()) @db.Timestamp(6)
   updated_at DateTime            @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?            @default(false)
+  is_delete  Boolean             @default(false)
   courts     courts_devices[]
   complex    complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   telemetry  devices_telemetry[]
@@ -81,7 +79,7 @@ model notifications {
   related_id Int?
   created_at DateTime              @default(now()) @db.Timestamp(6)
   updated_at DateTime              @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?              @default(false)
+  is_delete  Boolean               @default(false)
   user       users                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id, user_id, created_at])
@@ -97,7 +95,7 @@ model reservations {
   status     reservation_status @default(EMPTY)
   created_at DateTime           @default(now()) @db.Timestamp(6)
   updated_at DateTime           @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?           @default(false)
+  is_delete  Boolean            @default(false)
   complexes  complexes          @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   court      courts             @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user       users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -117,7 +115,7 @@ model users {
   phone_number  Int
   created_at    DateTime        @default(now()) @db.Timestamp(6)
   updated_at    DateTime        @default(now()) @db.Timestamp(6)
-  is_delete     Boolean?        @default(false)
+  is_delete     Boolean         @default(false)
   admins        admins[]
   notifications notifications[]
   reservations  reservations[]
@@ -134,7 +132,7 @@ model complexes {
   loc_longitude Float
   created_at    DateTime       @default(now()) @db.Timestamp(6)
   updated_at    DateTime       @default(now()) @db.Timestamp(6)
-  is_delete     Boolean?       @default(false)
+  is_delete     Boolean        @default(false)
   admins        admins[]
   courts        courts[]
   devices       devices[]
