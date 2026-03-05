@@ -378,6 +378,7 @@ export class WeatherService implements OnModuleInit {
         precip_intensity_curr: true,
         precip_probability_curr: true,
         precip_probability_next: true,
+        alert_level: true,
       }
     });
 
@@ -416,13 +417,13 @@ export class WeatherService implements OnModuleInit {
    * @returns A Promise that resolves to a ResponseComplexWeatherDto containing the complex id and weather data.
    * @throws {Error} If the complex cannot be found or if the weather retrieval fails.
    */
-  async getWeatherFromId(complexId: number): Promise<ResponseComplexWeatherDto> {
+  async getWeatherFromId(complexId: number): Promise<WeatherDataDto> {
     // Obtener los datos del complejo pedido
     const complex = await this.complexesService.getComplex(complexId);
 
     // Obtener los datos meteorológicos del complejo
     const weather = await this.getWeatherFromCoordinates(complex.locLatitude, complex.locLongitude);
 
-    return new ResponseComplexWeatherDto({ id: complex.id, weather });
+    return new WeatherDataDto(weather);
   }
 }

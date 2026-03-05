@@ -1,6 +1,6 @@
 import { Type } from "class-transformer";
 import { IsNotEmpty, IsNumber, ValidateNested } from "class-validator";
-import { WeatherDataDto } from "src/weather/dto";
+import { ResponseWeatherDataDto } from "./response-weater-data.dto";
 
 export class ResponseComplexWeatherDto {
   @Type(() => Number)
@@ -8,10 +8,10 @@ export class ResponseComplexWeatherDto {
   @IsNotEmpty()
   id: number;
 
-  @Type(() => WeatherDataDto)
+  @Type(() => ResponseWeatherDataDto)
   @ValidateNested()
   @IsNotEmpty()
-  weather: WeatherDataDto;
+  weather: ResponseWeatherDataDto;
 
   constructor(weather: any) {
     this.id = weather.id;
