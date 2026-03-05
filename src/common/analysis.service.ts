@@ -60,6 +60,43 @@ export interface WeatherData {
    * Previously calculated surface water.
    */
   surfaceWaterPrev: number,
+
+  /**
+   * Precipitation probability for the next hour (0–100). Used for alert level 1 evaluation.
+   */
+  precipitationProbabilityNext: number,
+
+  /**
+   * Alert level persisted in the previous cycle, after hysteresis was applied (0, 1 or 2).
+   */
+  alertLevelPrev: number,
+
+  /**
+   * Number of consecutive cycles in which the raw calculated level was lower than prevAlertLevel.
+   */
+  alertLevelTicksPrev: number,
+}
+
+export interface ResponseWeatherData {
+  /**
+   * Calculated surface water.
+   */
+  surfaceWater: number,
+
+  /**
+   * Calculated estimated drying time.
+   */
+  estimatedDryingTime: number,
+
+  /**
+   * Alert level after hysteresis (0, 1 or 2). Must be persisted as alert_level.
+   */
+  alertLevel: number,
+
+  /**
+   * Updated hysteresis tick counter. Must be persisted as alert_level_ticks.
+   */
+  alertLevelTicks: number,
 }
 
 const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max);
@@ -152,6 +189,89 @@ export class AnalysisService {
   }
 
   /**
+   * Calculates the raw meteorological alert level (0, 1 or 2) based on current surface conditions,
+   * then applies hysteresis to avoid level flapping between cycles.
+   *
+   * Alert level rules (evaluated in order of priority):
+   *   2 (Danger)   — active rain OR critical surface water OR high estimated drying time.
+   *   1 (Caution)  — recent accumulated precipitation OR short drying time remaining OR high next-hour rain probability.
+   *   0 (None)     — all other conditions.
+   *
+   * Hysteresis rule (descending only):
+   *   - Rising (rawLevel > prevAlertLevel): applied immediately; ticks reset to 0.
+   *   - Equal  (rawLevel === prevAlertLevel): level unchanged; ticks reset to 0.
+   *   - Falling (rawLevel < prevAlertLevel): tick counter incremented; level only drops when ticks reach 2.
+   *
+   * @param intensity             - Effective rain intensity in the current 15-min interval (mm/15 min).
+   * @param intensitySum          - Accumulated effective precipitation over the last 60 minutes (mm).
+   * @param surfaceWater          - Calculated surface water for this cycle (mm).
+   * @param tEstimated            - Estimated drying time (min).
+   * @param precipitationProbNext - Precipitation probability for the next hour (%).
+   * @param alertLevelPrev        - Alert level persisted from the previous cycle (after hysteresis).
+   * @param alertLevelTicksPrev   - Tick counter persisted from the previous cycle.
+   * @returns Object containing the final alert level and the updated tick counter to persist.
+   */
+  private calculateAlertLevel(
+    intensity: number,
+    intensitySum: number,
+    surfaceWater: number,
+    tEstimated: number,
+    precipitationProbNext: number,
+    alertLevelPrev: number,
+    alertLevelTicksPrev: number,
+  ): { alertLevel: number; alertLevelTicks: number } {
+    // Parámetros:
+    // Intensidad límite para establecer bloqueo (mm/15 min)
+    const intensityThreshold = 0.05;
+    // Intensidad límite para establecer bloqueo (mm/60 min)
+    const intensitySumThreshold = 0.1;
+    // Probabilidad de lluvia próxima hora mínima para alerta 1 (%)
+    const precipProbThreshold = 60;
+    // Cantidad de agua en superficie límite para un nivel crítico (mm)
+    const surfaceWaterCritical = 0.35;
+    // Tiempo estimado corto (min) --> alerta 1
+    const tEstimatedLow = 30;
+    // Tiempo estimado alto (min) --> alerta 2
+    const tEstimatedHigh = 60;
+    // Ciclos consecutivos necesarios para cambiar el nivel de alerta
+    const ticksThreshold = 2;
+
+    // Calcular el nivel de alerta base
+    let rawAlertLevel: number;
+    if (
+      intensity >= intensityThreshold ||
+      surfaceWater >= surfaceWaterCritical ||
+      tEstimated >= tEstimatedHigh
+    ) {
+      rawAlertLevel = 2;
+    } else if (
+      intensitySum >= intensitySumThreshold ||
+      (tEstimated > 0 && tEstimated <= tEstimatedLow) ||
+      precipitationProbNext >= precipProbThreshold
+    ) {
+      rawAlertLevel = 1;
+    } else {
+      rawAlertLevel = 0;
+    }
+
+    // Aplicar histéresis
+    if (rawAlertLevel >= alertLevelPrev) {
+      // Subida inmediata o mantenimiento: resetear ticks
+      return { alertLevel: rawAlertLevel, alertLevelTicks: 0 };
+    }
+
+    // Bajada potencial: incrementar ticks
+    const newTicks = alertLevelTicksPrev + 1;
+    if (newTicks >= ticksThreshold) {
+      // Si se han cumplido los ciclos necesarios, aplicar descenso
+      return { alertLevel: rawAlertLevel, alertLevelTicks: 0 };
+    }
+
+    // Aún no se han cumplido los ciclos: mantener nivel anterior
+    return { alertLevel: alertLevelPrev, alertLevelTicks: newTicks };
+  }
+
+  /**
    * Processes weather data to calculate court closure duration due to moisture and precipitation.
    *
    * Implements a sophisticated weather analysis algorithm that:
@@ -168,7 +288,7 @@ export class AnalysisService {
    * @returns Promise that resolves once the calculation is complete.
    * @note The calculated blocking time is currently computed but not persisted in this implementation.
    */
-  async processWeatherData(weather: WeatherData): Promise<void> {
+  async processWeatherData(weather: WeatherData): Promise<ResponseWeatherData> {
     // Parámetros generales:
     // Tiempo mínimo de bloqueo (min)
     const tMin = 20;
@@ -185,7 +305,16 @@ export class AnalysisService {
     const wShowers = 1.6;
 
     const intensity = weather.rainCurr + wShowers * weather.showersCurr;
-    if (intensity >= intensityThreshold) { }
+    if (intensity >= intensityThreshold) {
+      const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(
+        intensity, 0, 0, 0,
+        weather.precipitationProbabilityNext,
+        weather.alertLevelPrev,
+        weather.alertLevelTicksPrev,
+      );
+
+      return { surfaceWater: 0.0, estimatedDryingTime: 0, alertLevel, alertLevelTicks };
+    }
     else {
       // PASO 2.1: Calcular la intensidad efectiva del agua en función de los bloques de 15 minutos dados
       const intensityArray = weather.rain15Min.slice(0, 4).map((r, i) => {
@@ -200,7 +329,16 @@ export class AnalysisService {
 
       // PASO 3: Si no se supera el límite para establecer un bloqueo inicial (no está lloviendo), se verifica si la
       // suma total de la última hora supera el límite para establecer un bloqueo
-      if (intensitySum < intensitySumThreshold) { }
+      if (intensitySum < intensitySumThreshold) {
+        const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(
+          intensity, intensitySum, 0, 0,
+          weather.precipitationProbabilityNext,
+          weather.alertLevelPrev,
+          weather.alertLevelTicksPrev,
+        );
+
+        return { surfaceWater: 0.0, estimatedDryingTime: 0, alertLevel, alertLevelTicks };
+      }
       else {
         // PASO 4: Si se supera el límite para establecer un bloqueo por acumulación de agua, calcular:
         //  a. Bloqueo de seguridad (tLock)
@@ -262,6 +400,15 @@ export class AnalysisService {
 
         // PASO 5: Calcular el tiempo estimado para el secado tomando el mayor de los dos bloqueos calculados
         const tEstimated = clamp(Math.max(tLock, tDry), tMin, tMax);
+
+        const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(
+          intensity, intensitySum, surfaceWater, tEstimated,
+          weather.precipitationProbabilityNext,
+          weather.alertLevelPrev,
+          weather.alertLevelTicksPrev,
+        );
+
+        return { surfaceWater, estimatedDryingTime: tEstimated, alertLevel, alertLevelTicks };
       }
     }
   }

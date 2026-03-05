@@ -78,6 +78,9 @@ export class WeatherService implements OnModuleInit {
       rain15Min: raw.rain_15min,
       precipitation15Min: raw.precipitation_15min,
       surfaceWaterPrev: 0,
+      precipitationProbabilityNext: raw.precip_probability_next,
+      alertLevelPrev: 0,
+      alertLevelTicksPrev: 0,
     };
   }
 
@@ -217,19 +220,30 @@ export class WeatherService implements OnModuleInit {
         orderBy: { created_at: 'desc' },
         select: {
           surface_water_prev: true,
+          alert_level: true,
+          alert_level_ticks: true,
         }
       });
 
       // Transformar a WeatherData y actualizar la cantidad de agua en superficie previa
       const weatherData = this.toWeatherData(rawWeather);
-      weatherData.surfaceWaterPrev = weather !== null ? weather.surface_water_prev : 0;
+      weatherData.surfaceWaterPrev = weather?.surface_water_prev ?? 0;
+      weatherData.alertLevelPrev = weather?.alert_level ?? 0;
+      weatherData.alertLevelTicksPrev = weather?.alert_level_ticks ?? 0;
 
       // Procesar los datos en el módulo de análisis para actualizar el estado de las pistas
-      await this.analysisService.processWeatherData(weatherData);
+      const weatherResult = await this.analysisService.processWeatherData(weatherData);
 
       // Crear la nueva entrada en la BD
       await this.prisma.weather.create({
-        data: { geohash, ...weatherDto },
+        data: {
+          geohash,
+          ...weatherDto,
+          surface_water_prev: weatherResult.surfaceWater,
+          estimated_drying_time: weatherResult.estimatedDryingTime,
+          alert_level: weatherResult.alertLevel,
+          alert_level_ticks: weatherResult.alertLevelTicks,
+        },
       });
 
       return weatherDto;
