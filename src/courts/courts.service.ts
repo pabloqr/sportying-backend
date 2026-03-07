@@ -42,6 +42,7 @@ export class CourtsService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
+    @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
     private courtsDevicesService: CourtsDevicesService,
     @Inject(forwardRef(() => ReservationsService))

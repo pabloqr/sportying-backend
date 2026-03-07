@@ -8,7 +8,7 @@ import { WeatherModule } from 'src/weather/weather.module';
 
 @Module({
   imports: [
-    WeatherModule,
+    forwardRef(() => WeatherModule),
     forwardRef(() => ReservationsModule),
     forwardRef(() => DevicesModule),
     CourtsDevicesModule,
