@@ -24,15 +24,17 @@ import {
   ReservationStatus,
 } from '../reservations/enums';
 import { ReservationsService } from '../reservations/reservations.service';
+import { WeatherService } from '../weather/weather.service';
 import {
   COURT_ORDER_FIELD_MAP,
+  CourtStatusData,
   CreateCourtDto,
   CreateCourtStatusDto,
   GetCourtDevicesDto,
   GetCourtsDto,
   UpdateCourtDto,
 } from './dto';
-import { CourtStatus, Sport } from './enums';
+import { CourtStatus, INACTIVE_COURT_STATUS, Sport } from './enums';
 
 @Injectable()
 export class CourtsService {
@@ -40,6 +42,7 @@ export class CourtsService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
+    private weatherService: WeatherService,
     private courtsDevicesService: CourtsDevicesService,
     @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
@@ -58,20 +61,24 @@ export class CourtsService {
     courtId: number,
     dateIni: Date,
   ): Promise<boolean> {
-    // Se obtienen las pistas del complejo
+    // Obtener las pistas del complejo
     const courts = await this.getCourts(complexId, {});
 
-    // Se obtienen los índices y los estatus de las pistas por separado
+    // Obtener los índices y los estatus de las pistas por separado
     const courtIds = courts.map((court) => court.id);
-    const courtStatuses = courts.map((court) => court.status);
+    const courtStatuses = courts.map((court) => court.statusData);
 
-    // Se obtiene la posición del 'id' de la pista en el array (si no se encuentra devuelve -1)
+    // Obtener la posición del 'id' de la pista en el array (si no se encuentra devolver -1)
     const index = courtIds.indexOf(courtId);
     return (
       index !== -1 &&
-      (courtStatuses[index] === CourtStatus.OPEN ||
-        (courtStatuses[index] === CourtStatus.WEATHER &&
-          this.utilitiesService.dateIsEqualOrGreater(120, dateIni, new Date())))
+      (
+        courtStatuses[index].status === CourtStatus.OPEN ||
+        (
+          courtStatuses[index].status === CourtStatus.WEATHER &&
+          this.utilitiesService.dateIsEqualOrGreater(courtStatuses[index].estimatedDryingTime, dateIni, new Date())
+        )
+      )
     );
   }
 
@@ -160,28 +167,26 @@ export class CourtsService {
     dto: GetCourtsDto,
     checkDeleted: boolean = false,
   ): Promise<Array<ResponseCourtDto>> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.courtsWhereInput = {
-      // Se evita obtener las pistas eliminados
+      // Evitar obtener las pistas eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      // Se obtienen solo las pistas del complejo actual
+      // Obtener solo las pistas del complejo actual
       ...{ complex_id: complexId },
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
-      // Se establecen las condiciones para los campos de tipo 'string'
-      ...(dto.sport !== undefined && {
-        sport: { contains: dto.sport, mode: 'insensitive' },
-      }),
+      // Establecer las condiciones para los campos de tipo 'string'
+      ...(dto.sport && { sport: { contains: dto.sport, mode: 'insensitive' } }),
 
-      ...(dto.number !== undefined && { name: dto.number }),
-      ...(dto.maxPeople !== undefined && { max_people: dto.maxPeople }),
+      ...(dto.number && { name: dto.number }),
+      ...(dto.maxPeople && { max_people: dto.maxPeople }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
+    // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.courtsOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COURT_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -190,7 +195,7 @@ export class CourtsService {
       });
     }
 
-    // Se realiza la consulta seleccionando las columnas que se quieren devolver
+    // Realizar la consulta seleccionando las columnas que se quieren devolver
     const courts = await this.prisma.courts.findMany({
       where,
       select: {
@@ -206,27 +211,27 @@ export class CourtsService {
       orderBy,
     });
 
-    // Se obtienen los estados de todas las pistas encontradas
+    // Obtener los estados de todas las pistas encontradas
     const courtsWithStatusAsync = courts.map(async (court) => {
-      const status = await this.getCourtStatus(complexId, court.id);
+      const courtStatus = await this.getCourtStatus(complexId, court.id);
       return {
         ...court,
-        status: status.status,
+        status_data: courtStatus.statusData,
       };
     });
 
-    // Se resuelve la operación asíncrona
+    // Resolver la operación asíncrona
     const courtsWithStatus = await Promise.all(courtsWithStatusAsync);
 
-    // Se filtran las entradas del array si está definido el estatus
+    // Filtrar las entradas del array si está definido el estatus
     let courtsWithStatusFiltered = courtsWithStatus;
-    if (dto.status !== undefined) {
+    if (dto.status) {
       courtsWithStatusFiltered = courtsWithStatus.filter(
-        (court) => court.status === dto.status,
+        (court) => court.status_data.status === dto.status,
       );
     }
 
-    // Se devuelve la lista modificando los elementos obtenidos
+    // Devolver la lista modificando los elementos obtenidos
     return courtsWithStatusFiltered.map((court) => new ResponseCourtDto(court));
   }
 
@@ -244,10 +249,10 @@ export class CourtsService {
     courtId: number,
     checkDeleted: boolean = false,
   ): Promise<ResponseCourtDto> {
-    // Se trata de obtener la pista con el 'id' dado
+    // Tratar de obtener la pista con el 'id' dado
     const result = await this.getCourts(complexId, { id: courtId }, checkDeleted);
 
-    // Se verifican los elementos obtenidos
+    // Verificar los elementos obtenidos
     if (result.length === 0) {
       throw new NotFoundException(`Court with ID ${courtId} not found.`);
     } else if (result.length > 1) {
@@ -300,12 +305,29 @@ export class CourtsService {
         },
       });
 
-      // Establecer el estatus de la pista con el dado o uno por defecto
-      const status = await this.setCourtStatus(complexId, court.id, {
-        status: dto.status ?? CourtStatus.OPEN,
-      });
+      let statusData: CreateCourtStatusDto;
+      if (dto.statusData?.status && !INACTIVE_COURT_STATUS.has(dto.statusData.status)) {
+        const weather = await this.weatherService.getWeatherFromId(complexId);
 
-      return new ResponseCourtDto({ ...court, status: status.status });
+        // Obtener los datos del estatus de la pista en función de la información meteorológica
+        statusData = {
+          status: weather.alert_level >= 2 ? CourtStatus.WEATHER : CourtStatus.OPEN,
+          alertLevel: weather.alert_level,
+          estimatedDryingTime: weather.estimated_drying_time,
+        };
+      } else {
+        // Establecer los datos del estatus de la pista con los dado o unos por defecto
+        statusData = {
+          status: dto.statusData.status ?? CourtStatus.OPEN,
+          alertLevel: 0,
+          estimatedDryingTime: 0,
+        };
+      }
+
+      // Establecer el estatus de la pista
+      const courtStatus = await this.setCourtStatus(complexId, court.id, statusData);
+
+      return new ResponseCourtDto({ ...court, statusData: courtStatus.statusData });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2003: `Cannot assign court to complex with ID ${complexId}. Complex not found.`,
@@ -335,11 +357,11 @@ export class CourtsService {
 
     // Establecer las propiedades a actualizar
     const data: Prisma.courtsUpdateInput = {
-      ...(dto.number !== undefined && { number: dto.number }),
+      ...(dto.number && { number: dto.number }),
       // ...(dto.sport !== undefined && { sport: dto.sport }),
-      ...(dto.description !== undefined && { description: dto.description }),
-      ...(dto.maxPeople !== undefined && { max_people: dto.maxPeople }),
-      ...(dto.isDelete !== undefined && { is_delete: dto.isDelete }),
+      ...(dto.description && { description: dto.description }),
+      ...(dto.maxPeople && { max_people: dto.maxPeople }),
+      ...(dto.isDelete && { is_delete: dto.isDelete }),
     };
 
     try {
@@ -355,20 +377,16 @@ export class CourtsService {
         data: { ...data, updated_at: new Date() },
       });
 
-      // Obtener el estado actual de la pista
-      const currentStatus = await this.getCourtStatus(complexId, courtId);
-
-      // Si está definido, actualizar el estado
-      let status: ResponseCourtStatusDto;
-      if (dto.status !== undefined && dto.status !== currentStatus.status) {
-        status = await this.setCourtStatus(complexId, court.id, {
-          status: dto.status,
-        });
-      }
+      // Actualizar el estatus de la pista
+      const courtStatus = await this.setCourtStatus(complexId, courtId, {
+        status: dto.statusData.status,
+        alertLevel: dto.statusData.alertLevel,
+        estimatedDryingTime: dto.statusData.estimatedDryingTime,
+      });
 
       return new ResponseCourtDto({
         ...court,
-        status: status?.status ?? currentStatus.status,
+        statusData: courtStatus.statusData,
       });
     } catch (error) {
       this.errorsService.dbError(error, {
@@ -418,7 +436,7 @@ export class CourtsService {
     complexId: number,
     courtId: number,
   ): Promise<ResponseCourtStatusDto> {
-    // Se trata de obtener el estatus más actualizado de la pista dada
+    // Tratar de obtener el estatus más actualizado de la pista dada
     const status = await this.prisma.courts_status.findFirst({
       where: {
         court_id: courtId,
@@ -428,11 +446,13 @@ export class CourtsService {
       },
     });
 
-    // Se devuelve el objeto obtenido o se construye uno con el estatus por defecto 'OPEN'
+    // Devolver el objeto obtenido o construir uno con el estatus por defecto 'OPEN'
     return new ResponseCourtStatusDto({
       ...(status ?? {
         court_id: courtId,
         status: CourtStatus.OPEN,
+        alert_level: 0,
+        estimated_drying_time: 0,
       }),
       complex_id: complexId,
     });
@@ -451,12 +471,41 @@ export class CourtsService {
     courtId: number,
     dto: CreateCourtStatusDto,
   ): Promise<ResponseCourtStatusDto> {
+    // Verificar que el cuerpo contiene elementos
+    this.errorsService.noBodyError(dto);
+
     try {
-      // Se añade una nueva entrada con el estatus de la pista
+      // Tratar de obtener el estatus más actualizado de la pista dada
+      const statusPrev = await this.getCourtStatus(complexId, courtId);
+
+      // Actualizar los datos del estatus con valores válidos
+      const statusData: CourtStatusData = {
+        status: dto.status ?? statusPrev.statusData.status,
+        alertLevel: dto.alertLevel ?? statusPrev.statusData.alertLevel,
+        estimatedDryingTime: dto.estimatedDryingTime ?? statusPrev.statusData.estimatedDryingTime,
+      };
+
+      // Si los nuevos valores son iguales a los existentes, devolver el objeto existente
+      if (
+        statusData.status === statusPrev.statusData.status &&
+        statusData.alertLevel == statusPrev.statusData.alertLevel
+      ) {
+        return new ResponseCourtStatusDto({ ...statusPrev, complex_id: complexId });
+      }
+
+      // Actualizar el estatus de la pista en función del nivel de alerta
+      statusData.status =
+        statusData.alertLevel >= 2 && !INACTIVE_COURT_STATUS.has(statusData.status)
+          ? CourtStatus.WEATHER
+          : statusData.status;
+
+      // Añadir una nueva entrada con el estatus de la pista
       const status = await this.prisma.courts_status.create({
         data: {
           court_id: courtId,
-          status: dto.status,
+          status: statusData.status,
+          alert_level: statusData.alertLevel,
+          estimated_drying_time: statusData.estimatedDryingTime,
         },
       });
 
@@ -523,9 +572,9 @@ export class CourtsService {
 
     const courts = await this.getCourts(complexId, {});
     for (const court of courts) {
-      const courtStatus = (await this.getCourt(complexId, court.id)).status;
-      if (courtStatus === CourtStatus.WEATHER) {
-        const timeBlock = this.utilitiesService.getTimeBlock();
+      const statusData = (await this.getCourtStatus(complexId, court.id)).statusData;
+      if (statusData.status === CourtStatus.WEATHER) {
+        const timeBlock = this.utilitiesService.getTimeBlock(statusData.estimatedDryingTime);
 
         // Obtener los slots existentes para esta pista
         const existingSlots = formattedReservations.get(court.id) ?? [];

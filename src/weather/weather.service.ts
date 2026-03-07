@@ -3,10 +3,9 @@ import { Cron } from "@nestjs/schedule";
 import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from "openmeteo";
 import { AnalysisService, WeatherData } from "src/common/analysis.service";
-import { ResponseComplexWeatherDto } from "src/common/dto";
+import { ResponseWeatherDataDto } from "src/common/dto";
 import { ComplexesService } from "src/complexes/complexes.service";
 import { PrismaService } from "src/prisma/prisma.service";
-import { WeatherDataDto } from "./dto";
 
 interface RawWeatherData {
   // Datos actuales (current)
@@ -30,7 +29,7 @@ interface RawWeatherData {
 
 @Injectable({})
 export class WeatherService implements OnModuleInit {
-  private activeRequests = new Map<string, Promise<WeatherDataDto>>();
+  private activeRequests = new Map<string, Promise<ResponseWeatherDataDto>>();
 
   constructor(
     private prisma: PrismaService,
@@ -46,8 +45,8 @@ export class WeatherService implements OnModuleInit {
    * @param raw - RawWeatherData object containing API response fields.
    * @returns A new WeatherDataDto instance with mapped weather values.
    */
-  private toWeatherDataDto(raw: RawWeatherData): WeatherDataDto {
-    return new WeatherDataDto({
+  private toWeatherDataDto(raw: RawWeatherData): ResponseWeatherDataDto {
+    return new ResponseWeatherDataDto({
       temperature_curr: raw.temperature_2m,
       relative_humidity_curr: raw.relative_humidity_2m,
       cloud_cover_curr: raw.cloud_cover,
@@ -206,7 +205,7 @@ export class WeatherService implements OnModuleInit {
    * @returns Promise that resolves to the created WeatherDataDto.
    * @throws {InternalServerErrorException} When API fetch fails or database operations fail.
    */
-  private async updateWeather(geohash: string): Promise<WeatherDataDto> {
+  private async updateWeather(geohash: string): Promise<ResponseWeatherDataDto> {
     try {
       // Obtener todos los datos crudos del API en una sola llamada
       const rawWeather = await this.fetchWeather(geohash);
@@ -246,7 +245,11 @@ export class WeatherService implements OnModuleInit {
         },
       });
 
-      return weatherDto;
+      return new ResponseWeatherDataDto({
+        ...weatherDto,
+        estimated_drying_time: weatherResult.estimatedDryingTime,
+        alert_level: weatherResult.alertLevel
+      });
     } catch (error) {
       throw new InternalServerErrorException(`Error updating data for geohash ${geohash}:`, error.message);
     }
@@ -361,10 +364,10 @@ export class WeatherService implements OnModuleInit {
    * and caches the promise in activeRequests to handle concurrent requests efficiently.
    *
    * @param geohash - Geohash string identifying the location to retrieve weather for.
-   * @returns Promise that resolves to the WeatherDataDto for the specified location.
+   * @returns Promise that resolves to the ResponseWeatherDataDto for the specified location.
    * @throws {InternalServerErrorException} When weather data cannot be fetched or created.
    */
-  async getWeatherFromGeohash(geohash: string): Promise<WeatherDataDto> {
+  async getWeatherFromGeohash(geohash: string): Promise<ResponseWeatherDataDto> {
     // Obtener la información meteorológica almacenada en la BD
     const weather = await this.prisma.weather.findFirst({
       where: { geohash },
@@ -379,11 +382,12 @@ export class WeatherService implements OnModuleInit {
         precip_probability_curr: true,
         precip_probability_next: true,
         alert_level: true,
+        estimated_drying_time: true,
       }
     });
 
     // Si se ha obtenido una entrada, devolver los datos
-    if (weather !== null) return new WeatherDataDto({ ...weather });
+    if (weather !== null) return new ResponseWeatherDataDto(weather);
 
     // Si no se ha obtenido ninguna entrada, verificar si ya hay un proceso de actualización
     if (this.activeRequests.has(geohash)) return this.activeRequests[geohash];
@@ -400,7 +404,7 @@ export class WeatherService implements OnModuleInit {
     return weatherUpdate;
   }
 
-  async getWeatherFromCoordinates(locLatitude: number, locLongitude: number): Promise<WeatherDataDto> {
+  async getWeatherFromCoordinates(locLatitude: number, locLongitude: number): Promise<ResponseWeatherDataDto> {
     // Obtener el geohash de las coordenadas del complejo
     const geohash = ngeohash.encode(locLatitude, locLongitude, 5);
     // Obtener los datos meteorológicos del complejo
@@ -417,13 +421,13 @@ export class WeatherService implements OnModuleInit {
    * @returns A Promise that resolves to a ResponseComplexWeatherDto containing the complex id and weather data.
    * @throws {Error} If the complex cannot be found or if the weather retrieval fails.
    */
-  async getWeatherFromId(complexId: number): Promise<WeatherDataDto> {
+  async getWeatherFromId(complexId: number): Promise<ResponseWeatherDataDto> {
     // Obtener los datos del complejo pedido
     const complex = await this.complexesService.getComplex(complexId);
 
     // Obtener los datos meteorológicos del complejo
     const weather = await this.getWeatherFromCoordinates(complex.locLatitude, complex.locLongitude);
 
-    return new WeatherDataDto(weather);
+    return new ResponseWeatherDataDto(weather);
   }
 }

@@ -1,8 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { CourtStatus } from '../enums';
+import { PartialType } from '@nestjs/mapped-types';
+import { CourtStatusData } from './court-status-data.dto';
 
-export class CreateCourtStatusDto {
-  @IsEnum(CourtStatus)
-  @IsNotEmpty()
-  status: CourtStatus;
-}
+export class CreateCourtStatusDto extends PartialType(CourtStatusData) { }

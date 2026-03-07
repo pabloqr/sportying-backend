@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsInt, IsNotEmpty, IsNumber } from "class-validator";
 
 export class ResponseWeatherDataDto {
   @IsNumber()
@@ -33,6 +33,14 @@ export class ResponseWeatherDataDto {
   @IsNotEmpty()
   precip_probability_next: number;
 
+  @IsInt()
+  @IsNotEmpty()
+  estimated_drying_time: number;
+
+  @IsInt()
+  @IsNotEmpty()
+  alert_level: number;
+
   constructor(weatherData: any) {
     this.temperature_curr = weatherData.temperatureCurr ?? weatherData.temperature_curr;
     this.relative_humidity_curr = weatherData.relativeHumidityCurr ?? weatherData.relative_humidity_curr;
@@ -42,5 +50,7 @@ export class ResponseWeatherDataDto {
     this.precip_intensity_curr = weatherData.precipIntensityCurr ?? weatherData.precip_intensity_curr;
     this.precip_probability_curr = weatherData.precipProbabilityCurr ?? weatherData.precip_probability_curr;
     this.precip_probability_next = weatherData.precipProbabilityNext ?? weatherData.precip_probability_next;
+    this.estimated_drying_time = weatherData.estimated_drying_time ?? weatherData.estimatedDryingTime;
+    this.alert_level = weatherData.alert_level ?? weatherData.alertLevel;
   }
 }

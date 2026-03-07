@@ -8,13 +8,13 @@ import {
 import * as ngeohash from 'ngeohash';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { WeatherDataDto } from 'src/weather/dto';
 import { WeatherService } from 'src/weather/weather.service';
 import { Prisma } from '../../prisma/generated/client';
 import {
   ResponseComplexDto,
   ResponseComplexTimeDto,
   ResponseCourtAvailabilityDto,
+  ResponseWeatherDataDto,
 } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
 import { CourtsService } from '../courts/courts.service';
@@ -101,7 +101,7 @@ export class ComplexesService {
       orderBy,
     });
 
-    const weatherData: Map<string, WeatherDataDto> = new Map<string, WeatherDataDto>();
+    const weatherData: Map<string, ResponseWeatherDataDto> = new Map<string, ResponseWeatherDataDto>();
 
     // Devolver la lista modificando los elementos obtenidos
     return Promise.all(complexes.map(async (complex) => {

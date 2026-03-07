@@ -35,7 +35,7 @@ export class UtilitiesService {
     return date;
   }
 
-  public getTimeBlock(): { dateIni: Date; dateEnd: Date } {
+  public getTimeBlock(time: number = 60): { dateIni: Date; dateEnd: Date } {
     // Obtener el instante de tiempo actual
     const now = new Date();
 
@@ -43,8 +43,8 @@ export class UtilitiesService {
     const dateIni = new Date(now);
     dateIni.setMinutes(now.getMinutes() < 30 ? 0 : 30, 0, 0);
 
-    // Calcular el instante final que se encuentra a 1h del actual
-    const minEnd = new Date(now.getTime() + 60 * 60 * 1000);
+    // Calcular el instante final con la diferencia de tiempo dada
+    const minEnd = new Date(now.getTime() + time * 60 * 1000);
 
     // Redondear a la media hora posterior al instante final calculado
     const dateEnd = new Date(minEnd);

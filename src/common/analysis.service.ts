@@ -503,8 +503,8 @@ export class AnalysisService {
         courtStatus = CourtStatus.OPEN;
       }
 
-      const court = await this.courtsService.getCourt(complexId, courtId);
-      if (court.status !== courtStatus) {
+      const statusData = (await this.courtsService.getCourt(complexId, courtId)).statusData;
+      if (statusData.status !== courtStatus) {
         await this.courtsService.setCourtStatus(complexId, courtId, {
           status: courtStatus,
         });

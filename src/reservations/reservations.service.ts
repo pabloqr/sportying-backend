@@ -253,18 +253,15 @@ export class ReservationsService {
       filteredReservations.map(async (reservation) => {
         const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
 
-        const courtStatus = (
-          await this.courtsService.getCourtStatus(
-            reservation.complex_id,
-            reservation.court_id,
-          )
-        ).status;
+        const statusData = (
+          await this.courtsService.getCourtStatus(reservation.complex_id, reservation.court_id)
+        ).statusData;
 
         return new ResponseReservationDto({
           ...reservation,
           reservationStatus: this.getReservationStatus(
             reservation.status as ReservationAvailabilityStatus,
-            courtStatus,
+            statusData.status,
             timeFilter,
           ),
           timeFilter,
@@ -429,18 +426,15 @@ export class ReservationsService {
 
       const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
 
-      const courtStatus = (
-        await this.courtsService.getCourtStatus(
-          reservation.complex_id,
-          reservation.court_id,
-        )
-      ).status;
+      const statusData = (
+        await this.courtsService.getCourtStatus(reservation.complex_id, reservation.court_id)
+      ).statusData;
 
       return new ResponseReservationDto({
         ...reservation,
         reservationStatus: this.getReservationStatus(
           reservation.status as ReservationAvailabilityStatus,
-          courtStatus,
+          statusData.status,
           timeFilter,
         ),
         timeFilter,
@@ -506,18 +500,15 @@ export class ReservationsService {
 
       const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
 
-      const courtStatus = (
-        await this.courtsService.getCourtStatus(
-          reservation.complex_id,
-          reservation.court_id,
-        )
-      ).status;
+      const statusData = (
+        await this.courtsService.getCourtStatus(reservation.complex_id, reservation.court_id)
+      ).statusData;
 
       return new ResponseReservationDto({
         ...reservation,
         reservationStatus: this.getReservationStatus(
           reservation.status as ReservationAvailabilityStatus,
-          courtStatus,
+          statusData.status,
           timeFilter,
         ),
         timeFilter,
