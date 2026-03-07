@@ -65,7 +65,7 @@ export class ResponseCourtDto {
     this.sport = court.sport;
     this.description = court.description;
     this.maxPeople = court.max_people ?? court.maxPeople;
-    this.statusData = court.status;
+    this.statusData = new CourtStatusData(court.status_data ?? court.statusData);
     this.weather = court.weather;
     this.createdAt = new Date(court.created_at ?? court.createdAt);
     this.updatedAt = new Date(court.updated_at ?? court.updatedAt);

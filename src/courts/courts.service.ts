@@ -449,13 +449,13 @@ export class CourtsService {
 
     // Devolver el objeto obtenido o construir uno con el estatus por defecto 'OPEN'
     return new ResponseCourtStatusDto({
-      ...(status ?? {
-        court_id: courtId,
+      court_id: courtId,
+      complex_id: complexId,
+      status_data: status ?? {
         status: CourtStatus.OPEN,
         alert_level: 0,
         estimated_drying_time: 0,
-      }),
-      complex_id: complexId,
+      }
     });
   }
 
