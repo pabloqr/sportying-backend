@@ -60,7 +60,7 @@ export class GetDevicesDto {
   status?: DeviceStatus;
 
   @Transform(({ value }) => {
-    // Si no se ha proporcionado un valor o es indefinido, se devuelve
+    // Si no se ha proporcionado un valor o es indefinido, devolver
     if (!value) return value;
 
     try {
@@ -91,22 +91,22 @@ export class GetDevicesDto {
   courts?: number[];
 
   @Transform(({ value }) => {
-    // Si no se ha proporcionado un valor o es indefinido, se devuelve
+    // Si no se ha proporcionado un valor o es indefinido, devolver
     if (!value) return value;
 
     try {
-      // Si ya es un array, se devuelve
+      // Si ya es un array, devolver
       if (Array.isArray(value)) {
         return value;
       }
 
-      // Si es un string, se parsea para obtener el JSON correspondiente
+      // Si es un string, parsear para obtener el JSON correspondiente
       if (typeof value === 'string') {
         const parsed = JSON.parse(value);
 
-        // Se verifica que sea un array
+        // Verificar que sea un array
         if (Array.isArray(parsed)) {
-          // Se crea la instancia de DeviceOrderParamsDto para cada elemento
+          // Crear la instancia de DeviceOrderParamsDto para cada elemento
           return parsed.map((item) => {
             const orderParam = new DeviceOrderParamsDto();
             orderParam.field = item.field;

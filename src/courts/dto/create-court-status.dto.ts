@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CourtStatusData } from './court-status-data.dto';
+import { OptionalCourtStatusData } from './optional-court-status-data.dto';
 
-export class CreateCourtStatusDto extends PartialType(CourtStatusData) { }
+export class CreateCourtStatusDto extends OptionalCourtStatusData { }

@@ -226,9 +226,23 @@ export class CourtsService {
 
     // Filtrar las entradas del array si está definido el estatus
     let courtsWithStatusFiltered = courtsWithStatus;
-    if (dto.status) {
+    if (dto.statusData) {
       courtsWithStatusFiltered = courtsWithStatus.filter(
-        (court) => court.status_data.status === dto.status,
+        (court) => {
+          // Obtener los datos sobre el estatus del DTO y del objeto
+          const dtoStatusData = dto.statusData;
+          const courtStatusData = court.status_data;
+
+          // Verificar los datos para el estatus, el nivel de alerta y el tiempo de secado
+          const status = !dto.statusData.status || dtoStatusData.status === courtStatusData.status;
+          const alertLevel = !dto.statusData.alertLevel || dtoStatusData.alertLevel == courtStatusData.alertLevel;
+          const estimatedDryingTime = !dto.statusData.estimatedDryingTime ||
+            dtoStatusData.estimatedDryingTime == courtStatusData.estimatedDryingTime;
+
+          console.log(`${status} && ${alertLevel} && ${estimatedDryingTime}`);
+
+          return status && alertLevel && estimatedDryingTime;
+        },
       );
     }
 
@@ -409,7 +423,7 @@ export class CourtsService {
    */
   async deleteCourt(_complexId: number, courtId: number): Promise<null> {
     try {
-      // Se marca la pista como eliminada
+      // Marcar la pista como eliminada
       await this.prisma.courts.update({
         where: { id: courtId },
         data: { is_delete: true, updated_at: new Date() },
@@ -534,7 +548,7 @@ export class CourtsService {
     complexId: number,
     groupAvailability: boolean = true,
   ): Promise<Array<ResponseCourtAvailabilityDto>> {
-    // Se obtienen las reservas para el complejo actual, ordenadas por su 'id' y la fecha de inicio
+    // Obtener las reservas para el complejo actual, ordenadas por su 'id' y la fecha de inicio
     const reservations = await this.reservationsService.getReservations({
       complexId,
       orderParams: [
@@ -543,7 +557,7 @@ export class CourtsService {
       ],
     });
 
-    // Se filtran las reservas para no procesar las canceladas
+    // Filtrar las reservas para no procesar las canceladas
     const filteredReservations = reservations.filter(
       (reservation) =>
         reservation.status !== ReservationAvailabilityStatus.CANCELLED &&
@@ -552,13 +566,13 @@ export class CourtsService {
         reservation.dateIni > new Date(),
     );
 
-    // Se agrupan las reservas en función del 'id' de la pista
+    // Agrupar las reservas en función del 'id' de la pista
     const groupedReservations = this.utilitiesService.groupArrayByField(
       filteredReservations,
       'courtId',
     );
 
-    // Se formatean las reservas para que tengan la estructura correcta
+    // Formatear las reservas para que tengan la estructura correcta
     const formattedReservations = new Map<number, CourtAvailabilitySlotDto[]>();
     for (const [courtId, reservations] of groupedReservations.entries()) {
       const slots = reservations.map(
@@ -588,12 +602,12 @@ export class CourtsService {
       }
     }
 
-    // Se crea el array de disponibilidad con los datos de las reservas
+    // Crear el array de disponibilidad con los datos de las reservas
     return Promise.all(
       Array.from(formattedReservations.entries()).map(async ([key, value]) => {
         const reservations = value;
 
-        // Si no se quiere agrupar la disponibilidad, se devuelve
+        // Si no se quiere agrupar la disponibilidad, devolver
         if (!groupAvailability) {
           return new ResponseCourtAvailabilityDto({
             court_id: key,
@@ -610,13 +624,13 @@ export class CourtsService {
             undefined;
 
           reservations.forEach((reservation) => {
-            // Si el intervalo actual es indefinido, se actualiza y se devuelve
+            // Si el intervalo actual es indefinido, actualizarlo y devolverlo
             if (currentAvailability === undefined) {
               currentAvailability = new CourtAvailabilitySlotDto(reservation);
               return;
             }
 
-            // Se establecen las condiciones para verificar si los intervalos son contiguos
+            // Establecer las condiciones para verificar si los intervalos son contiguos
             const equalEdgeDates =
               currentAvailability.dateEnd.getTime() ===
               reservation.dateIni.getTime();
@@ -624,16 +638,16 @@ export class CourtsService {
               currentAvailability.available === reservation.available;
 
             if (equalEdgeDates && equalAvailability) {
-              // Si son contiguos, se extiende el intervalo
+              // Si son contiguos, extender el intervalo
               currentAvailability.dateEnd = reservation.dateEnd;
             } else {
-              // Si no son contiguos, se añade el intervalo actual al array y se actualiza
+              // Si no son contiguos, añadir el intervalo actual al array y actualizarlo
               groupedAvailability.push(currentAvailability);
               currentAvailability = new CourtAvailabilitySlotDto(reservation);
             }
           });
 
-          // Se añade el intervalo final al array
+          // Añadir el intervalo final al array
           if (currentAvailability !== undefined) {
             groupedAvailability.push(currentAvailability);
           }
