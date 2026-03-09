@@ -104,7 +104,7 @@ export class GetComplexesDto {
 
         // Verificar que sea un array
         if (Array.isArray(parsed)) {
-          // Crear la instancia de CourtOrderParamsDto para cada elemento
+          // Crear la instancia de ComplexOrderParamsDto para cada elemento
           return parsed.map((item) => {
             const orderParam = new ComplexOrderParamsDto();
             orderParam.field = item.field;
