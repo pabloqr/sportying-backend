@@ -12,6 +12,7 @@ export * from './response-device-status.dto';
 export * from './response-device-telemetry.dto';
 export * from './response-device.dto';
 export * from './response-reservation.dto';
+export * from './response-sport.dto';
 export * from './response-user.dto';
 export * from './response-weater-data.dto';
 
