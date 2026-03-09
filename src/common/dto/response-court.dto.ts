@@ -1,14 +1,12 @@
 import { Type } from 'class-transformer';
 import {
   IsDate,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsString,
   ValidateNested
 } from 'class-validator';
 import { CourtStatusData } from 'src/courts/dto';
-import { Sport } from '../../courts/enums';
 import { ResponseWeatherDataDto } from './response-weater-data.dto';
 
 export class ResponseCourtDto {
@@ -27,9 +25,9 @@ export class ResponseCourtDto {
   @IsNotEmpty()
   number: number;
 
-  @IsEnum(Sport)
+  @IsString()
   @IsNotEmpty()
-  sport: Sport;
+  sportKey: string;
 
   @IsString()
   @IsNotEmpty()
@@ -62,7 +60,7 @@ export class ResponseCourtDto {
     this.id = court.id;
     this.complexId = court.complex_id ?? court.complexId;
     this.number = court.number;
-    this.sport = court.sport;
+    this.sportKey = court.sport_key ?? court.sportKey;
     this.description = court.description;
     this.maxPeople = court.max_people ?? court.maxPeople;
     this.statusData = new CourtStatusData(court.status_data ?? court.statusData);

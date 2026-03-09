@@ -1,4 +1,4 @@
-import { plainToInstance, Transform, Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -9,14 +9,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { OrderBy } from '../../common/enums';
-import { CourtStatus, Sport } from '../enums';
-import { CourtStatusData } from './court-status-data.dto';
-import { PartialType } from '@nestjs/mapped-types';
 import { OptionalCourtStatusData } from './optional-court-status-data.dto';
 
 export enum CourtOrderField {
   ID = 'id',
-  SPORT = 'sport',
+  SPORT_KEY = 'sportKey',
   NUMBER = 'number',
   MAX_PEOPLE = 'maxPeople',
   STATUS = 'status',
@@ -26,7 +23,7 @@ export enum CourtOrderField {
 
 export const COURT_ORDER_FIELD_MAP: Record<string, string> = {
   id: 'id',
-  sport: 'sport',
+  sportKey: 'sport_key',
   number: 'number',
   maxPeople: 'max_people',
   status: 'status',
@@ -52,9 +49,9 @@ export class GetCourtsDto {
   @IsOptional()
   id?: number;
 
-  @IsEnum(Sport)
+  @IsString()
   @IsOptional()
-  sport?: Sport;
+  sportKey?: string;
 
   @IsString()
   @IsOptional()

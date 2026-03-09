@@ -1,14 +1,12 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import {
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested
 } from 'class-validator';
-import { Sport } from '../enums';
 import { CourtStatusData } from './court-status-data.dto';
 
 class CreateCourtStatusDataDto extends PartialType(CourtStatusData) { }
@@ -19,9 +17,9 @@ export class CreateCourtDto {
   @IsOptional()
   number?: number;
 
-  @IsEnum(Sport)
+  @IsString()
   @IsNotEmpty()
-  sport: Sport;
+  sportKey: string;
 
   @IsString()
   @IsOptional()

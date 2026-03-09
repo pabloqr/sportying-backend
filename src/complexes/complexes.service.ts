@@ -108,7 +108,7 @@ export class ComplexesService {
       // Obtener las pistas asociadas al complejo actual
       const courts = await this.courtsService.getCourts(complex.id, {});
       // Filtrar los deportes
-      const sports = [...new Set(courts.map((court) => court.sport))];
+      const sports = [...new Set(courts.map((court) => court.sportKey))];
 
       // Obtener el geohash de las coordenadas dadas
       const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);

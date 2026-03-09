@@ -34,7 +34,7 @@ import {
   GetCourtsDto,
   UpdateCourtDto,
 } from './dto';
-import { CourtStatus, INACTIVE_COURT_STATUS, Sport } from './enums';
+import { CourtStatus, INACTIVE_COURT_STATUS } from './enums';
 
 @Injectable()
 export class CourtsService {
@@ -83,24 +83,24 @@ export class CourtsService {
     );
   }
 
-  private async calculateCourtNumber(complexId: number, sport: Sport): Promise<number> {
+  private async calculateCourtNumber(complexId: number, sportKey: string): Promise<number> {
     // Obtener el máximo para el complejo y deporte dados
     const aggregate = await this.prisma.courts.aggregate({
       _max: { number: true },
-      where: { complex_id: complexId, sport, is_delete: false },
+      where: { complex_id: complexId, sport_key: sportKey, is_delete: false },
     });
 
     // Calcular el número de pista a asignar
     return (aggregate._max.number || 0) + 1;
   }
 
-  private async checkExistingCourtNumber(complexId: number, number: number, sport: Sport) {
+  private async checkExistingCourtNumber(complexId: number, number: number, sportKey: string) {
     // Obtener una pista existente para el número dado y la combinación complejo-deporte
     const exists = await this.prisma.courts.findFirst({
       where: {
         complex_id: complexId,
         number,
-        sport: sport,
+        sport_key: sportKey,
         is_delete: false
       }
     });
@@ -108,7 +108,7 @@ export class CourtsService {
     // Si existe, lanzar un error de conflicto
     if (exists) {
       throw new ConflictException(
-        `Court number ${number} alerady exists in complex with ID ${complexId} for sport ${sport}`
+        `Court number ${number} alerady exists in complex with ID ${complexId} and SportKey ${sportKey}`
       );
     }
   }
@@ -179,7 +179,7 @@ export class CourtsService {
       ...(dto.id && { id: dto.id }),
 
       // Establecer las condiciones para los campos de tipo 'string'
-      ...(dto.sport && { sport: { contains: dto.sport, mode: 'insensitive' } }),
+      ...(dto.sportKey && { sport_key: { contains: dto.sportKey, mode: 'insensitive' } }),
 
       ...(dto.number && { name: dto.number }),
       ...(dto.maxPeople && { max_people: dto.maxPeople }),
@@ -202,7 +202,7 @@ export class CourtsService {
       select: {
         id: true,
         complex_id: true,
-        sport: true,
+        sport_key: true,
         number: true,
         description: true,
         max_people: true,
@@ -283,8 +283,8 @@ export class CourtsService {
    * Creates a new court associated with the given complex ID and details provided in the data transfer object (DTO).
    *
    * @param {number} complexId - The ID of the complex to which the court belongs.
-   * @param {CreateCourtDto} dto - The data transfer object containing court details such as sport, name, description,
-   * maximum capacity, and status.
+   * @param {CreateCourtDto} dto - The data transfer object containing court details such as sport key, name,
+   * description, maximum capacity, and status.
    * @return {Promise<ResponseCourtDto>} A promise that resolves to a ResponseCourtDto containing the details of the
    * created court, including its status.
    */
@@ -294,16 +294,16 @@ export class CourtsService {
   ): Promise<ResponseCourtDto> {
     try {
       // Obtener de la petición o calcular el número de pista para la combinación complejo-deporte
-      const number = dto.number ?? (await this.calculateCourtNumber(complexId, dto.sport));
+      const number = dto.number ?? (await this.calculateCourtNumber(complexId, dto.sportKey));
 
       // Verificar si hay una pista existente para el número dado y la combinación complejo-deporte
-      await this.checkExistingCourtNumber(complexId, number, dto.sport);
+      await this.checkExistingCourtNumber(complexId, number, dto.sportKey);
 
       // Crear la entrada para la pista en la BD
       const court = await this.prisma.courts.create({
         data: {
           complex_id: complexId,
-          sport: dto.sport,
+          sport_key: dto.sportKey,
           number,
           description: dto.description,
           max_people: dto.maxPeople,
@@ -311,7 +311,7 @@ export class CourtsService {
         select: {
           id: true,
           complex_id: true,
-          sport: true,
+          sport_key: true,
           number: true,
           description: true,
           max_people: true,
@@ -373,7 +373,6 @@ export class CourtsService {
     // Establecer las propiedades a actualizar
     const data: Prisma.courtsUpdateInput = {
       ...(dto.number && { number: dto.number }),
-      // ...(dto.sport !== undefined && { sport: dto.sport }),
       ...(dto.description && { description: dto.description }),
       ...(dto.maxPeople && { max_people: dto.maxPeople }),
       ...(dto.isDelete && { is_delete: dto.isDelete }),
@@ -384,7 +383,7 @@ export class CourtsService {
       const storedCourt = await this.getCourt(complexId, courtId, true);
 
       // Verificar si hay una pista existente para el número dado y la combinación complejo-deporte
-      await this.checkExistingCourtNumber(complexId, dto.number ?? storedCourt.number, storedCourt.sport);
+      await this.checkExistingCourtNumber(complexId, dto.number ?? storedCourt.number, storedCourt.sportKey);
 
       // Actualizar la entrada de la pista
       const court = await this.prisma.courts.update({

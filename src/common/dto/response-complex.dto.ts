@@ -11,7 +11,6 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Sport } from 'src/courts/enums';
 import { Coordinates } from '../validators';
 import { ResponseWeatherDataDto } from './response-weater-data.dto';
 
@@ -57,7 +56,7 @@ export class ResponseComplexDto {
 
   @IsArray()
   @IsNotEmpty()
-  sports: Sport[]
+  sports: string[]
 
   @Type(() => ResponseWeatherDataDto)
   @ValidateNested()
