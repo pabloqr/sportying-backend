@@ -15,12 +15,12 @@ export class SportsController {
     @Query(new ValidationPipe({ skipMissingProperties: true }))
     query: GetSportsDto,
   ) {
-    return;
+    return this.sportsService.getSports(query);
   }
 
   @Public()
   @Get(':sportKey')
   async getSport(@Param('sportKey') sportKey: string) {
-    return;
+    return this.sportsService.getSport(sportKey);
   }
 }
