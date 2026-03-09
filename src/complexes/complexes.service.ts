@@ -128,10 +128,10 @@ export class ComplexesService {
    * @throws {InternalServerErrorException} If multiple complexes are found with the specified ID.
    */
   async getComplex(complexId: number): Promise<ResponseComplexDto> {
-    // Se trata de obtener el complejo con el 'id' dado
+    // Tratar de obtener el complejo con el 'id' dado
     const result = await this.getComplexes({ id: complexId });
 
-    // Se verifican los elementos obtenidos
+    // Verificar los elementos obtenidos
     if (result.length === 0) {
       throw new NotFoundException(`Complex with ID ${complexId} not found.`);
     } else if (result.length > 1) {
@@ -279,7 +279,7 @@ export class ComplexesService {
    * times of the complex.
    */
   async getComplexTime(complexId: number): Promise<ResponseComplexTimeDto> {
-    // Se obtiene la información del complejo y se devuelven los campos con el horario
+    // Obtener la información del complejo y devolver los campos con el horario
     const complex = await this.getComplex(complexId);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
@@ -295,7 +295,7 @@ export class ComplexesService {
     complexId: number,
     dto: UpdateComplexTimeDto,
   ): Promise<ResponseComplexTimeDto> {
-    // Se actualiza la información del complejo y se devuelven los campos con el horario
+    // Actualizar la información del complejo y devolver los campos con el horario
     const complex = await this.updateComplex(complexId, dto);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
