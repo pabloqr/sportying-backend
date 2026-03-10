@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { CourtsService } from '../courts/courts.service';
 import { CourtStatus } from '../courts/enums';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -105,7 +105,9 @@ const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, 
 export class AnalysisService {
   constructor(
     private utilitiesService: UtilitiesService,
+    @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
+    @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
     private notificationsService: NotificationsService,
   ) { }

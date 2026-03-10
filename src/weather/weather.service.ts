@@ -33,6 +33,7 @@ export class WeatherService implements OnModuleInit {
 
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => AnalysisService))
     private analysisService: AnalysisService,
     @Inject(forwardRef(() => ComplexesService))
     private complexesService: ComplexesService

@@ -8,6 +8,7 @@ import {
 import * as ngeohash from 'ngeohash';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SportsService } from 'src/sports/sports.service';
 import { WeatherService } from 'src/weather/weather.service';
 import { Prisma } from '../../prisma/generated/client';
 import {
@@ -34,6 +35,8 @@ export class ComplexesService {
     private utilitiesService: UtilitiesService,
     @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
+    @Inject(forwardRef(() => SportsService))
+    private sportsService: SportsService,
     @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
   ) { }
@@ -105,10 +108,10 @@ export class ComplexesService {
 
     // Devolver la lista modificando los elementos obtenidos
     return Promise.all(complexes.map(async (complex) => {
-      // Obtener las pistas asociadas al complejo actual
-      const courts = await this.courtsService.getCourts(complex.id, {});
-      // Filtrar los deportes
-      const sports = [...new Set(courts.map((court) => court.sportKey))];
+      // Obtener el listado de los deportes que se pueden practicar en el complejo
+      const sportDatas = await this.sportsService.getComplexSports(complex.id, {});
+      // Mapear a un listado de string
+      const sports = sportDatas.map((sport) => sport.key);
 
       // Obtener el geohash de las coordenadas dadas
       const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);

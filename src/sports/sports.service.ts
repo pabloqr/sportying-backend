@@ -1,5 +1,6 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ResponseSportDto } from 'src/common/dto';
+import { CourtsService } from 'src/courts/courts.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto';
@@ -8,7 +9,38 @@ import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto';
 export class SportsService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => CourtsService))
+    private courtsService: CourtsService,
   ) { }
+
+  async getComplexSports(
+    complexId: number,
+    dto: GetSportsDto,
+  ): Promise<Array<ResponseSportDto>> {
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
+    const where: Prisma.sportsWhereInput = {
+      ...(dto.minPeople && { min_people: dto.minPeople }),
+      ...(dto.maxPeople && { max_people: dto.maxPeople }),
+    };
+
+    // Obtener las pistas asociadas al complejo actual
+    const courts = await this.courtsService.getCourts(complexId, {});
+    // Obtener los deportes (construcción del Set) y convertir la colección en un Array
+    const sportKeys = [...new Set(courts.map((court) => court.sportKey))];
+    // Si se proporciona el listado de claves de deportes, filtrar la lista obtenida
+    const filteredSportKeys = dto.keys ? sportKeys.filter((key) => dto.keys.includes(key)) : sportKeys;
+
+    // Obtener los datos de los deportes obtenidos incluyendo los parámetros de filtrado
+    const sports = await this.prisma.sports.findMany({
+      where: {
+        key: { in: filteredSportKeys },
+        ...where,
+        is_delete: false
+      }
+    });
+
+    return sports.map((sport) => new ResponseSportDto(sport));
+  }
 
   async getSports(
     dto: GetSportsDto,
