@@ -34,7 +34,7 @@ export class SportOrderParamsDto {
 export class GetSportsDto {
   @IsString()
   @IsOptional()
-  key?: string;
+  keys?: string[];
 
   @IsInt()
   @Min(1)

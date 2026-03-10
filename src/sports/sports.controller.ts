@@ -12,8 +12,7 @@ export class SportsController {
   @Public()
   @Get()
   async getSports(
-    @Query(new ValidationPipe({ skipMissingProperties: true }))
-    query: GetSportsDto,
+    @Query(new ValidationPipe({ skipMissingProperties: true })) query: GetSportsDto,
   ) {
     return this.sportsService.getSports(query);
   }

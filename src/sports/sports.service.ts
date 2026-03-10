@@ -19,8 +19,6 @@ export class SportsService {
       // Evitar obtener los deportes eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      ...(dto.key && { key: dto.key }),
-
       ...(dto.minPeople && { min_people: dto.minPeople }),
       ...(dto.maxPeople && { max_people: dto.maxPeople }),
     };
@@ -49,12 +47,15 @@ export class SportsService {
       orderBy,
     });
 
-    return sports.map((sport) => new ResponseSportDto(sport));
+    // Si se proporciona el listado de claves de deportes, filtrar la lista obtenida
+    const filteredSports = dto.keys ? sports.filter((sport) => dto.keys.includes(sport.key)) : sports;
+
+    return filteredSports.map((sport) => new ResponseSportDto(sport));
   }
 
   async getSport(sportKey: string): Promise<ResponseSportDto> {
     // Tratar de obtener el complejo con el 'id' dado
-    const result = await this.getSports({ key: sportKey });
+    const result = await this.getSports({ keys: [sportKey] });
 
     // Verificar los elementos obtenidos
     if (result.length === 0) {
