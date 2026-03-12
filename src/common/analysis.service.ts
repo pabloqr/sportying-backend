@@ -1,5 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { CourtsService } from '../courts/courts.service';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { CourtStatus } from '../courts/enums';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ReservationAvailabilityStatus } from '../reservations/enums';
@@ -105,8 +105,7 @@ const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, 
 export class AnalysisService {
   constructor(
     private utilitiesService: UtilitiesService,
-    @Inject(forwardRef(() => CourtsService))
-    private courtsService: CourtsService,
+    private courtsStatusService: CourtsStatusService,
     @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
     private notificationsService: NotificationsService,
@@ -489,11 +488,11 @@ export class AnalysisService {
       let courtStatus = CourtStatus.OPEN;
       if (
         rainIntensity >= 2.5 ||
-        (previousTelemetry !== null && previousTelemetry.value > 0.0)
+        (previousTelemetry && previousTelemetry.value > 0.0)
       ) {
         courtStatus = CourtStatus.WEATHER;
       } else if (
-        previousTelemetry !== null &&
+        previousTelemetry &&
         (previousTelemetry.value == 0.0 ||
           (previousTelemetry.value <= 2.5 &&
             this.utilitiesService.dateIsEqualOrGreater(
@@ -505,9 +504,10 @@ export class AnalysisService {
         courtStatus = CourtStatus.OPEN;
       }
 
-      const statusData = (await this.courtsService.getCourt(complexId, courtId)).statusData;
+      // Obtener el estatus actual de la pista para aplicar los cambios necesarios
+      const statusData = (await this.courtsStatusService.getCourtStatus(complexId, courtId)).statusData;
       if (statusData.status !== courtStatus) {
-        await this.courtsService.setCourtStatus(complexId, courtId, {
+        await this.courtsStatusService.setCourtStatus(complexId, courtId, {
           status: courtStatus,
         });
 

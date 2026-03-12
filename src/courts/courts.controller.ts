@@ -13,7 +13,6 @@ import { Public } from 'src/auth/decorator';
 import { CourtsService } from './courts.service';
 import {
   CreateCourtDto,
-  CreateCourtStatusDto,
   GetCourtsDto,
   UpdateCourtDto
 } from './dto';
@@ -68,25 +67,6 @@ export class CourtsController {
     @Param('courtId', ParseIntPipe) courtId: number,
   ) {
     return this.courtsService.deleteCourt(complexId, courtId);
-  }
-
-  @Public()
-  @Get(':complexId/courts/:courtId/status')
-  async getCourtStatus(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Param('courtId', ParseIntPipe) courtId: number,
-  ) {
-    return this.courtsService.getCourtStatus(complexId, courtId);
-  }
-
-  @Public()
-  @Post(':complexId/courts/:courtId/status')
-  async setCourtStatus(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Param('courtId', ParseIntPipe) courtId: number,
-    @Body() dto: CreateCourtStatusDto,
-  ) {
-    return this.courtsService.setCourtStatus(complexId, courtId, dto);
   }
 
   @Public()

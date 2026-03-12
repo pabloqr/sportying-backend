@@ -6,17 +6,16 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import {
   CourtAvailabilitySlotDto,
   ResponseCourtAvailabilityDto,
-  ResponseCourtDto,
-  ResponseCourtStatusDto
+  ResponseCourtDto
 } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
 import { UtilitiesService } from '../common/utilities.service';
-import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 import { ReservationOrderField } from '../reservations/dto';
 import {
   ReservationAvailabilityStatus,
@@ -26,7 +25,6 @@ import { ReservationsService } from '../reservations/reservations.service';
 import { WeatherService } from '../weather/weather.service';
 import {
   COURT_ORDER_FIELD_MAP,
-  CourtStatusData,
   CreateCourtDto,
   CreateCourtStatusDto,
   GetCourtsDto,
@@ -40,9 +38,9 @@ export class CourtsService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
+    private courtsStatusService: CourtsStatusService,
     @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
-    private courtsDevicesService: CourtsDevicesService,
     @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
   ) { }
@@ -212,7 +210,7 @@ export class CourtsService {
 
     // Obtener los estados de todas las pistas encontradas
     const courtsWithStatusAsync = courts.map(async (court) => {
-      const courtStatus = await this.getCourtStatus(complexId, court.id);
+      const courtStatus = await this.courtsStatusService.getCourtStatus(complexId, court.id);
       return {
         ...court,
         status_data: courtStatus.statusData,
@@ -338,7 +336,7 @@ export class CourtsService {
       }
 
       // Establecer el estatus de la pista
-      const courtStatus = await this.setCourtStatus(complexId, court.id, statusData);
+      const courtStatus = await this.courtsStatusService.setCourtStatus(complexId, court.id, statusData);
 
       return new ResponseCourtDto({ ...court, statusData: courtStatus.statusData });
     } catch (error) {
@@ -390,7 +388,7 @@ export class CourtsService {
       });
 
       // Actualizar el estatus de la pista
-      const courtStatus = await this.setCourtStatus(complexId, courtId, {
+      const courtStatus = await this.courtsStatusService.setCourtStatus(complexId, courtId, {
         status: dto.statusData.status,
         alertLevel: dto.statusData.alertLevel,
         estimatedDryingTime: dto.statusData.estimatedDryingTime,
@@ -427,101 +425,6 @@ export class CourtsService {
       });
 
       return null;
-    } catch (error) {
-      this.errorsService.dbError(error, {
-        p2025: `Court with ID ${courtId} not found.`,
-      });
-
-      throw error;
-    }
-  }
-
-  /**
-   * Retrieves the most recent status of a specific court.
-   *
-   * @param {number} complexId - The identifier for the sports complex to which the court belongs.
-   * @param {number} courtId - The identifier for the court whose status is to be retrieved.
-   * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the most updated status of the court, or a
-   * default status if no recent status is found.
-   */
-  async getCourtStatus(
-    complexId: number,
-    courtId: number,
-  ): Promise<ResponseCourtStatusDto> {
-    // Tratar de obtener el estatus más actualizado de la pista dada
-    const status = await this.prisma.courts_status.findFirst({
-      where: {
-        court_id: courtId,
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
-
-    // Devolver el objeto obtenido o construir uno con el estatus por defecto 'OPEN'
-    return new ResponseCourtStatusDto({
-      court_id: courtId,
-      complex_id: complexId,
-      status_data: status ?? {
-        status: CourtStatus.OPEN,
-        alert_level: 0,
-        estimated_drying_time: 0,
-      }
-    });
-  }
-
-  /**
-   * Updates the status of a court by creating a new entry in the court status table.
-   *
-   * @param {number} complexId - The ID of the complex to which the court belongs.
-   * @param {number} courtId - The ID of the court whose status is being updated.
-   * @param {CreateCourtStatusDto} dto - The data transfer object containing the new status information for the court.
-   * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the updated court status object.
-   */
-  async setCourtStatus(
-    complexId: number,
-    courtId: number,
-    dto: CreateCourtStatusDto,
-  ): Promise<ResponseCourtStatusDto> {
-    // Verificar que el cuerpo contiene elementos
-    this.errorsService.noBodyError(dto);
-
-    try {
-      // Tratar de obtener el estatus más actualizado de la pista dada
-      const statusPrev = await this.getCourtStatus(complexId, courtId);
-
-      // Actualizar los datos del estatus con valores válidos
-      const statusData: CourtStatusData = {
-        status: dto.status ?? statusPrev.statusData.status,
-        alertLevel: dto.alertLevel ?? statusPrev.statusData.alertLevel,
-        estimatedDryingTime: dto.estimatedDryingTime ?? statusPrev.statusData.estimatedDryingTime,
-      };
-
-      // Si los nuevos valores son iguales a los existentes, devolver el objeto existente
-      if (
-        statusData.status === statusPrev.statusData.status &&
-        statusData.alertLevel == statusPrev.statusData.alertLevel
-      ) {
-        return new ResponseCourtStatusDto({ ...statusPrev, complex_id: complexId });
-      }
-
-      // Actualizar el estatus de la pista en función del nivel de alerta
-      statusData.status =
-        statusData.alertLevel >= 2 && !INACTIVE_COURT_STATUS.has(statusData.status)
-          ? CourtStatus.WEATHER
-          : statusData.status;
-
-      // Añadir una nueva entrada con el estatus de la pista
-      const status = await this.prisma.courts_status.create({
-        data: {
-          court_id: courtId,
-          status: statusData.status,
-          alert_level: statusData.alertLevel,
-          estimated_drying_time: statusData.estimatedDryingTime,
-        },
-      });
-
-      return new ResponseCourtStatusDto({ ...status, complex_id: complexId });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Court with ID ${courtId} not found.`,
@@ -584,7 +487,7 @@ export class CourtsService {
 
     const courts = await this.getCourts(complexId, {});
     for (const court of courts) {
-      const statusData = (await this.getCourtStatus(complexId, court.id)).statusData;
+      const statusData = (await this.courtsStatusService.getCourtStatus(complexId, court.id)).statusData;
       if (statusData.status === CourtStatus.WEATHER) {
         const timeBlock = this.utilitiesService.getTimeBlock(statusData.estimatedDryingTime);
 
