@@ -4,7 +4,6 @@ import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from "openmeteo";
 import { AnalysisService, WeatherData } from "src/common/analysis.service";
 import { ResponseWeatherDataDto } from "src/common/dto";
-import { ComplexesService } from "src/complexes/complexes.service";
 import { PrismaService } from "src/prisma/prisma.service";
 
 interface RawWeatherData {
@@ -35,8 +34,6 @@ export class WeatherService implements OnModuleInit {
     private prisma: PrismaService,
     @Inject(forwardRef(() => AnalysisService))
     private analysisService: AnalysisService,
-    @Inject(forwardRef(() => ComplexesService))
-    private complexesService: ComplexesService
   ) { }
 
   /**
@@ -424,10 +421,10 @@ export class WeatherService implements OnModuleInit {
    */
   async getWeatherFromId(complexId: number): Promise<ResponseWeatherDataDto> {
     // Obtener los datos del complejo pedido
-    const complex = await this.complexesService.getComplex(complexId);
+    const complex = await this.prisma.complexes.findUnique({ where: { id: complexId } });
 
     // Obtener los datos meteorológicos del complejo
-    const weather = await this.getWeatherFromCoordinates(complex.locLatitude, complex.locLongitude);
+    const weather = await this.getWeatherFromCoordinates(complex.loc_latitude, complex.loc_longitude);
 
     return new ResponseWeatherDataDto(weather);
   }

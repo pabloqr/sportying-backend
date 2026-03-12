@@ -1,10 +1,8 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { ComplexesModule } from 'src/complexes/complexes.module';
+import { Module } from '@nestjs/common';
 import { WeatherController } from './weather.controller';
 import { WeatherService } from './weather.service';
 
 @Module({
-  imports: [forwardRef(() => ComplexesModule)],
   controllers: [WeatherController],
   providers: [WeatherService],
   exports: [WeatherService],
