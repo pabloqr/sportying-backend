@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
@@ -12,7 +10,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import { ResponseReservationDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
-import { ComplexesService } from '../complexes/complexes.service';
 import { CourtStatus } from '../courts/enums';
 import {
   CreateReservationDto,
@@ -33,8 +30,6 @@ export class ReservationsService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
-    @Inject(forwardRef(() => ComplexesService))
-    private complexesService: ComplexesService,
     private courtsStatusService: CourtsStatusService,
   ) { }
 
@@ -148,8 +143,15 @@ export class ReservationsService {
       throw new BadRequestException('Requested court is not valid.');
     }
 
-    // Se obtiene el horario del complejo
-    const complexTime = await this.complexesService.getComplexTime(complexId);
+    // Obtener el complejo
+    const complex = await this.prisma.complexes.findUnique({ where: { id: complexId } });
+    // Verificar los datos obtenidos
+    if (!complex) {
+      throw new NotFoundException(`Complex with ID ${complexId} not found.`)
+    }
+
+    // Obtener el horario del complejo
+    const complexTime = { timeIni: complex.time_ini, timeEnd: complex.time_end };
 
     if (
       dto.dateIni !== undefined &&
@@ -170,29 +172,20 @@ export class ReservationsService {
   /**
    * Validates whether a given time range is valid based on input constraints.
    *
-   * @param {string} complexTimeIni - The initial time in HH:mm format as a string.
-   * @param {string} complexTimeEnd - The end time in HH:mm format as a string.
+   * @param {string} complexTimeIni - The complex opening time.
+   * @param {string} complexTimeEnd - The complex closing time.
    * @param {Date} dateIni - The starting date and time to validate.
    * @param {Date} dateEnd - The ending date and time to validate.
    * @return {boolean} Returns true if the date range and time constraints are valid, otherwise false.
    */
   private isValidDate(
-    complexTimeIni: string,
-    complexTimeEnd: string,
+    complexTimeIni: Date,
+    complexTimeEnd: Date,
     dateIni: Date,
     dateEnd: Date,
   ): boolean {
-    const complexTimeIniSplit = complexTimeIni.split(':').map(Number);
-    const afterComplexTimeIni =
-      complexTimeIniSplit[0] < dateIni.getHours() ||
-      (complexTimeIniSplit[0] === dateIni.getHours() &&
-        complexTimeIniSplit[1] <= dateIni.getMinutes());
-
-    const complexTimeEndSplit = complexTimeEnd.split(':').map(Number);
-    const beforeComplexTimeEnd =
-      complexTimeEndSplit[0] > dateEnd.getHours() ||
-      (complexTimeEndSplit[0] === dateEnd.getHours() &&
-        complexTimeEndSplit[1] >= dateEnd.getMinutes());
+    const afterComplexTimeIni = this.utilitiesService.timeIsEqualOrGreater(dateIni, complexTimeIni);
+    const beforeComplexTimeEnd = this.utilitiesService.timeIsEqualOrLower(dateEnd, complexTimeEnd);
 
     return dateIni < dateEnd && afterComplexTimeIni && beforeComplexTimeEnd;
   }
@@ -211,9 +204,9 @@ export class ReservationsService {
     dto: GetReservationsDto,
     checkDeleted: boolean = false,
   ): Promise<Array<ResponseReservationDto>> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.reservationsWhereInput = {
-      // Se evita obtener las reservas eliminadas
+      // Evitar obtener las reservas eliminadas
       ...(!checkDeleted && { is_delete: false }),
 
       ...(dto.id !== undefined && { id: dto.id }),
@@ -229,7 +222,7 @@ export class ReservationsService {
       }),
     };
 
-    // Se obtiene el filtro por momento de la reserva
+    // Obtener el filtro por momento de la reserva
     if (dto.timeFilter !== undefined) {
       switch (dto.timeFilter) {
         case ReservationTimeFilter.PAST:
@@ -244,7 +237,7 @@ export class ReservationsService {
       }
     }
 
-    // Se obtiene el modo de ordenación de los elementos
+    // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.reservationsOrderByWithRelationInput[] = [];
     if (dto.orderParams !== undefined) {
       dto.orderParams.forEach((orderParam) => {
@@ -255,7 +248,7 @@ export class ReservationsService {
       });
     }
 
-    // Se realiza la consulta seleccionando las columnas que se quieren devolver
+    // Realizar la consulta seleccionando las columnas que se quieren devolver
     const reservations = await this.prisma.reservations.findMany({
       where,
       select: {
@@ -319,10 +312,10 @@ export class ReservationsService {
    * @throws {InternalServerErrorException} If multiple reservations with the same ID are found.
    */
   async getReservation(reservationId: number): Promise<ResponseReservationDto> {
-    // Se trata de obtener la reserva con el 'id' dado
+    // Tratar de obtener la reserva con el 'id' dado
     const result = await this.getReservations({ id: reservationId });
 
-    // Se verifican los elementos obtenidos
+    // Verificar los elementos obtenidos
     if (result.length === 0) {
       throw new NotFoundException(
         `Reservation with ID ${reservationId} not found.`,
@@ -349,7 +342,7 @@ export class ReservationsService {
     dto: GetUserReservationsDto,
     checkDeleted: boolean = false,
   ): Promise<Array<ResponseReservationDto>> {
-    // Se trata de obtener las reservas
+    // Tratar de obtener las reservas
     return this.getReservations({ ...dto, userId }, checkDeleted);
   }
 
@@ -368,7 +361,7 @@ export class ReservationsService {
     dto: GetUserReservationsDto,
     checkDeleted: boolean = false,
   ): Promise<Array<ResponseReservationDto>> {
-    // Se trata de obtener las reservas
+    // Tratar de obtener las reservas
     return this.getReservations({ ...dto, complexId }, checkDeleted);
   }
 
@@ -386,11 +379,11 @@ export class ReservationsService {
     complexId: number,
     dto: CreateReservationDto,
   ): Promise<ResponseReservationDto> {
-    // Se verifica que los datos de la petición son correctos
+    // Verificar que los datos de la petición son correctos
     await this.validateReservationData(complexId, dto);
 
     try {
-      // Se crea la entrada para la pista en la BD
+      // Crear la entrada para la pista en la BD
       const reservation = await this.prisma.reservations.create({
         data: {
           user_id: dto.userId,
@@ -437,16 +430,16 @@ export class ReservationsService {
     reservationId: number,
     dto: UpdateReservationDto,
   ): Promise<ResponseReservationDto> {
-    // Se verifica que el cuerpo contiene elementos
+    // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
-    // Se obtiene el complejo actual de la reserva
+    // Obtener el complejo actual de la reserva
     const complexId = (await this.getReservation(reservationId)).complexId;
 
-    // Se verifica que los datos de la petición son correctos
+    // Verificar que los datos de la petición son correctos
     await this.validateReservationData(complexId, dto);
 
-    // Se establecen las propiedades a actualizar
+    // Establecer las propiedades a actualizar
     const data: Prisma.reservationsUpdateInput = {
       ...(dto.userId !== undefined && { user_id: dto.userId }),
       ...(dto.courtId !== undefined && { court_id: dto.courtId }),
@@ -455,7 +448,7 @@ export class ReservationsService {
     };
 
     try {
-      // Se actualiza la entrada de la reserva
+      // Actualizar la entrada de la reserva
       const reservation = await this.prisma.reservations.update({
         where: {
           id: reservationId,
@@ -497,7 +490,7 @@ export class ReservationsService {
    */
   async deleteReservation(reservationId: number): Promise<null> {
     try {
-      // Se marca la reserva como eliminada
+      // Marcar la reserva como eliminada
       await this.prisma.reservations.update({
         where: { id: reservationId },
         data: { is_delete: true, updated_at: new Date() },

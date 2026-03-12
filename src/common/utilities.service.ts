@@ -24,6 +24,26 @@ export class UtilitiesService {
     return diff >= minutes * 60 * 1000;
   }
 
+  public timeIsEqualOrLower(
+    dateA: Date,
+    dateB: Date,
+  ): boolean {
+    const timeA = dateA.getHours() * 60 + dateA.getMinutes();
+    const timeB = dateB.getHours() * 60 + dateB.getMinutes();
+
+    return timeA <= timeB;
+  }
+
+  public timeIsEqualOrGreater(
+    dateA: Date,
+    dateB: Date,
+  ): boolean {
+    const timeA = dateA.getHours() * 60 + dateA.getMinutes();
+    const timeB = dateB.getHours() * 60 + dateB.getMinutes();
+
+    return timeA >= timeB;
+  }
+
   public stringToDate(dateString: string): Date {
     const [hoursString, minutesString] = dateString.split(':');
     const hours = parseInt(hoursString);
