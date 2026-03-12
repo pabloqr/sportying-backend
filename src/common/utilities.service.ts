@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { CourtStatus } from 'src/courts/enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
 
 @Injectable()
 export class UtilitiesService {
@@ -95,5 +97,50 @@ export class UtilitiesService {
     });
 
     return map;
+  }
+
+  /**
+   * Determines the reservation time filter based on the provided date.
+   *
+   * @param {Date} date - The date to evaluate for determining the time filter.
+   * @return {ReservationTimeFilter} Returns PAST if the date is earlier than the current date,
+   *  otherwise returns UPCOMING.
+   */
+  public getTimeFilterFromDate(date: Date): ReservationTimeFilter {
+    return date < new Date()
+      ? ReservationTimeFilter.PAST
+      : ReservationTimeFilter.UPCOMING;
+  }
+
+  public getReservationStatus(
+    status: ReservationAvailabilityStatus,
+    courtStatus: CourtStatus,
+    timeFilter: ReservationTimeFilter,
+  ): ReservationStatus {
+    let reservationStatus = ReservationStatus.SCHEDULED;
+    if (timeFilter === ReservationTimeFilter.UPCOMING) {
+      switch (courtStatus) {
+        case CourtStatus.OPEN:
+          break;
+        case CourtStatus.WEATHER:
+          reservationStatus = ReservationStatus.WEATHER;
+          break;
+        case CourtStatus.BLOCKED:
+        case CourtStatus.MAINTENANCE:
+          reservationStatus = ReservationStatus.CANCELLED;
+          break;
+      }
+    } else if (timeFilter === ReservationTimeFilter.PAST) {
+      switch (status) {
+        case ReservationAvailabilityStatus.CANCELLED:
+          reservationStatus = ReservationStatus.CANCELLED;
+          break;
+        default:
+          reservationStatus = ReservationStatus.COMPLETED;
+          break;
+      }
+    }
+
+    return reservationStatus;
   }
 }

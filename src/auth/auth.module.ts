@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { AccessControlService } from './access-control.service';
@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
 
 @Module({
-  imports: [JwtModule.register({}), forwardRef(() => UsersModule)],
+  imports: [JwtModule.register({}), UsersModule],
   controllers: [AuthController],
   providers: [
     AuthService,

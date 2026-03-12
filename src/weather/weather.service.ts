@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException, OnModuleInit } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, OnModuleInit } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from "openmeteo";
@@ -32,7 +32,6 @@ export class WeatherService implements OnModuleInit {
 
   constructor(
     private prisma: PrismaService,
-    @Inject(forwardRef(() => AnalysisService))
     private analysisService: AnalysisService,
   ) { }
 

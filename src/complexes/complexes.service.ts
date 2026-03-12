@@ -1,9 +1,7 @@
 import {
-  forwardRef,
-  Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
 import { UtilitiesService } from 'src/common/utilities.service';
@@ -33,10 +31,8 @@ export class ComplexesService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
-    @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
     private sportsService: SportsService,
-    @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,
   ) { }
 

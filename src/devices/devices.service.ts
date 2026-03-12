@@ -388,7 +388,6 @@ export class DevicesService {
    * @param {number} complexId - The unique identifier of the complex the device belongs to.
    * @param {number} deviceId - The unique identifier of the device.
    * @param {CreateDeviceTelemetryDto} dto - The data transfer object containing telemetry values.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
    * @return {Promise<ResponseDeviceTelemetryDto>} A promise that resolves to an object containing the updated device
    * telemetry information.
    */
@@ -396,7 +395,6 @@ export class DevicesService {
     complexId: number,
     deviceId: number,
     dto: CreateDeviceTelemetryDto,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
   ): Promise<ResponseDeviceTelemetryDto> {
     try {
       // Se añade una nueva entrada con la telemetría del dispositivo

@@ -1,9 +1,10 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
 import { CourtStatus } from '../courts/enums';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ReservationAvailabilityStatus } from '../reservations/enums';
-import { ReservationsService } from '../reservations/reservations.service';
 import { DeviceTelemetrySlotDto } from './dto';
 import { UtilitiesService } from './utilities.service';
 
@@ -104,10 +105,10 @@ const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, 
 @Injectable({})
 export class AnalysisService {
   constructor(
+    private prisma: PrismaService,
     private utilitiesService: UtilitiesService,
     private courtsStatusService: CourtsStatusService,
-    @Inject(forwardRef(() => ReservationsService))
-    private reservationsService: ReservationsService,
+    private reservationsStatusService: ReservationsStatusService,
     private notificationsService: NotificationsService,
   ) { }
 
@@ -419,23 +420,23 @@ export class AnalysisService {
    *
    * @param {boolean} available - Indicates whether the court is currently available or not.
    * @param {Date} timestamp - The timestamp of the availability telemetry.
-   * @param {number} court - The unique identifier of the court for which telemetry is being processed.
+   * @param {number} courtId - The unique identifier of the court for which telemetry is being processed.
    * @return {Promise<void>} - A promise that resolves once the operation is completed.
    */
   async processAvailabilityTelemetry(
     available: boolean,
     timestamp: Date,
-    court: number,
+    courtId: number,
   ): Promise<void> {
-    const reservations = await this.reservationsService.getReservations({
-      courtId: court,
+    const reservations = await this.prisma.reservations.findMany({
+      where: { court_id: courtId, }
     });
 
     const current = reservations.find((reservation) =>
       this.utilitiesService.dateIsBetween(
         timestamp,
-        reservation.dateIni,
-        reservation.dateEnd,
+        reservation.date_ini,
+        reservation.date_end,
       ),
     );
 
@@ -446,7 +447,7 @@ export class AnalysisService {
       if (
         !this.utilitiesService.dateIsEqualOrGreater(
           15,
-          current.dateIni,
+          current.date_ini,
           timestamp,
         )
       ) {
@@ -456,13 +457,13 @@ export class AnalysisService {
       reservationStatus = ReservationAvailabilityStatus.CANCELLED;
     }
 
-    await this.reservationsService.setReservationStatus(
+    await this.reservationsStatusService.setReservationStatus(
       current.id,
       reservationStatus,
     );
 
     this.notificationsService.notifyReservationChange(
-      current.complexId,
+      current.complex_id,
       current.id,
       reservationStatus,
     );

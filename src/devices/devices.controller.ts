@@ -10,24 +10,20 @@ import {
   Query,
 } from '@nestjs/common';
 import { Public } from 'src/auth/decorator';
-import { CourtsService } from '../courts/courts.service';
 import { DevicesService } from './devices.service';
 import {
-  CreateDeviceCourtsDto,
   CreateDeviceDto,
   CreateDeviceStatusDto,
   CreateDeviceTelemetryDto,
-  GetDeviceCourtsDto,
   GetDevicesDto,
   GetDeviceTelemetryDto,
-  UpdateDeviceDto,
+  UpdateDeviceDto
 } from './dto';
 
 @Controller('complexes')
 export class DevicesController {
   constructor(
     private devicesService: DevicesService,
-    private courtsService: CourtsService,
   ) { }
 
   @Public()
@@ -94,12 +90,7 @@ export class DevicesController {
     @Param('deviceId', ParseIntPipe) deviceId: number,
     @Body() body: CreateDeviceTelemetryDto,
   ) {
-    return this.devicesService.setDeviceTelemetry(
-      complexId,
-      deviceId,
-      body,
-      this.courtsService.getCourt.bind(this.courtsService),
-    );
+    return this.devicesService.setDeviceTelemetry(complexId, deviceId, body);
   }
 
   @Public()

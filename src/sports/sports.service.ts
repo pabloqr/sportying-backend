@@ -1,6 +1,5 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ResponseSportDto } from 'src/common/dto';
-import { CourtsService } from 'src/courts/courts.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto';

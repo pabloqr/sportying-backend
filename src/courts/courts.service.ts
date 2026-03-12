@@ -1,10 +1,8 @@
 import {
   ConflictException,
-  forwardRef,
-  Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -38,9 +36,8 @@ export class CourtsService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
-    private courtsStatusService: CourtsStatusService,
-    @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
+    private courtsStatusService: CourtsStatusService,
     private reservationsService: ReservationsService,
   ) { }
 

@@ -5,7 +5,6 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import * as argon from 'argon2';
-import { ComplexesService } from 'src/complexes/complexes.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, user_role } from '../../prisma/generated/client';
 import { Role } from '../auth/enums';
@@ -23,7 +22,6 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-    private complexesService: ComplexesService,
   ) { }
 
   /**
@@ -180,7 +178,7 @@ export class UsersService {
       }
 
       try {
-        await this.complexesService.getComplex(dto.complexId);
+        await this.prisma.complexes.findUniqueOrThrow({ where: { id: dto.complexId } });
       } catch (error) {
         this.errorsService.dbError(error, {
           p2025:

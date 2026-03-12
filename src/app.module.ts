@@ -7,15 +7,16 @@ import { JwtGuard, RolesGuard } from './auth/guard';
 import { CommonModule } from './common/common.module';
 import { ComplexesModule } from './complexes/complexes.module';
 import { CourtsDevicesModule } from './courts-devices/court-devices.module';
+import { CourtsStatusModule } from './courts-status/courts-status.module';
 import { CourtsModule } from './courts/courts.module';
 import { DevicesModule } from './devices/devices.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PrismaModule } from './prisma/prisma.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { SportsModule } from './sports/sports.module';
 import { UsersModule } from './users/users.module';
 import { WeatherModule } from './weather/weather.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { SportsModule } from './sports/sports.module';
-import { CourtsStatusModule } from './courts-status/courts-status.module';
+import { ReservationsStatusModule } from './reservations-status/reservations-status.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { CourtsStatusModule } from './courts-status/courts-status.module';
     WeatherModule,
     SportsModule,
     CourtsStatusModule,
+    ReservationsStatusModule,
   ],
   providers: [
     {
