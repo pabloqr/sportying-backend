@@ -6,12 +6,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import { ResponseReservationDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
 import { ComplexesService } from '../complexes/complexes.service';
-import { CourtsService } from '../courts/courts.service';
 import { CourtStatus } from '../courts/enums';
 import {
   CreateReservationDto,
@@ -31,10 +32,10 @@ export class ReservationsService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private utilitiesService: UtilitiesService,
     @Inject(forwardRef(() => ComplexesService))
     private complexesService: ComplexesService,
-    @Inject(forwardRef(() => CourtsService))
-    private courtsService: CourtsService,
+    private courtsStatusService: CourtsStatusService,
   ) { }
 
   /**
@@ -83,6 +84,45 @@ export class ReservationsService {
   }
 
   /**
+   * Validates if the given court ID is valid and currently open in the specified complex.
+   *
+   * @param {number} complexId - The ID of the complex to check.
+   * @param {number} courtId - The ID of the court to validate.
+   * @param dateIni - The initial date of the reservation.
+   * @return {Promise<boolean>} A promise that resolves to `true` if the court ID is valid and open; otherwise, `false`.
+   */
+  public async validateCourt(
+    complexId: number,
+    courtId: number,
+    dateIni: Date,
+  ): Promise<boolean> {
+    // Obtener las pistas del complejo
+    const courts = await this.prisma.courts.findMany({ where: { complex_id: complexId } });
+
+    // Obtener los índices y los estatus de las pistas por separado
+    const courtIds = courts.map((court) => court.id);
+    const courtStatuses = await Promise.all(
+      courts.map(async (court) => {
+        const courtStatus = await this.courtsStatusService.getCourtStatus(complexId, court.id);
+        return courtStatus.statusData;
+      })
+    );
+
+    // Obtener la posición del 'id' de la pista en el array (si no se encuentra devolver -1)
+    const index = courtIds.indexOf(courtId);
+    return (
+      index !== -1 &&
+      (
+        courtStatuses[index].status === CourtStatus.OPEN ||
+        (
+          courtStatuses[index].status === CourtStatus.WEATHER &&
+          this.utilitiesService.dateIsEqualOrGreater(courtStatuses[index].estimatedDryingTime, dateIni, new Date())
+        )
+      )
+    );
+  }
+
+  /**
    * Validates the reservation data provided in the DTO. Checks the validity of the court ID
    * and ensures the initial and final dates are valid.
    *
@@ -99,7 +139,7 @@ export class ReservationsService {
     if (
       dto.courtId !== undefined &&
       dto.dateIni !== undefined &&
-      !(await this.courtsService.isValidCourt(
+      !(await this.validateCourt(
         complexId,
         dto.courtId,
         dto.dateIni,
@@ -254,7 +294,7 @@ export class ReservationsService {
         const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
 
         const statusData = (
-          await this.courtsService.getCourtStatus(reservation.complex_id, reservation.court_id)
+          await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
         ).statusData;
 
         return new ResponseReservationDto({
@@ -427,7 +467,7 @@ export class ReservationsService {
       const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
 
       const statusData = (
-        await this.courtsService.getCourtStatus(reservation.complex_id, reservation.court_id)
+        await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
       ).statusData;
 
       return new ResponseReservationDto({
@@ -501,7 +541,7 @@ export class ReservationsService {
       const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
 
       const statusData = (
-        await this.courtsService.getCourtStatus(reservation.complex_id, reservation.court_id)
+        await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
       ).statusData;
 
       return new ResponseReservationDto({

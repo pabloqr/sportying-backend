@@ -41,43 +41,8 @@ export class CourtsService {
     private courtsStatusService: CourtsStatusService,
     @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
-    @Inject(forwardRef(() => ReservationsService))
     private reservationsService: ReservationsService,
   ) { }
-
-  /**
-   * Validates if the given court ID is valid and currently open in the specified complex.
-   *
-   * @param {number} complexId - The ID of the complex to check.
-   * @param {number} courtId - The ID of the court to validate.
-   * @param dateIni - The initial date of the reservation.
-   * @return {Promise<boolean>} A promise that resolves to `true` if the court ID is valid and open; otherwise, `false`.
-   */
-  public async isValidCourt(
-    complexId: number,
-    courtId: number,
-    dateIni: Date,
-  ): Promise<boolean> {
-    // Obtener las pistas del complejo
-    const courts = await this.getCourts(complexId, {});
-
-    // Obtener los índices y los estatus de las pistas por separado
-    const courtIds = courts.map((court) => court.id);
-    const courtStatuses = courts.map((court) => court.statusData);
-
-    // Obtener la posición del 'id' de la pista en el array (si no se encuentra devolver -1)
-    const index = courtIds.indexOf(courtId);
-    return (
-      index !== -1 &&
-      (
-        courtStatuses[index].status === CourtStatus.OPEN ||
-        (
-          courtStatuses[index].status === CourtStatus.WEATHER &&
-          this.utilitiesService.dateIsEqualOrGreater(courtStatuses[index].estimatedDryingTime, dateIni, new Date())
-        )
-      )
-    );
-  }
 
   private async calculateCourtNumber(complexId: number, sportKey: string): Promise<number> {
     // Obtener el máximo para el complejo y deporte dados
