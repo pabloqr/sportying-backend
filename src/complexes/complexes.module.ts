@@ -6,7 +6,7 @@ import { ComplexesController } from './complexes.controller';
 import { ComplexesService } from './complexes.service';
 
 @Module({
-  imports: [forwardRef(() => WeatherModule), forwardRef(() => SportsModule), forwardRef(() => CourtsModule)],
+  imports: [forwardRef(() => WeatherModule), SportsModule, forwardRef(() => CourtsModule)],
   controllers: [ComplexesController],
   providers: [ComplexesService],
   exports: [ComplexesService],

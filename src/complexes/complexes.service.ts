@@ -35,7 +35,6 @@ export class ComplexesService {
     private utilitiesService: UtilitiesService,
     @Inject(forwardRef(() => WeatherService))
     private weatherService: WeatherService,
-    @Inject(forwardRef(() => SportsService))
     private sportsService: SportsService,
     @Inject(forwardRef(() => CourtsService))
     private courtsService: CourtsService,

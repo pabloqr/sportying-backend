@@ -9,8 +9,6 @@ import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto';
 export class SportsService {
   constructor(
     private prisma: PrismaService,
-    @Inject(forwardRef(() => CourtsService))
-    private courtsService: CourtsService,
   ) { }
 
   async getComplexSports(
@@ -24,9 +22,9 @@ export class SportsService {
     };
 
     // Obtener las pistas asociadas al complejo actual
-    const courts = await this.courtsService.getCourts(complexId, {});
+    const courts = await this.prisma.courts.findMany({ where: { complex_id: complexId } });
     // Obtener los deportes (construcción del Set) y convertir la colección en un Array
-    const sportKeys = [...new Set(courts.map((court) => court.sportKey))];
+    const sportKeys = [...new Set(courts.map((court) => court.sport_key))];
     // Si se proporciona el listado de claves de deportes, filtrar la lista obtenida
     const filteredSportKeys = dto.keys ? sportKeys.filter((key) => dto.keys.includes(key)) : sportKeys;
 
