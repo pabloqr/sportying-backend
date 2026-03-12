@@ -7,6 +7,7 @@ import {
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
 import { Prisma } from '../../prisma/generated/client';
 import { ResponseReservationDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
@@ -32,51 +33,6 @@ export class ReservationsService {
     private utilitiesService: UtilitiesService,
     private courtsStatusService: CourtsStatusService,
   ) { }
-
-  /**
-   * Determines the reservation time filter based on the provided date.
-   *
-   * @param {Date} date - The date to evaluate for determining the time filter.
-   * @return {ReservationTimeFilter} Returns PAST if the date is earlier than the current date,
-   *  otherwise returns UPCOMING.
-   */
-  private getTimeFilterFromDate(date: Date): ReservationTimeFilter {
-    return date < new Date()
-      ? ReservationTimeFilter.PAST
-      : ReservationTimeFilter.UPCOMING;
-  }
-
-  private getReservationStatus(
-    status: ReservationAvailabilityStatus,
-    courtStatus: CourtStatus,
-    timeFilter: ReservationTimeFilter,
-  ): ReservationStatus {
-    let reservationStatus = ReservationStatus.SCHEDULED;
-    if (timeFilter === ReservationTimeFilter.UPCOMING) {
-      switch (courtStatus) {
-        case CourtStatus.OPEN:
-          break;
-        case CourtStatus.WEATHER:
-          reservationStatus = ReservationStatus.WEATHER;
-          break;
-        case CourtStatus.BLOCKED:
-        case CourtStatus.MAINTENANCE:
-          reservationStatus = ReservationStatus.CANCELLED;
-          break;
-      }
-    } else if (timeFilter === ReservationTimeFilter.PAST) {
-      switch (status) {
-        case ReservationAvailabilityStatus.CANCELLED:
-          reservationStatus = ReservationStatus.CANCELLED;
-          break;
-        default:
-          reservationStatus = ReservationStatus.COMPLETED;
-          break;
-      }
-    }
-
-    return reservationStatus;
-  }
 
   /**
    * Validates if the given court ID is valid and currently open in the specified complex.
@@ -284,7 +240,7 @@ export class ReservationsService {
 
     return Promise.all(
       filteredReservations.map(async (reservation) => {
-        const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
+        const timeFilter = this.utilitiesService.getTimeFilterFromDate(reservation.date_end);
 
         const statusData = (
           await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
@@ -292,7 +248,7 @@ export class ReservationsService {
 
         return new ResponseReservationDto({
           ...reservation,
-          reservationStatus: this.getReservationStatus(
+          reservationStatus: this.utilitiesService.getReservationStatus(
             reservation.status as ReservationAvailabilityStatus,
             statusData.status,
             timeFilter,
@@ -407,7 +363,7 @@ export class ReservationsService {
       return new ResponseReservationDto({
         ...reservation,
         reservationStatus: ReservationStatus.SCHEDULED,
-        timeFilter: this.getTimeFilterFromDate(reservation.date_end),
+        timeFilter: this.utilitiesService.getTimeFilterFromDate(reservation.date_end),
       });
     } catch (error) {
       this.errorsService.dbError(error, {
@@ -457,7 +413,7 @@ export class ReservationsService {
         data: { ...data, updated_at: new Date() },
       });
 
-      const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
+      const timeFilter = this.utilitiesService.getTimeFilterFromDate(reservation.date_end);
 
       const statusData = (
         await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
@@ -465,7 +421,7 @@ export class ReservationsService {
 
       return new ResponseReservationDto({
         ...reservation,
-        reservationStatus: this.getReservationStatus(
+        reservationStatus: this.utilitiesService.getReservationStatus(
           reservation.status as ReservationAvailabilityStatus,
           statusData.status,
           timeFilter,
@@ -497,55 +453,6 @@ export class ReservationsService {
       });
 
       return null;
-    } catch (error) {
-      this.errorsService.dbError(error, {
-        p2025: `Reservation with ID ${reservationId} not found.`,
-      });
-
-      throw error;
-    }
-  }
-
-  //------------------------------------------------------------------------------------------------------------------//
-
-  /**
-   * Updates the status of a reservation.
-   *
-   * @param {number} reservationId - The unique identifier of the reservation to update.
-   * @param {ReservationAvailabilityStatus} status - The new status to be applied to the reservation.
-   * @return {Promise<ResponseReservationDto>} A promise that resolves with the updated reservation details.
-   */
-  async setReservationStatus(
-    reservationId: number,
-    status: ReservationAvailabilityStatus,
-  ): Promise<ResponseReservationDto> {
-    try {
-      const reservation = await this.prisma.reservations.update({
-        where: {
-          id: reservationId,
-          is_delete: false,
-        },
-        data: {
-          status,
-          updated_at: new Date(),
-        },
-      });
-
-      const timeFilter = this.getTimeFilterFromDate(reservation.date_end);
-
-      const statusData = (
-        await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
-      ).statusData;
-
-      return new ResponseReservationDto({
-        ...reservation,
-        reservationStatus: this.getReservationStatus(
-          reservation.status as ReservationAvailabilityStatus,
-          statusData.status,
-          timeFilter,
-        ),
-        timeFilter,
-      });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Reservation with ID ${reservationId} not found.`,
