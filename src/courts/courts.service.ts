@@ -11,9 +11,8 @@ import { Prisma } from '../../prisma/generated/client';
 import {
   CourtAvailabilitySlotDto,
   ResponseCourtAvailabilityDto,
-  ResponseCourtDevicesDto,
   ResponseCourtDto,
-  ResponseCourtStatusDto,
+  ResponseCourtStatusDto
 } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
 import { UtilitiesService } from '../common/utilities.service';
@@ -30,9 +29,8 @@ import {
   CourtStatusData,
   CreateCourtDto,
   CreateCourtStatusDto,
-  GetCourtDevicesDto,
   GetCourtsDto,
-  UpdateCourtDto,
+  UpdateCourtDto
 } from './dto';
 import { CourtStatus, INACTIVE_COURT_STATUS } from './enums';
 
@@ -683,34 +681,6 @@ export class CourtsService {
       availability.find(
         (courtAvailability) => courtAvailability.id === courtId,
       ) ?? new ResponseCourtAvailabilityDto({ courtId, complexId })
-    );
-  }
-
-  /**
-   * Fetches court devices based on the provided parameters and conditions.
-   * This method delegates to the CourtsDevicesService to handle the relationship logic.
-   *
-   * @param {number} complexId - The ID of the sports complex where the court resides.
-   * @param {number} courtId - The ID of the court whose devices are being retrieved.
-   * @param {GetCourtDevicesDto} dto - Data transfer object containing filtering and ordering parameters.
-   * @param {Function} getDevice - Function to get device details by complexId and deviceId.
-   * @param {boolean} [checkDeleted=false] - If true, includes devices marked as deleted; otherwise, excludes them.
-   * @return {Promise<ResponseCourtDevicesDto>} A promise that resolves to a ResponseCourtDevicesDto containing the
-   * court devices data.
-   */
-  async getCourtDevices(
-    complexId: number,
-    courtId: number,
-    dto: GetCourtDevicesDto,
-    getDevice: (complexId: number, deviceId: number) => Promise<any>,
-    checkDeleted: boolean = false,
-  ): Promise<ResponseCourtDevicesDto> {
-    return this.courtsDevicesService.getCourtDevices(
-      complexId,
-      courtId,
-      dto,
-      getDevice,
-      checkDeleted,
     );
   }
 }

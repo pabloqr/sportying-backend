@@ -121,34 +121,4 @@ export class DevicesController {
   ) {
     return this.devicesService.setDeviceStatus(complexId, deviceId, body);
   }
-
-  @Public()
-  @Get(':complexId/devices/:deviceId/courts')
-  async getDeviceCourts(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Param('deviceId', ParseIntPipe) deviceId: number,
-    @Query() query: GetDeviceCourtsDto,
-  ) {
-    return this.devicesService.getDeviceCourts(
-      complexId,
-      deviceId,
-      query,
-      this.courtsService.getCourt.bind(this.courtsService),
-    );
-  }
-
-  @Public()
-  @Post(':complexId/devices/:deviceId/courts')
-  async setDeviceCourts(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Param('deviceId', ParseIntPipe) deviceId: number,
-    @Body() body: CreateDeviceCourtsDto,
-  ) {
-    return this.devicesService.setDeviceCourts(
-      complexId,
-      deviceId,
-      body,
-      this.courtsService.getCourt.bind(this.courtsService),
-    );
-  }
 }

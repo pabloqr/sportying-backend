@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import {
@@ -40,24 +40,20 @@ export class CourtsDevicesService {
     complexId: number,
     courtId: number,
     dto: GetCourtDevicesDto,
-    getDevice: (
-      complexId: number,
-      deviceId: number,
-    ) => Promise<ResponseDeviceDto>,
     checkDeleted: boolean = false,
   ): Promise<ResponseCourtDevicesDto> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.courts_devicesWhereInput = {
-      // Se evita obtener las pistas eliminados
+      // Evitar obtener las pistas eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      // Se obtienen solo las relaciones del dispositivo actual
+      // Obtener solo las relaciones del dispositivo actual
       ...{ court_id: courtId },
 
       ...(dto.deviceId !== undefined && { device_id: dto.deviceId }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
+    // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
     if (dto.orderParams !== undefined) {
       dto.orderParams.forEach((orderParam) => {
@@ -68,14 +64,24 @@ export class CourtsDevicesService {
       });
     }
 
-    // Se obtienen todas las entradas en las que se relacione un dispositivo con la pista dada
+    // Obtener todas las entradas en las que se relacione un dispositivo con la pista dada
     const courtDevices = await this.prisma.courts_devices.findMany({
       where,
       orderBy,
     });
 
+    // Obtener la información de los dispositivos
     const devices = await Promise.all(
-      courtDevices.map((cd) => getDevice(complexId, cd.device_id)),
+      courtDevices.map(async (cd) => {
+        // Obtener el dispositivo de la BD
+        const device = await this.prisma.devices.findUnique({ where: { id: cd.device_id } });
+        // Verificar los datos obtenidos
+        if (!device) {
+          throw new NotFoundException(`Device with ID ${cd.device_id} not found.`);
+        }
+        // Devolver la información formateada con el DTO
+        return new ResponseDeviceDto(device);
+      }),
     );
 
     return new ResponseCourtDevicesDto({
@@ -101,21 +107,20 @@ export class CourtsDevicesService {
     complexId: number,
     deviceId: number,
     dto: GetDeviceCourtsDto,
-    getCourt: (complexId: number, courtId: number) => Promise<ResponseCourtDto>,
     checkDeleted: boolean = false,
   ): Promise<ResponseDeviceCourtsDto> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.courts_devicesWhereInput = {
-      // Se evita obtener las pistas eliminados
+      // Evitar obtener las pistas eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      // Se obtienen solo las relaciones del dispositivo actual
+      // Obtener solo las relaciones del dispositivo actual
       ...{ device_id: deviceId },
 
       ...(dto.courtId !== undefined && { court_id: dto.courtId }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
+    // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
     if (dto.orderParams !== undefined) {
       dto.orderParams.forEach((orderParam) => {
@@ -126,14 +131,24 @@ export class CourtsDevicesService {
       });
     }
 
-    // Se obtienen todas las entradas en las que se relacione una pista con el dispositivo dado
+    // Obtener todas las entradas en las que se relacione una pista con el dispositivo dado
     const deviceCourts = await this.prisma.courts_devices.findMany({
       where,
       orderBy,
     });
 
+    // Obtener la información de las pistas
     const courts = await Promise.all(
-      deviceCourts.map((dc) => getCourt(complexId, dc.court_id)),
+      deviceCourts.map(async (dc) => {
+        // Obtener la pista de la BD
+        const court = await this.prisma.courts.findUnique({ where: { id: dc.court_id } });
+        // Verificar los datos obtenidos
+        if (!court) {
+          throw new NotFoundException(`Court with ID ${dc.court_id} not found.`);
+        }
+        // Devolver la información formateada con el DTO
+        return new ResponseCourtDto(court);
+      }),
     );
 
     return new ResponseDeviceCourtsDto({
@@ -159,21 +174,20 @@ export class CourtsDevicesService {
     complexId: number,
     deviceId: number,
     dto: CreateDeviceCourtsDto,
-    getCourt: (complexId: number, courtId: number) => Promise<ResponseCourtDto>,
   ): Promise<ResponseDeviceCourtsDto> {
-    // Se obtienen las pistas actuales asociadas con el dispositivo
+    // Obtener las pistas actuales asociadas con el dispositivo
     let currentDeviceCourts = (
-      await this.getDeviceCourts(complexId, deviceId, {}, getCourt, true)
+      await this.getDeviceCourts(complexId, deviceId, {}, true)
     ).courts;
 
     try {
       let deviceCourts: ResponseCourtDto[] = [];
 
-      // Se procesan todas las pistas
+      // Procesar todas las pistas
       for (const courtId of dto.courts) {
         const court = currentDeviceCourts.find((court) => court.id === courtId);
         if (court === undefined) {
-          // Si la pista actual no está incluida en la lista, se crea una nueva entrada
+          // Si la pista actual no está incluida en la lista, crear una nueva entrada
           await this.prisma.courts_devices.create({
             data: {
               court_id: courtId,
@@ -181,13 +195,17 @@ export class CourtsDevicesService {
             },
           });
 
-          // Se obtiene el dispositivo actual para poder devolverlo
-          const newCourt = await getCourt(complexId, courtId);
+          // Obtener la pista actual para poder devolverla
+          const newCourt = await this.prisma.courts.findUnique({ where: { id: courtId } });
+          // Verificar los datos obtenidos
+          if (!newCourt) {
+            throw new NotFoundException(`Court with ID ${courtId} not found.`);
+          }
 
-          // Se añade a la lista final
-          deviceCourts.push(newCourt);
+          // Añadir a la lista final
+          deviceCourts.push(new ResponseCourtDto(newCourt));
         } else {
-          // Si la pista actual está incluida en la lista, se actualiza la entrada para asegurar que no se ha
+          // Si la pista actual está incluida en la lista, actualizar la entrada para asegurar que no se ha
           // establecido como eliminada
           await this.prisma.courts_devices.update({
             where: {
@@ -201,16 +219,16 @@ export class CourtsDevicesService {
             },
           });
 
-          // Se añade a la lista final
+          // Añadir a la lista final
           deviceCourts.push(court);
 
-          // Se elimina el valor de la lista inicial
+          // Eliminar el valor de la lista inicial
           currentDeviceCourts = currentDeviceCourts.filter(
             (court) => court.id !== courtId,
           );
         }
 
-        // Se actualizan las entradas restantes para establecerlas como eliminadas
+        // Actualizar las entradas restantes para establecerlas como eliminadas
         for (const court of currentDeviceCourts) {
           await this.prisma.courts_devices.update({
             where: {

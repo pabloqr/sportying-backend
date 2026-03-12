@@ -9,26 +9,23 @@ import { AuthService } from '../auth/auth.service';
 import { AnalysisService } from '../common/analysis.service';
 import {
   DeviceTelemetrySlotDto,
-  ResponseDeviceCourtsDto,
   ResponseDeviceDto,
   ResponseDeviceStatusDto,
-  ResponseDeviceTelemetryDto,
+  ResponseDeviceTelemetryDto
 } from '../common/dto';
 import { OrderBy } from '../common/enums';
 import { ErrorsService } from '../common/errors.service';
 import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 import {
-  CreateDeviceCourtsDto,
   CreateDeviceDto,
   CreateDeviceStatusDto,
   CreateDeviceTelemetryDto,
   DEVICE_ORDER_FIELD_MAP,
   DEVICE_TELEMETRY_ORDER_FIELD_MAP,
   DeviceTelemetryOrderField,
-  GetDeviceCourtsDto,
   GetDevicesDto,
   GetDeviceTelemetryDto,
-  UpdateDeviceDto,
+  UpdateDeviceDto
 } from './dto';
 import { DeviceType } from './enum';
 
@@ -57,7 +54,6 @@ export class DevicesService {
     deviceId: number,
     value: number,
     timestamp: Date,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
   ): Promise<void> {
     // Se obtiene la información sobre el dispositivo actual
     const device = await this.getDevice(complexId, deviceId);
@@ -67,7 +63,6 @@ export class DevicesService {
         complexId,
         deviceId,
         {},
-        getCourt,
       )
     ).courts;
 
@@ -417,7 +412,6 @@ export class DevicesService {
         deviceId,
         dto.value,
         telemetry.created_at,
-        getCourt,
       ).catch((error) =>
         console.error('Error processing device telemetry:', error),
       );
@@ -499,60 +493,5 @@ export class DevicesService {
 
       throw error;
     }
-  }
-
-  /**
-   * Retrieves a list of courts associated with a specific device in a complex.
-   * This method delegates to the CourtsDevicesService to handle the relationship logic.
-   *
-   * @param {number} complexId - The unique identifier of the complex.
-   * @param {number} deviceId - The unique identifier of the device.
-   * @param {GetDeviceCourtsDto} dto - The data transfer object containing filters and order parameters for the courts.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
-   * @param {boolean} [checkDeleted=false] - A flag to include deleted courts in the result. If false, deleted courts
-   * are excluded.
-   * @return {Promise<ResponseDeviceCourtsDto>} A promise that resolves with a response object containing the device ID,
-   * complex ID, and associated courts.
-   */
-  async getDeviceCourts(
-    complexId: number,
-    deviceId: number,
-    dto: GetDeviceCourtsDto,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
-    checkDeleted: boolean = false,
-  ): Promise<ResponseDeviceCourtsDto> {
-    return this.courtsDevicesService.getDeviceCourts(
-      complexId,
-      deviceId,
-      dto,
-      getCourt,
-      checkDeleted,
-    );
-  }
-
-  /**
-   * Associates a list of courts with a specific device.
-   * This method delegates to the CourtsDevicesService to handle the relationship logic.
-   *
-   * @param {number} complexId - The identifier for the sports or device complex.
-   * @param {number} deviceId - The identifier for the specific device to associate with the courts.
-   * @param {CreateDeviceCourtsDto} dto - An object containing the list of court IDs to be associated with the specified
-   * device.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
-   * @return {Promise<ResponseDeviceCourtsDto>} A promise that resolves to an object containing the updated device-court
-   * associations.
-   */
-  async setDeviceCourts(
-    complexId: number,
-    deviceId: number,
-    dto: CreateDeviceCourtsDto,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
-  ): Promise<ResponseDeviceCourtsDto> {
-    return this.courtsDevicesService.setDeviceCourts(
-      complexId,
-      deviceId,
-      dto,
-      getCourt,
-    );
   }
 }

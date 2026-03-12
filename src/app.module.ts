@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { WeatherModule } from './weather/weather.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SportsModule } from './sports/sports.module';
+import { CourtsStatusModule } from './courts-status/courts-status.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { SportsModule } from './sports/sports.module';
     NotificationsModule,
     WeatherModule,
     SportsModule,
+    CourtsStatusModule,
   ],
   providers: [
     {
