@@ -3,7 +3,26 @@ module.exports = {
   rootDir: '..',
   testEnvironment: 'node',
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': [
+      '@swc/jest',
+      {
+        sourceMaps: 'inline',
+        module: {
+          type: 'commonjs',
+        },
+        jsc: {
+          target: 'es2022',
+          parser: {
+            syntax: 'typescript',
+            decorators: true,
+          },
+          transform: {
+            legacyDecorator: true,
+            decoratorMetadata: true,
+          },
+        },
+      },
+    ],
   },
   setupFiles: ['<rootDir>/test/support/setup-env.js'],
   moduleNameMapper: {
@@ -13,4 +32,5 @@ module.exports = {
   testTimeout: 30000,
   collectCoverageFrom: ['<rootDir>/src/**/*.ts'],
   coverageDirectory: '<rootDir>/coverage',
+  coverageProvider: 'v8',
 };

@@ -149,7 +149,7 @@ export class AnalysisService {
 
     return 1 + wTemperature
       * Math.tanh((temperature - temperatureThreshold) / temperatureScale)
-      * 1 - Math.min(1, temperature / surfaceWaterSaturation);
+      * (1 - Math.min(1, temperature / surfaceWaterSaturation));
   }
 
   /**
@@ -388,9 +388,10 @@ export class AnalysisService {
         // Agua máxima en superficie (mm) --> [3, 6]
         const surfaceWaterMax = 6.0;
 
-        const surfaceWater = Math.min(
+        const surfaceWater = clamp(
+          wDrain * weather.surfaceWaterPrev + intensityArray.at(-2) + intensity - dryinRate * 0.5,
+          0,
           surfaceWaterMax,
-          wDrain * weather.surfaceWaterPrev + intensityArray.at(-2) + intensity - dryinRate * 0.5
         );
 
         // PASO 4b.7: Calcular el bloqueo por condiciones físicas
