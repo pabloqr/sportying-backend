@@ -26,7 +26,7 @@ describe('AuthController', () => {
   });
 
   it('delegates signup to AuthService', async () => {
-    const dto = { mail: 'user@test.com' };
+    const dto = { mail: 'user@test.com', password: 'secret123' };
     mockAuthService.signup.mockResolvedValue({ id: 1 });
 
     await expect(controller.signup(dto as any)).resolves.toEqual({ id: 1 });
@@ -34,7 +34,7 @@ describe('AuthController', () => {
   });
 
   it('delegates signin to AuthService', async () => {
-    const dto = { mail: 'user@test.com', password: 'pw' };
+    const dto = { mail: 'user@test.com', password: 'secret123' };
     mockAuthService.signin.mockResolvedValue({ accessToken: 'token' });
 
     await expect(controller.signin(dto as any)).resolves.toEqual({
@@ -44,7 +44,7 @@ describe('AuthController', () => {
   });
 
   it('delegates refreshToken to AuthService', async () => {
-    const dto = { refreshToken: 'refresh' };
+    const dto = { refreshToken: 'refresh-token' };
     mockAuthService.refreshToken.mockResolvedValue({ accessToken: 'new-token' });
 
     await expect(controller.refreshToken(dto as any)).resolves.toEqual({
@@ -53,7 +53,7 @@ describe('AuthController', () => {
     expect(mockAuthService.refreshToken).toHaveBeenCalledWith(dto);
   });
 
-  it('delegates signout to AuthService with the current user id', async () => {
+  it('delegates signout to AuthService with the authenticated user id', async () => {
     mockAuthService.signout.mockResolvedValue(undefined);
 
     await expect(controller.signout(7)).resolves.toBeUndefined();
