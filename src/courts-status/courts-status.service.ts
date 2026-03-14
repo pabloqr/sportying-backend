@@ -97,7 +97,11 @@ export class CourtsStatusService {
         },
       });
 
-      return new ResponseCourtStatusDto({ ...status, complex_id: complexId });
+      return new ResponseCourtStatusDto({
+        court_id: courtId,
+        complex_id: complexId,
+        status_data: status,
+      });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Court with ID ${courtId} not found.`,

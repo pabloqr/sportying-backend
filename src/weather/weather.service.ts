@@ -387,7 +387,7 @@ export class WeatherService implements OnModuleInit {
     if (weather !== null) return new ResponseWeatherDataDto(weather);
 
     // Si no se ha obtenido ninguna entrada, verificar si ya hay un proceso de actualización
-    if (this.activeRequests.has(geohash)) return this.activeRequests[geohash];
+    if (this.activeRequests.has(geohash)) return this.activeRequests.get(geohash)!;
 
     // Si no hay ningún proceso de actualización, iniciarlo (en este caso no hay bloqueo porque no hay await)
     const weatherUpdate = this.updateWeather(geohash).finally(() => {

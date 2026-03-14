@@ -25,7 +25,7 @@ export class ResponseCourtStatusDto {
   constructor(courtStatus: any) {
     this.id = courtStatus.court_id ?? courtStatus.courtId;
     this.complexId = courtStatus.complex_id ?? courtStatus.complexId;
-    this.statusData = courtStatus.status_data ?? courtStatus.statusData;
+    this.statusData = new CourtStatusData(courtStatus.status_data ?? courtStatus.statusData);
     this.createdAt = new Date(courtStatus.created_at ?? courtStatus.createdAt);
   }
 }
