@@ -38,12 +38,12 @@ export class CourtsDevicesService {
       // Obtener solo las relaciones del dispositivo actual
       ...{ court_id: courtId },
 
-      ...(dto.deviceId !== undefined && { device_id: dto.deviceId }),
+      ...(dto.deviceId && { device_id: dto.deviceId }),
     };
 
     // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COURT_DEVICES_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -105,12 +105,12 @@ export class CourtsDevicesService {
       // Obtener solo las relaciones del dispositivo actual
       ...{ device_id: deviceId },
 
-      ...(dto.courtId !== undefined && { court_id: dto.courtId }),
+      ...(dto.courtId && { court_id: dto.courtId }),
     };
 
     // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_COURTS_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({

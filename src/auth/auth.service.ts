@@ -54,16 +54,6 @@ export class AuthService {
   }
 
   /**
-   * Decodes a given JWT token and retrieves its payload.
-   *
-   * @param token - The JWT token to be decoded.
-   * @return The decoded payload containing the subject (sub) and email (mail).
-   */
-  private decodeToken(token: string) {
-    return this.jwt.decode<{ sub: number; mail: string; role: string }>(token);
-  }
-
-  /**
    * Validates the provided payload to ensure it contains the required properties.
    *
    * @param {Object} payload - The payload to validate.
@@ -283,13 +273,7 @@ export class AuthService {
    */
   async refreshToken(dto: RefreshTokenDto): Promise<TokensDto> {
     // Se obtienen los datos del token de refresco
-    const refreshTokenPayload = await this.verifyToken(dto.refreshToken, false).catch((error: Error) => {
-      if (error instanceof TokenExpiredError) {
-        throw error;
-      }
-
-      throw new UnauthorizedException('Invalid refresh token. Please try again.');
-    });
+    const refreshTokenPayload = await this.verifyToken(dto.refreshToken, false);
 
     // Se trata de obtener el usuario con los datos del token de refresco
     const user = await this.prisma.users.findUnique({

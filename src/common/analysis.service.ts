@@ -465,34 +465,34 @@ export class AnalysisService {
    * @param {number[]} courtIds - An array of identifiers for the courts within the complex.
    * @return {Promise<void>} A promise that resolves when the process is complete.
    */
-  async processRainTelemetry(
-    complexId: number,
-    previousTelemetry: DeviceTelemetrySlotDto | null,
-    rainIntensity: number,
-    courtIds: number[],
-  ): Promise<void> {
-    for (const courtId of courtIds) {
-      let courtStatus = CourtStatus.OPEN;
-      if (rainIntensity >= 2.5 || (previousTelemetry && previousTelemetry.value > 0.0)) {
-        courtStatus = CourtStatus.WEATHER;
-      } else if (
-        previousTelemetry &&
-        (previousTelemetry.value == 0.0 ||
-          (previousTelemetry.value <= 2.5 &&
-            this.utilitiesService.dateIsEqualOrGreater(30, previousTelemetry.createdAt, new Date())))
-      ) {
-        courtStatus = CourtStatus.OPEN;
-      }
+  // async processRainTelemetry(
+  //   complexId: number,
+  //   previousTelemetry: DeviceTelemetrySlotDto | null,
+  //   rainIntensity: number,
+  //   courtIds: number[],
+  // ): Promise<void> {
+  //   for (const courtId of courtIds) {
+  //     let courtStatus = CourtStatus.OPEN;
+  //     if (rainIntensity >= 2.5 || (previousTelemetry && previousTelemetry.value > 0.0)) {
+  //       courtStatus = CourtStatus.WEATHER;
+  //     } else if (
+  //       previousTelemetry &&
+  //       (previousTelemetry.value == 0.0 ||
+  //         (previousTelemetry.value <= 2.5 &&
+  //           this.utilitiesService.dateIsEqualOrGreater(30, previousTelemetry.createdAt, new Date())))
+  //     ) {
+  //       courtStatus = CourtStatus.OPEN;
+  //     }
 
-      // Obtener el estatus actual de la pista para aplicar los cambios necesarios
-      const statusData = (await this.courtsStatusService.getCourtStatus(complexId, courtId)).statusData;
-      if (statusData.status !== courtStatus) {
-        await this.courtsStatusService.setCourtStatus(complexId, courtId, {
-          status: courtStatus,
-        });
+  //     // Obtener el estatus actual de la pista para aplicar los cambios necesarios
+  //     const statusData = (await this.courtsStatusService.getCourtStatus(complexId, courtId)).statusData;
+  //     if (statusData.status !== courtStatus) {
+  //       await this.courtsStatusService.setCourtStatus(complexId, courtId, {
+  //         status: courtStatus,
+  //       });
 
-        this.notificationsService.notifyCourtStatusChange(complexId, courtId, courtStatus);
-      }
-    }
-  }
+  //       this.notificationsService.notifyCourtStatusChange(complexId, courtId, courtStatus);
+  //     }
+  //   }
+  // }
 }

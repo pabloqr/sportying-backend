@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
 import { Prisma } from '../../prisma/generated/client';
 import { ResponseReservationDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
@@ -70,11 +69,7 @@ export class ReservationsService {
     complexId: number,
     dto: CreateReservationDto | UpdateReservationDto,
   ): Promise<void> {
-    if (
-      dto.courtId !== undefined &&
-      dto.dateIni !== undefined &&
-      !(await this.validateCourt(complexId, dto.courtId, dto.dateIni))
-    ) {
+    if (dto.courtId && dto.dateIni && !(await this.validateCourt(complexId, dto.courtId, dto.dateIni))) {
       throw new BadRequestException('Requested court is not valid.');
     }
 
@@ -89,8 +84,8 @@ export class ReservationsService {
     const complexTime = { timeIni: complex.time_ini, timeEnd: complex.time_end };
 
     if (
-      dto.dateIni !== undefined &&
-      dto.dateEnd !== undefined &&
+      dto.dateIni &&
+      dto.dateEnd &&
       !this.isValidDate(complexTime.timeIni, complexTime.timeEnd, dto.dateIni, dto.dateEnd)
     ) {
       throw new BadRequestException('Dates are not valid. Initial date must be previous to final date.');
@@ -132,21 +127,19 @@ export class ReservationsService {
       // Evitar obtener las reservas eliminadas
       ...(!checkDeleted && { is_delete: false }),
 
-      ...(dto.id !== undefined && { id: dto.id }),
-      ...(dto.userId !== undefined && { user_id: dto.userId }),
-      ...(dto.complexId !== undefined && { complex_id: dto.complexId }),
-      ...(dto.courtId !== undefined && { court_id: dto.courtId }),
+      ...(dto.id && { id: dto.id }),
+      ...(dto.userId && { user_id: dto.userId }),
+      ...(dto.complexId && { complex_id: dto.complexId }),
+      ...(dto.courtId && { court_id: dto.courtId }),
 
-      ...(dto.dateIni !== undefined && { date_ini: dto.dateIni }),
-      ...(dto.dateEnd !== undefined && { date_end: dto.dateEnd }),
+      ...(dto.dateIni && { date_ini: dto.dateIni }),
+      ...(dto.dateEnd && { date_end: dto.dateEnd }),
 
-      ...(dto.status !== undefined && {
-        status: dto.status,
-      }),
+      ...(dto.status && { status: dto.status }),
     };
 
     // Obtener el filtro por momento de la reserva
-    if (dto.timeFilter !== undefined) {
+    if (dto.timeFilter) {
       switch (dto.timeFilter) {
         case ReservationTimeFilter.PAST:
           where.date_end = { lt: new Date() };
@@ -162,7 +155,7 @@ export class ReservationsService {
 
     // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.reservationsOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = RESERVATION_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -353,10 +346,10 @@ export class ReservationsService {
 
     // Establecer las propiedades a actualizar
     const data: Prisma.reservationsUpdateInput = {
-      ...(dto.userId !== undefined && { user_id: dto.userId }),
-      ...(dto.courtId !== undefined && { court_id: dto.courtId }),
-      ...(dto.dateIni !== undefined && { date_ini: dto.dateIni }),
-      ...(dto.dateEnd !== undefined && { date_end: dto.dateEnd }),
+      ...(dto.userId && { user_id: dto.userId }),
+      ...(dto.courtId && { court_id: dto.courtId }),
+      ...(dto.dateIni && { date_ini: dto.dateIni }),
+      ...(dto.dateEnd && { date_end: dto.dateEnd }),
     };
 
     try {

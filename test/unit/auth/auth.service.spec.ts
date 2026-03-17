@@ -8,16 +8,15 @@ jest.mock('uuid', () => ({
 }));
 
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TokenExpiredError } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { v4 as uuidV4 } from 'uuid';
 import { AuthService } from '../../../src/auth/auth.service';
 import { Role } from '../../../src/auth/enums';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { UsersService } from '../../../src/users/users.service';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 
 const mockPrisma = {
   devices: {
@@ -126,6 +125,21 @@ describe('AuthService', () => {
       await expect(service.validateApiKey('id.secret')).rejects.toThrow(UnauthorizedException);
     });
 
+    it('throws when the api key is not valid', async () => {
+      mockPrisma.devices.findUnique.mockResolvedValue({
+        id: 1,
+        complex_id: 2,
+        type: 'RAIN',
+        status: 'NORMAL',
+        api_key: 'hashed',
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      (argon.verify as jest.Mock).mockResolvedValue(false);
+
+      await expect(service.validateApiKey('id.secret')).rejects.toThrow(UnauthorizedException);
+    });
+
     it('returns the device dto when the key is valid', async () => {
       mockPrisma.devices.findUnique.mockResolvedValue({
         id: 1,
@@ -216,6 +230,24 @@ describe('AuthService', () => {
       await expect(service.signin({ mail: 'a@a.com', password: 'pw' } as any)).rejects.toThrow(ForbiddenException);
     });
 
+    it('throws when password does not match', async () => {
+      mockPrisma.users.findUnique.mockResolvedValue({
+        id: 1,
+        role: Role.CLIENT,
+        name: 'A',
+        surname: 'B',
+        mail: 'a@a.com',
+        phone_prefix: 34,
+        phone_number: 123456789,
+        password: 'hashed',
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      (argon.verify as jest.Mock).mockResolvedValue(false);
+
+      await expect(service.signin({ mail: 'a@a.com', password: 'pw' } as any)).rejects.toThrow(ForbiddenException);
+    });
+
     it('returns tokens and the mapped user when signin succeeds', async () => {
       mockPrisma.users.findUnique.mockResolvedValue({
         id: 1,
@@ -262,23 +294,83 @@ describe('AuthService', () => {
       });
     });
 
-    it('returns new signed tokens when refresh token is valid', async () => {
+    it('thows when the user is not found', async () => {
       jest.spyOn(service, 'verifyToken').mockResolvedValue({
         sub: 1,
         mail: 'a@a.com',
         role: 'CLIENT',
       });
-      jest.spyOn(service, 'getSignedTokens').mockResolvedValue({
-        accessToken: 'new-access',
-        refreshToken: 'new-refresh',
-        expiresIn: 900,
-      } as any);
+      mockPrisma.users.findUnique.mockResolvedValue(null);
+
+      await expect(service.refreshToken({ refreshToken: 'token' } as any)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('thows when the user does not contain a valid refresh token', async () => {
+      jest.spyOn(service, 'verifyToken').mockResolvedValue({
+        sub: 1,
+        mail: 'a@a.com',
+        role: 'CLIENT',
+      });
+      mockPrisma.users.findUnique.mockResolvedValue({
+        id: 1,
+        mail: 'a@a.com',
+        refresh_token: null,
+      });
+
+      await expect(service.refreshToken({ refreshToken: 'token' } as any)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('thows when the refresh token does not match', async () => {
+      jest.spyOn(service, 'verifyToken').mockResolvedValue({
+        sub: 1,
+        mail: 'a@a.com',
+        role: 'CLIENT',
+      });
+      mockPrisma.users.findUnique.mockResolvedValue({
+        id: 1,
+        mail: 'a@a.com',
+        refresh_token: 'hashed',
+      });
+      (argon.verify as jest.Mock).mockResolvedValue(false);
+
+      await expect(service.refreshToken({ refreshToken: 'token' } as any)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('thows when the refresh token payload is not valid', async () => {
+      jest.spyOn(service, 'verifyToken').mockResolvedValue({
+        sub: 1,
+        mail: 'a@a.com',
+        role: 'CLIENT',
+      });
       mockPrisma.users.findUnique.mockResolvedValue({
         id: 1,
         mail: 'a@a.com',
         refresh_token: 'hashed',
       });
       (argon.verify as jest.Mock).mockResolvedValue(true);
+      jest.spyOn(service, 'validatePayload').mockReturnValue(false);
+
+      await expect(service.refreshToken({ refreshToken: 'token' } as any)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('returns new signed tokens when refresh token is valid', async () => {
+      jest.spyOn(service, 'verifyToken').mockResolvedValue({
+        sub: 1,
+        mail: 'a@a.com',
+        role: 'CLIENT',
+      });
+      mockPrisma.users.findUnique.mockResolvedValue({
+        id: 1,
+        mail: 'a@a.com',
+        refresh_token: 'hashed',
+      });
+      (argon.verify as jest.Mock).mockResolvedValue(true);
+      jest.spyOn(service, 'validatePayload').mockReturnValue(true);
+      jest.spyOn(service, 'getSignedTokens').mockResolvedValue({
+        accessToken: 'new-access',
+        refreshToken: 'new-refresh',
+        expiresIn: 900,
+      } as any);
 
       await expect(service.refreshToken({ refreshToken: 'token' } as any)).resolves.toMatchObject({
         accessToken: 'new-access',

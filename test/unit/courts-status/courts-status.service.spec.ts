@@ -1,3 +1,4 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
@@ -124,6 +125,39 @@ describe('CourtsStatusService', () => {
 
       await expect(service.setCourtStatus(1, 2, { status: CourtStatus.OPEN })).rejects.toThrow(error);
       expect(mockErrorsService.dbError).toHaveBeenCalled();
+    });
+
+    it('throws when setCourtStatus receives no body', async () => {
+      const bodyError = new BadRequestException('No properties to update.');
+      mockErrorsService.noBodyError.mockImplementationOnce(() => {
+        throw bodyError;
+      });
+
+      await expect(service.setCourtStatus(1, 2, undefined as any)).rejects.toThrow(bodyError);
+      expect(mockPrisma.courts_status.create).not.toHaveBeenCalled();
+    });
+
+    it('throws the mapped error when creating court status fails', async () => {
+      const error = new Error('db');
+      const mappedError = new NotFoundException('Court with ID 2 not found.');
+      jest.spyOn(service, 'getCourtStatus').mockResolvedValue({
+        complexId: 1,
+        courtId: 2,
+        statusData: {
+          status: CourtStatus.OPEN,
+          alertLevel: 0,
+          estimatedDryingTime: 0,
+        },
+      } as any);
+      mockPrisma.courts_status.create.mockRejectedValue(error);
+      mockErrorsService.dbError.mockImplementationOnce(() => {
+        throw mappedError;
+      });
+
+      await expect(service.setCourtStatus(1, 2, { status: CourtStatus.BLOCKED })).rejects.toThrow(mappedError);
+      expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+        p2025: 'Court with ID 2 not found.',
+      });
     });
   });
 });

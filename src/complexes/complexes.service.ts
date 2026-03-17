@@ -50,24 +50,22 @@ export class ComplexesService {
       // Evitar obtener los complejos eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
       // Establecer las condiciones para los campos de tipo 'string'
-      ...(dto.complexName !== undefined && {
-        complex_name: { contains: dto.complexName, mode: 'insensitive' },
-      }),
+      ...(dto.complexName && { complex_name: { contains: dto.complexName, mode: 'insensitive' } }),
 
       // Establecer las condiciones para los campos de tipo 'Date'
-      ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
-      ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
+      ...(dto.timeIni && { time_ini: dto.timeIni }),
+      ...(dto.timeEnd && { time_end: dto.timeEnd }),
 
-      ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
-      ...(dto.locLongitude !== undefined && { loc_longitude: dto.locLongitude }),
+      ...(dto.locLatitude && { loc_latitude: dto.locLatitude }),
+      ...(dto.locLongitude && { loc_longitude: dto.locLongitude }),
     };
 
     // Obtener el modo de ordenación de los elementos
     let orderBy: Prisma.complexesOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COMPLEX_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -92,7 +90,7 @@ export class ComplexesService {
       orderBy,
     });
 
-    const weatherData: Map<string, ResponseWeatherDataDto> = new Map<string, ResponseWeatherDataDto>();
+    const weatherData: Map<string, Promise<ResponseWeatherDataDto>> = new Map<string, Promise<ResponseWeatherDataDto>>();
 
     // Devolver la lista modificando los elementos obtenidos
     return Promise.all(
@@ -105,9 +103,12 @@ export class ComplexesService {
         // Obtener el geohash de las coordenadas dadas
         const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);
         // Obtener la meteorología si no existe previamente
-        if (!weatherData.has(geohash)) weatherData[geohash] = await this.weatherService.getWeatherFromGeohash(geohash);
+        if (!weatherData.has(geohash)) {
+          weatherData.set(geohash, this.weatherService.getWeatherFromGeohash(geohash));
+        }
+        const weather = await weatherData.get(geohash);
 
-        return new ResponseComplexDto({ ...complex, sports, weather: weatherData[geohash] });
+        return new ResponseComplexDto({ ...complex, sports, weather });
       }),
     );
   }
@@ -205,11 +206,11 @@ export class ComplexesService {
 
     // Establecer las propiedades a actualizar
     const data = {
-      ...(dto.complexName !== undefined && { complex_name: dto.complexName }),
-      ...(dto.timeIni !== undefined && { time_ini: this.utilitiesService.stringToDate(dto.timeIni) }),
-      ...(dto.timeEnd !== undefined && { time_end: this.utilitiesService.stringToDate(dto.timeEnd) }),
-      ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
-      ...(dto.locLongitude !== undefined && { loc_longitude: dto.locLongitude }),
+      ...(dto.complexName && { complex_name: dto.complexName }),
+      ...(dto.timeIni && { time_ini: this.utilitiesService.stringToDate(dto.timeIni) }),
+      ...(dto.timeEnd && { time_end: this.utilitiesService.stringToDate(dto.timeEnd) }),
+      ...(dto.locLatitude && { loc_latitude: dto.locLatitude }),
+      ...(dto.locLongitude && { loc_longitude: dto.locLongitude }),
     };
 
     try {

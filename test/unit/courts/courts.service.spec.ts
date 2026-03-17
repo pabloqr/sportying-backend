@@ -1,4 +1,4 @@
-import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { UtilitiesService } from '../../../src/common/utilities.service';
@@ -79,6 +79,12 @@ describe('CourtsService', () => {
     await expect((service as any).checkExistingCourtNumber(1, 2, 'padel')).rejects.toThrow(ConflictException);
   });
 
+  it('does not throw when a court number is available', async () => {
+    mockPrisma.courts.findFirst.mockResolvedValue(null);
+
+    await expect((service as any).checkExistingCourtNumber(1, 2, 'padel')).resolves.toBeUndefined();
+  });
+
   it('inserts trimmed availability windows when a weather block overlaps', () => {
     const result = (service as any).insertBlock(
       [
@@ -96,6 +102,23 @@ describe('CourtsService', () => {
 
     expect(result).toHaveLength(2);
     expect(result[1].dateIni.toISOString()).toBe('2024-06-01T11:00:00.000Z');
+  });
+
+  it('keeps availability unchanged when the candidate block is fully contained', () => {
+    const availability = [
+      {
+        dateIni: new Date('2024-06-01T10:00:00Z'),
+        dateEnd: new Date('2024-06-01T11:00:00Z'),
+        available: false,
+      },
+    ];
+
+    const result = (service as any).insertBlock(availability, {
+      dateIni: new Date('2024-06-01T10:15:00Z'),
+      dateEnd: new Date('2024-06-01T10:45:00Z'),
+    });
+
+    expect(result).toEqual(availability);
   });
 
   it('throws when no court is found', async () => {
@@ -234,6 +257,40 @@ describe('CourtsService', () => {
     expect(result.number).toBe(2);
   });
 
+  it('throws when updateCourt receives no body', async () => {
+    const bodyError = new BadRequestException('No properties to update.');
+    mockErrorsService.noBodyError.mockImplementationOnce(() => {
+      throw bodyError;
+    });
+
+    await expect(service.updateCourt(1, 3, undefined as any)).rejects.toThrow(bodyError);
+    expect(mockPrisma.courts.update).not.toHaveBeenCalled();
+  });
+
+  it('throws the mapped error when updateCourt fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Court with ID 3 not found.');
+    jest.spyOn(service, 'getCourt').mockResolvedValue({
+      number: 1,
+      sportKey: 'padel',
+    } as any);
+    jest.spyOn(service as any, 'checkExistingCourtNumber').mockResolvedValue(undefined);
+    mockPrisma.courts.update.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(
+      service.updateCourt(1, 3, {
+        number: 2,
+        statusData: { status: CourtStatus.BLOCKED, alertLevel: 0, estimatedDryingTime: 0 },
+      } as any),
+    ).rejects.toThrow(mappedError);
+    expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+      p2025: 'Court with ID 3 not found.',
+    });
+  });
+
   it('groups future non-cancelled reservations into availability slots', async () => {
     const futureDateIni = new Date(Date.now() + 60 * 60 * 1000);
     const futureDateEnd = new Date(Date.now() + 2 * 60 * 60 * 1000);
@@ -319,6 +376,29 @@ describe('CourtsService', () => {
     expect(result[0].id).toBe(4);
   });
 
+  it('returns all courts when no status filter is provided', async () => {
+    mockPrisma.courts.findMany.mockResolvedValue([
+      {
+        id: 3,
+        complex_id: 1,
+        sport_key: 'padel',
+        number: 1,
+        description: 'Court 1',
+        max_people: 4,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    ]);
+    mockCourtsStatusService.getCourtStatus.mockResolvedValue({
+      statusData: { status: CourtStatus.OPEN, alertLevel: 0, estimatedDryingTime: 0 },
+    });
+
+    const result = await service.getCourts(1, {});
+
+    expect(result).toHaveLength(1);
+    expect(result[0].statusData.status).toBe(CourtStatus.OPEN);
+  });
+
   it('merges contiguous reservations when grouped availability is requested', async () => {
     const baseDate = new Date(Date.now() + 60 * 60 * 1000);
     const secondDate = new Date(baseDate.getTime() + 30 * 60 * 1000);
@@ -363,6 +443,26 @@ describe('CourtsService', () => {
     expect(result[0].availability[0].dateEnd).toEqual(thirdDate);
   });
 
+  it('adds weather drying blocks to court availability', async () => {
+    const timeBlock = {
+      dateIni: new Date(Date.now() + 60 * 60 * 1000),
+      dateEnd: new Date(Date.now() + 2 * 60 * 60 * 1000),
+    };
+    mockReservationsService.getReservations.mockResolvedValue([]);
+    mockUtilitiesService.groupArrayByField.mockReturnValue(new Map());
+    jest.spyOn(service, 'getCourts').mockResolvedValue([{ id: 3 } as any]);
+    mockCourtsStatusService.getCourtStatus.mockResolvedValue({
+      statusData: { status: CourtStatus.WEATHER, estimatedDryingTime: 30 },
+    });
+    mockUtilitiesService.getTimeBlock.mockReturnValue(timeBlock);
+
+    const result = await service.getCourtsAvailability(1, false);
+
+    expect(mockUtilitiesService.getTimeBlock).toHaveBeenCalledWith(30);
+    expect(result[0].availability).toHaveLength(1);
+    expect(result[0].availability[0].available).toBe(false);
+  });
+
   it('deletes a court by marking it as deleted', async () => {
     mockPrisma.courts.update.mockResolvedValue({});
 
@@ -381,6 +481,17 @@ describe('CourtsService', () => {
     expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
       p2025: 'Court with ID 3 not found.',
     });
+  });
+
+  it('throws the mapped error when deleting a court fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Court with ID 3 not found.');
+    mockPrisma.courts.update.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(service.deleteCourt(1, 3)).rejects.toThrow(mappedError);
   });
 
   it('returns an empty default availability when a court is not found in grouped results', async () => {

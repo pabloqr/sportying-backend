@@ -1,5 +1,11 @@
+jest.mock('openmeteo', () => ({
+  fetchWeatherApi: jest.fn(),
+}));
+
 import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as ngeohash from 'ngeohash';
+import { fetchWeatherApi } from 'openmeteo';
 import { AnalysisService } from '../../../src/common/analysis.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { WeatherService } from '../../../src/weather/weather.service';
@@ -20,6 +26,45 @@ const mockAnalysisService = {
   processWeatherData: jest.fn(),
 };
 
+function buildWeatherApiResponse({
+  startUnix,
+  interval,
+  precipProbability,
+  precipitation,
+  currentValues,
+  rain15Min,
+  precipitation15Min,
+}: {
+  startUnix: number;
+  interval: number;
+  precipProbability: number[];
+  precipitation: number[];
+  currentValues: number[];
+  rain15Min: number[];
+  precipitation15Min: number[];
+}) {
+  return {
+    current: () => ({
+      variables: (index: number) => ({
+        value: () => currentValues[index],
+      }),
+    }),
+    hourly: () => ({
+      time: () => startUnix,
+      timeEnd: () => startUnix + precipProbability.length * interval,
+      interval: () => interval,
+      variables: (index: number) => ({
+        valuesArray: () => (index === 0 ? precipProbability : precipitation),
+      }),
+    }),
+    minutely15: () => ({
+      variables: (index: number) => ({
+        valuesArray: () => (index === 1 ? rain15Min : precipitation15Min),
+      }),
+    }),
+  };
+}
+
 describe('WeatherService', () => {
   let service: WeatherService;
 
@@ -38,6 +83,7 @@ describe('WeatherService', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   it('maps raw weather to persistence dto format', () => {
@@ -82,6 +128,97 @@ describe('WeatherService', () => {
 
     expect(result.temperatureCurr).toBe(20);
     expect(result.precipitationProbabilityNext).toBe(30);
+  });
+
+  describe('fetchWeather', () => {
+    it('fetches weather data and maps current, hourly and minutely values', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-06-01T10:25:00Z'));
+      (fetchWeatherApi as jest.Mock).mockResolvedValue([
+        buildWeatherApiResponse({
+          startUnix: Date.parse('2024-06-01T09:00:00Z') / 1000,
+          interval: 3600,
+          precipProbability: [10, 20, 30],
+          precipitation: [0.1, 0.2, 0.3],
+          currentValues: [20, 999, 30, 50, 10, 90, 15, 1, 0.5],
+          rain15Min: [0, 0.1, 0.2, 0.3],
+          precipitation15Min: [0, 0.2, 0.4, 0.6],
+        }),
+      ]);
+
+      const result = await (service as any).fetchWeather('ezs42');
+
+      expect(fetchWeatherApi).toHaveBeenCalledWith('https://api.open-meteo.com/v1/forecast', {
+        latitude: expect.any(Number),
+        longitude: expect.any(Number),
+        hourly: ['precipitation_probability', 'precipitation'],
+        current: [
+          'temperature_2m',
+          'precipitation',
+          'cloud_cover',
+          'relative_humidity_2m',
+          'wind_speed_10m',
+          'wind_direction_10m',
+          'wind_gusts_10m',
+          'rain',
+          'showers',
+          'snowfall',
+          'apparent_temperature',
+        ],
+        minutely_15: [
+          'temperature_2m',
+          'rain',
+          'snowfall',
+          'precipitation',
+          'relative_humidity_2m',
+          'wind_speed_10m',
+          'wind_direction_10m',
+          'wind_gusts_10m',
+          'visibility',
+        ],
+        past_days: 1,
+        forecast_days: 1,
+        past_minutely_15: 4,
+        forecast_minutely_15: 4,
+      });
+      expect(result).toEqual({
+        temperature_2m: 20,
+        relative_humidity_2m: 50,
+        cloud_cover: 30,
+        wind_speed_10m: 10,
+        wind_direction_10m: 90,
+        wind_gusts_10m: 15,
+        rain: 1,
+        showers: 0.5,
+        precip_probability_prev: 10,
+        precip_probability_curr: 20,
+        precip_probability_next: 30,
+        precip_intensity_prev: 0.1,
+        rain_15min: [0, 0.1, 0.2, 0.3],
+        precipitation_15min: [0, 0.2, 0.4, 0.6],
+      });
+    });
+
+    it('uses sentinel values when the current hour is not present in the hourly range', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-06-01T15:25:00Z'));
+      (fetchWeatherApi as jest.Mock).mockResolvedValue([
+        buildWeatherApiResponse({
+          startUnix: Date.parse('2024-06-01T09:00:00Z') / 1000,
+          interval: 3600,
+          precipProbability: [10, 20, 30],
+          precipitation: [0.1, 0.2, 0.3],
+          currentValues: [20, 999, 30, 50, 10, 90, 15, 1, 0.5],
+          rain15Min: [0, 0.1, 0.2, 0.3],
+          precipitation15Min: [0, 0.2, 0.4, 0.6],
+        }),
+      ]);
+
+      const result = await (service as any).fetchWeather('ezs42');
+
+      expect(result.precip_probability_prev).toBe(-1);
+      expect(result.precip_probability_curr).toBe(-1);
+      expect(result.precip_probability_next).toBe(-1);
+      expect(result.precip_intensity_prev).toBe(-1);
+    });
   });
 
   it('returns cached weather from the database when present', async () => {

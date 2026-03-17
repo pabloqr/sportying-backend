@@ -1,4 +1,4 @@
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalysisService } from '../../../src/common/analysis.service';
 import { DevicesService } from '../../../src/devices/devices.service';
@@ -59,7 +59,7 @@ describe('DevicesService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     jest.restoreAllMocks();
   });
 
@@ -79,6 +79,32 @@ describe('DevicesService', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].type).toBe(DeviceType.RAIN);
+  });
+
+  it('forwards type filters and ordering when loading devices', async () => {
+    mockPrisma.devices.findMany.mockResolvedValue([]);
+
+    await service.getDevices(
+      2,
+      { type: DeviceType.PRESENCE, orderParams: [{ field: 'id', order: 'desc' }] } as any,
+      true,
+    );
+
+    expect(mockPrisma.devices.findMany).toHaveBeenCalledWith({
+      where: {
+        complex_id: 2,
+        type: DeviceType.PRESENCE,
+      },
+      select: {
+        id: true,
+        complex_id: true,
+        type: true,
+        status: true,
+        created_at: true,
+        updated_at: true,
+      },
+      orderBy: [{ id: 'desc' }],
+    });
   });
 
   it('throws when no device is found', async () => {
@@ -116,6 +142,26 @@ describe('DevicesService', () => {
     expect(result.id).toBe(1);
   });
 
+  it('throws the mapped error when createDevice fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Device already exists.');
+    mockAuthService.generateApiKey.mockResolvedValue({
+      idKey: 'id-key',
+      secretKey: 'secret-key',
+    });
+    mockPrisma.devices.create.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(service.createDevice(2, { type: DeviceType.RAIN, status: DeviceStatus.NORMAL } as any)).rejects.toThrow(
+      mappedError,
+    );
+    expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+      p2025: 'Device already exists.',
+    });
+  });
+
   it('updates the device and returns the dto', async () => {
     mockPrisma.devices.update.mockResolvedValue({
       id: 1,
@@ -135,10 +181,53 @@ describe('DevicesService', () => {
     expect(result.status).toBe(DeviceStatus.BATTERY);
   });
 
+  it('throws when updateDevice receives no body', async () => {
+    const bodyError = new BadRequestException('No properties to update.');
+    mockErrorsService.noBodyError.mockImplementationOnce(() => {
+      throw bodyError;
+    });
+
+    await expect(service.updateDevice(2, 1, undefined as any)).rejects.toThrow(bodyError);
+    expect(mockPrisma.devices.update).not.toHaveBeenCalled();
+  });
+
+  it('throws the mapped error when updateDevice fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Device with ID 1 not found.');
+    mockPrisma.devices.update.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(
+      service.updateDevice(2, 1, {
+        type: DeviceType.PRESENCE,
+        status: DeviceStatus.BATTERY,
+      } as any),
+    ).rejects.toThrow(mappedError);
+    expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+      p2025: 'Device with ID 1 not found.',
+    });
+  });
+
   it('marks the device as deleted', async () => {
     await expect(service.deleteDevice(2, 1)).resolves.toBeNull();
 
     expect(mockPrisma.devices.update).toHaveBeenCalled();
+  });
+
+  it('throws the mapped error when deleteDevice fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Device with ID 1 not found.');
+    mockPrisma.devices.update.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(service.deleteDevice(2, 1)).rejects.toThrow(mappedError);
+    expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+      p2025: 'Device with ID 1 not found.',
+    });
   });
 
   it('returns telemetry mapped with the device type', async () => {
@@ -155,6 +244,23 @@ describe('DevicesService', () => {
     expect(result.telemetry[0].type).toBe(DeviceType.RAIN);
   });
 
+  it('uses default descending order and take=1 when requesting the last telemetry sample', async () => {
+    jest.spyOn(service, 'getDevice').mockResolvedValue({
+      id: 1,
+      complexId: 2,
+      type: DeviceType.RAIN,
+    } as any);
+    mockPrisma.devices_telemetry.findMany.mockResolvedValue([]);
+
+    await service.getDeviceTelemetry(2, 1, { last: true } as any);
+
+    expect(mockPrisma.devices_telemetry.findMany).toHaveBeenCalledWith({
+      where: { device_id: 1 },
+      orderBy: [{ created_at: 'desc' }],
+      take: 1,
+    });
+  });
+
   it('stores telemetry and triggers async processing', async () => {
     mockPrisma.devices_telemetry.create.mockResolvedValue({
       value: 1.5,
@@ -166,6 +272,20 @@ describe('DevicesService', () => {
 
     expect(processSpy).toHaveBeenCalled();
     expect(result.telemetry).toHaveLength(1);
+  });
+
+  it('throws the mapped error when storing telemetry fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Device with ID 1 not found.');
+    mockPrisma.devices_telemetry.create.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(service.setDeviceTelemetry(2, 1, { value: 1.5 } as any)).rejects.toThrow(mappedError);
+    expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+      p2025: 'Device with ID 1 not found.',
+    });
   });
 
   it('processes presence telemetry against the first assigned court', async () => {
@@ -269,5 +389,19 @@ describe('DevicesService', () => {
     } as any);
 
     expect(result.status).toBe(DeviceStatus.ERROR);
+  });
+
+  it('throws the mapped error when updating device status fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Device with ID 1 not found.');
+    mockPrisma.devices.update.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(service.setDeviceStatus(2, 1, { status: DeviceStatus.ERROR } as any)).rejects.toThrow(mappedError);
+    expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+      p2025: 'Device with ID 1 not found.',
+    });
   });
 });

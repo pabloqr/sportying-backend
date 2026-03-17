@@ -11,8 +11,8 @@ export class CoordinatesValidator implements ValidatorConstraintInterface {
     const dto = validationArguments?.object as any;
     const { locLatitude, locLongitude } = dto;
 
-    const isLatitudeDefined = locLatitude !== undefined && locLatitude !== null;
-    const isLongitudeDefined = locLongitude !== undefined && locLongitude !== null;
+    const isLatitudeDefined = locLatitude && locLatitude !== null;
+    const isLongitudeDefined = locLongitude && locLongitude !== null;
 
     return (isLatitudeDefined && isLongitudeDefined) || (!isLatitudeDefined && !isLongitudeDefined);
   }

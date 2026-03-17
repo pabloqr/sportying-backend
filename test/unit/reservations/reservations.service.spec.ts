@@ -61,7 +61,7 @@ describe('ReservationsService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     jest.restoreAllMocks();
   });
 
@@ -125,6 +125,17 @@ describe('ReservationsService', () => {
 
       await expect(service.validateCourt(1, 7, new Date())).resolves.toBe(false);
     });
+
+    it('returns false when the court is WEATHER and drying time has not elapsed', async () => {
+      const dateIni = new Date('2026-03-13T10:00:00Z');
+      mockPrisma.courts.findMany.mockResolvedValue([{ id: 7 }]);
+      mockCourtsStatusService.getCourtStatus.mockResolvedValue({
+        statusData: { status: CourtStatus.WEATHER, estimatedDryingTime: 30 },
+      });
+      mockUtilitiesService.dateIsEqualOrGreater.mockReturnValue(false);
+
+      await expect(service.validateCourt(1, 7, dateIni)).resolves.toBe(false);
+    });
   });
 
   describe('getReservations', () => {
@@ -183,6 +194,21 @@ describe('ReservationsService', () => {
       );
     });
 
+    it('applies the UPCOMING time filter in the prisma query', async () => {
+      mockPrisma.reservations.findMany.mockResolvedValue([]);
+
+      await service.getReservations({ timeFilter: ReservationTimeFilter.UPCOMING });
+
+      expect(mockPrisma.reservations.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            is_delete: false,
+            date_ini: expect.objectContaining({ gt: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
     it('filters cancelled reservations when reservationStatus is CANCELLED', async () => {
       mockPrisma.reservations.findMany.mockResolvedValue([
         {
@@ -220,6 +246,45 @@ describe('ReservationsService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].status).toBe(ReservationAvailabilityStatus.CANCELLED);
+    });
+
+    it('filters out cancelled reservations when reservationStatus is SCHEDULED', async () => {
+      mockPrisma.reservations.findMany.mockResolvedValue([
+        {
+          id: 1,
+          user_id: 4,
+          complex_id: 1,
+          court_id: 7,
+          date_ini: new Date(),
+          date_end: new Date(),
+          status: ReservationAvailabilityStatus.CANCELLED,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 2,
+          user_id: 4,
+          complex_id: 1,
+          court_id: 7,
+          date_ini: new Date(),
+          date_end: new Date(),
+          status: ReservationAvailabilityStatus.EMPTY,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ]);
+      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(ReservationTimeFilter.UPCOMING);
+      mockCourtsStatusService.getCourtStatus.mockResolvedValue({
+        statusData: { status: CourtStatus.OPEN },
+      });
+      mockUtilitiesService.getReservationStatus.mockReturnValue(ReservationStatus.SCHEDULED);
+
+      const result = await service.getReservations({
+        reservationStatus: ReservationStatus.SCHEDULED,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(2);
     });
   });
 
@@ -267,6 +332,20 @@ describe('ReservationsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
+    it('throws when the complex is not found during reservation validation', async () => {
+      jest.spyOn(service, 'validateCourt').mockResolvedValue(true);
+      mockPrisma.complexes.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.createReservation(1, {
+          userId: 4,
+          courtId: 7,
+          dateIni: new Date('2026-03-14T10:00:00Z'),
+          dateEnd: new Date('2026-03-14T11:00:00Z'),
+        } as any),
+      ).rejects.toThrow(NotFoundException);
+    });
+
     it('creates a reservation and returns a scheduled dto', async () => {
       jest.spyOn(service, 'validateCourt').mockResolvedValue(true);
       mockPrisma.complexes.findUnique.mockResolvedValue({
@@ -296,6 +375,34 @@ describe('ReservationsService', () => {
 
       expect(result.reservationStatus).toBe(ReservationStatus.SCHEDULED);
       expect(result.timeFilter).toBe(ReservationTimeFilter.UPCOMING);
+    });
+
+    it('throws the mapped error when createReservation fails', async () => {
+      const error = new Error('db');
+      const mappedError = new NotFoundException('Overlapping reservations.');
+      jest.spyOn(service, 'validateCourt').mockResolvedValue(true);
+      mockPrisma.complexes.findUnique.mockResolvedValue({
+        id: 1,
+        time_ini: new Date('1970-01-01T08:00:00Z'),
+        time_end: new Date('1970-01-01T22:00:00Z'),
+      });
+      jest.spyOn(service as any, 'isValidDate').mockReturnValue(true);
+      mockPrisma.reservations.create.mockRejectedValue(error);
+      mockErrorsService.dbError.mockImplementationOnce(() => {
+        throw mappedError;
+      });
+
+      await expect(
+        service.createReservation(1, {
+          userId: 4,
+          courtId: 7,
+          dateIni: new Date('2026-03-14T10:00:00Z'),
+          dateEnd: new Date('2026-03-14T11:00:00Z'),
+        } as any),
+      ).rejects.toThrow(mappedError);
+      expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+        p2025: 'Overlapping reservations.',
+      });
     });
   });
 
@@ -337,6 +444,34 @@ describe('ReservationsService', () => {
       expect(mockErrorsService.noBodyError).toHaveBeenCalled();
       expect(result.reservationStatus).toBe(ReservationStatus.SCHEDULED);
     });
+
+    it('throws when updateReservation receives no body', async () => {
+      const bodyError = new BadRequestException('No properties to update.');
+      mockErrorsService.noBodyError.mockImplementationOnce(() => {
+        throw bodyError;
+      });
+
+      await expect(service.updateReservation(1, undefined as any)).rejects.toThrow(bodyError);
+      expect(mockPrisma.reservations.update).not.toHaveBeenCalled();
+    });
+
+    it('throws the mapped error when updateReservation fails', async () => {
+      const error = new Error('db');
+      const mappedError = new NotFoundException('Reservation with ID 1 not found.');
+      jest.spyOn(service, 'getReservation').mockResolvedValue({
+        complexId: 1,
+      } as any);
+      jest.spyOn(service as any, 'validateReservationData').mockResolvedValue(undefined);
+      mockPrisma.reservations.update.mockRejectedValue(error);
+      mockErrorsService.dbError.mockImplementationOnce(() => {
+        throw mappedError;
+      });
+
+      await expect(service.updateReservation(1, { courtId: 7 } as any)).rejects.toThrow(mappedError);
+      expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+        p2025: 'Reservation with ID 1 not found.',
+      });
+    });
   });
 
   describe('deleteReservation', () => {
@@ -348,6 +483,20 @@ describe('ReservationsService', () => {
         data: expect.objectContaining({
           is_delete: true,
         }),
+      });
+    });
+
+    it('throws the mapped error when deleteReservation fails', async () => {
+      const error = new Error('db');
+      const mappedError = new NotFoundException('Reservation with ID 1 not found.');
+      mockPrisma.reservations.update.mockRejectedValue(error);
+      mockErrorsService.dbError.mockImplementationOnce(() => {
+        throw mappedError;
+      });
+
+      await expect(service.deleteReservation(1)).rejects.toThrow(mappedError);
+      expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+        p2025: 'Reservation with ID 1 not found.',
       });
     });
   });

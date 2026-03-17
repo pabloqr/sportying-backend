@@ -179,8 +179,6 @@ export class CourtsService {
           !dto.statusData.estimatedDryingTime ||
           dtoStatusData.estimatedDryingTime == courtStatusData.estimatedDryingTime;
 
-        console.log(`${status} && ${alertLevel} && ${estimatedDryingTime}`);
-
         return status && alertLevel && estimatedDryingTime;
       });
     }
@@ -468,7 +466,7 @@ export class CourtsService {
           });
 
           // Añadir el intervalo final al array
-          if (currentAvailability !== undefined) {
+          if (currentAvailability) {
             groupedAvailability.push(currentAvailability);
           }
         }

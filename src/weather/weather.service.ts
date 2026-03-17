@@ -160,9 +160,9 @@ export class WeatherService implements OnModuleInit {
     const currIndex = hours.findIndex((hour) => hour.getTime() === now.getTime());
 
     // Calcular la validez de los índices buscados
-    const prevValidIndex = currIndex - 1 >= 0 && currIndex - 1 < hours.length;
     const currValidIndex = currIndex >= 0 && currIndex < hours.length;
-    const nextValidIndex = currIndex + 1 >= 0 && currIndex + 1 < hours.length;
+    const prevValidIndex = currValidIndex && currIndex - 1 >= 0;
+    const nextValidIndex = currValidIndex && currIndex + 1 < hours.length;
 
     // Extraer datos de 15 minutos (últimos 4 slots = 1 hora)
     const rain15minArray = Array.from(minutely15.variables(1)!.valuesArray());

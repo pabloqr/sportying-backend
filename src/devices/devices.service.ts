@@ -108,14 +108,14 @@ export class DevicesService {
       // Se obtienen solo los dispositivos del complejo actual
       ...{ complex_id: complexId },
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
-      ...(dto.type !== undefined && { type: dto.type }),
+      ...(dto.type && { type: dto.type }),
     };
 
     // Se obtiene el modo de ordenación de los elementos
     let orderBy: Prisma.devicesOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -223,8 +223,8 @@ export class DevicesService {
 
     // Se establecen las propiedades a actualizar
     const data: Prisma.devicesUpdateInput = {
-      ...(dto.type !== undefined && { type: dto.type }),
-      ...(dto.status !== undefined && { status: dto.status }),
+      ...(dto.type && { type: dto.type }),
+      ...(dto.status && { status: dto.status }),
     };
 
     try {
@@ -302,12 +302,12 @@ export class DevicesService {
       ...{ device_id: deviceId },
 
       // Se establecen condiciones para los límites de los valores
-      ...(dto.minValue !== undefined && {
+      ...(dto.minValue && {
         value: {
           gt: dto.minValue,
         },
       }),
-      ...(dto.maxValue !== undefined && {
+      ...(dto.maxValue && {
         value: {
           lt: dto.maxValue,
         },
@@ -317,7 +317,7 @@ export class DevicesService {
     // Se obtiene el modo de ordenación de los elementos
     // En caso de no estar incluido, se ordena descendentemente por la fecha de creación
     let orderBy: Prisma.devices_telemetryOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_TELEMETRY_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -336,7 +336,7 @@ export class DevicesService {
     const telemetry = await this.prisma.devices_telemetry.findMany({
       where,
       orderBy,
-      ...(dto.last !== undefined && dto.last && { take: 1 }),
+      ...(dto.last && dto.last && { take: 1 }),
     });
 
     // Se devuelve el objeto obtenido

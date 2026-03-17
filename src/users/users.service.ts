@@ -29,10 +29,10 @@ export class UsersService {
       // Se evita obtener los usuarios eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
       // Se establece la condición para obtener el rol
-      ...(dto.role !== undefined && {
+      ...(dto.role && {
         AND: [
           { role: dto.role as user_role },
           {
@@ -42,21 +42,17 @@ export class UsersService {
       }),
 
       // Se establecen las condiciones para los campos de tipo 'string'
-      ...(dto.name !== undefined && {
-        name: { contains: dto.name, mode: 'insensitive' },
-      }),
-      ...(dto.surname !== undefined && {
-        surname: { contains: dto.surname, mode: 'insensitive' },
-      }),
+      ...(dto.name && { name: { contains: dto.name, mode: 'insensitive' } }),
+      ...(dto.surname && { surname: { contains: dto.surname, mode: 'insensitive' } }),
 
-      ...(dto.mail !== undefined && { mail: dto.mail }),
-      ...(dto.phonePrefix !== undefined && { phone_prefix: dto.phonePrefix }),
-      ...(dto.phoneNumber !== undefined && { phone_number: dto.phoneNumber }),
+      ...(dto.mail && { mail: dto.mail }),
+      ...(dto.phonePrefix && { phone_prefix: dto.phonePrefix }),
+      ...(dto.phoneNumber && { phone_number: dto.phoneNumber }),
     };
 
     // Se obtiene el modo de ordenación de los elementos
     let orderBy: Prisma.usersOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = USER_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -287,15 +283,15 @@ export class UsersService {
 
     // Se establecen las propiedades a actualizar
     const data = {
-      ...(dto.role !== undefined && { role: dto.role as user_role }),
-      ...(dto.password !== undefined && {
+      ...(dto.role && { role: dto.role as user_role }),
+      ...(dto.password && {
         password: await argon.hash(dto.password),
       }),
-      ...(dto.name !== undefined && { name: dto.name }),
-      ...(dto.surname !== undefined && { surname: dto.surname }),
-      ...(dto.mail !== undefined && { mail: dto.mail }),
-      ...(dto.phonePrefix !== undefined && { phone_prefix: dto.phonePrefix }),
-      ...(dto.phoneNumber !== undefined && { phone_number: dto.phoneNumber }),
+      ...(dto.name && { name: dto.name }),
+      ...(dto.surname && { surname: dto.surname }),
+      ...(dto.mail && { mail: dto.mail }),
+      ...(dto.phonePrefix && { phone_prefix: dto.phonePrefix }),
+      ...(dto.phoneNumber && { phone_number: dto.phoneNumber }),
     };
 
     try {
@@ -309,7 +305,7 @@ export class UsersService {
       });
 
       // Se verifica el rol del usuario
-      if (dto.role !== undefined) {
+      if (dto.role) {
         // Se trata de obtener la entrada en la tabla de administradores para el usuario actual
         const isAdmin = await this.prisma.admins.findUnique({
           where: {

@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { UtilitiesService } from '../../../src/common/utilities.service';
@@ -82,5 +83,19 @@ describe('ReservationsStatusService', () => {
 
     await expect(service.setReservationStatus(5, ReservationAvailabilityStatus.CANCELLED)).rejects.toThrow(error);
     expect(mockErrorsService.dbError).toHaveBeenCalled();
+  });
+
+  it('throws the mapped error when updating reservation status fails', async () => {
+    const error = new Error('db');
+    const mappedError = new NotFoundException('Reservation with ID 5 not found.');
+    mockPrisma.reservations.update.mockRejectedValue(error);
+    mockErrorsService.dbError.mockImplementationOnce(() => {
+      throw mappedError;
+    });
+
+    await expect(service.setReservationStatus(5, ReservationAvailabilityStatus.CANCELLED)).rejects.toThrow(mappedError);
+    expect(mockErrorsService.dbError).toHaveBeenCalledWith(error, {
+      p2025: 'Reservation with ID 5 not found.',
+    });
   });
 });
