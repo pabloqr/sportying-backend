@@ -7,5 +7,5 @@ export class UpdateCourtDto extends PartialType(CreateCourtDto) {
   @Type(() => Boolean)
   @IsBoolean()
   @IsOptional()
-  isDelete?: boolean
+  isDelete?: boolean;
 }

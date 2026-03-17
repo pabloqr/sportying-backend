@@ -31,9 +31,7 @@ describe('CourtsController', () => {
     const query = { sportKey: 'padel' };
     mockCourtsService.getCourts.mockResolvedValue([{ id: 1 }]);
 
-    await expect(controller.getCourts(2, query as any)).resolves.toEqual([
-      { id: 1 },
-    ]);
+    await expect(controller.getCourts(2, query as any)).resolves.toEqual([{ id: 1 }]);
     expect(mockCourtsService.getCourts).toHaveBeenCalledWith(2, query);
   });
 
@@ -77,10 +75,6 @@ describe('CourtsController', () => {
     await expect(controller.getCourtAvailability(2, 5, false)).resolves.toEqual({
       id: 5,
     });
-    expect(mockCourtsService.getCourtAvailability).toHaveBeenCalledWith(
-      2,
-      5,
-      false,
-    );
+    expect(mockCourtsService.getCourtAvailability).toHaveBeenCalledWith(2, 5, false);
   });
 });

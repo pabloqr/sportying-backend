@@ -5,9 +5,7 @@ import { SportsService } from './sports.service';
 
 @Controller('complexes')
 export class ComplexSportsController {
-  constructor(
-    private sportsService: SportsService
-  ) { }
+  constructor(private sportsService: SportsService) {}
 
   @Public()
   @Get()

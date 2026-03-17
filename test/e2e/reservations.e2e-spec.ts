@@ -32,18 +32,13 @@ describe('Reservations e2e', () => {
     const dto = buildReservationDto();
     const updatedDateEnd = new Date(dto.dateEnd.getTime() + 30 * 60 * 1000);
 
-    const createResponse = await request(app.getHttpServer())
-      .post('/complexes/1/reservations')
-      .send(dto)
-      .expect(201);
+    const createResponse = await request(app.getHttpServer()).post('/complexes/1/reservations').send(dto).expect(201);
 
     expect(createResponse.body.courtId).toBe(1);
 
     const reservationId = createResponse.body.id;
 
-    const getResponse = await request(app.getHttpServer())
-      .get(`/reservations/${reservationId}`)
-      .expect(200);
+    const getResponse = await request(app.getHttpServer()).get(`/reservations/${reservationId}`).expect(200);
 
     expect(getResponse.body.id).toBe(reservationId);
 
@@ -56,9 +51,7 @@ describe('Reservations e2e', () => {
 
     expect(updateResponse.body.dateEnd).toBe(updatedDateEnd.toISOString());
 
-    await request(app.getHttpServer())
-      .delete(`/reservations/${reservationId}`)
-      .expect(200);
+    await request(app.getHttpServer()).delete(`/reservations/${reservationId}`).expect(200);
 
     const storedReservation = await prisma.reservations.findUniqueOrThrow({
       where: {
@@ -94,15 +87,9 @@ describe('Reservations e2e', () => {
   it('returns 409 for conflicting reservations', async () => {
     const dto = buildReservationDto();
 
-    await request(app.getHttpServer())
-      .post('/complexes/1/reservations')
-      .send(dto)
-      .expect(201);
+    await request(app.getHttpServer()).post('/complexes/1/reservations').send(dto).expect(201);
 
-    await request(app.getHttpServer())
-      .post('/complexes/1/reservations')
-      .send(dto)
-      .expect(409);
+    await request(app.getHttpServer()).post('/complexes/1/reservations').send(dto).expect(409);
   });
 
   it('lists reservations through user and collection endpoints', async () => {
@@ -113,13 +100,9 @@ describe('Reservations e2e', () => {
 
     const reservationId = createResponse.body.id;
 
-    const collectionResponse = await request(app.getHttpServer())
-      .get('/reservations')
-      .expect(200);
+    const collectionResponse = await request(app.getHttpServer()).get('/reservations').expect(200);
 
-    const userResponse = await request(app.getHttpServer())
-      .get('/users/1/reservations')
-      .expect(200);
+    const userResponse = await request(app.getHttpServer()).get('/users/1/reservations').expect(200);
 
     expect(collectionResponse.body.some((item: any) => item.id === reservationId)).toBe(true);
     expect(userResponse.body.some((item: any) => item.id === reservationId)).toBe(true);

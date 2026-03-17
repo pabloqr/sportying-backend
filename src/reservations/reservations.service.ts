@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,11 +14,7 @@ import {
   RESERVATION_ORDER_FIELD_MAP,
   UpdateReservationDto,
 } from './dto';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-  ReservationTimeFilter,
-} from './enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from './enums';
 
 @Injectable()
 export class ReservationsService {
@@ -32,7 +23,7 @@ export class ReservationsService {
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
     private courtsStatusService: CourtsStatusService,
-  ) { }
+  ) {}
 
   /**
    * Validates if the given court ID is valid and currently open in the specified complex.
@@ -42,11 +33,7 @@ export class ReservationsService {
    * @param dateIni - The initial date of the reservation.
    * @return {Promise<boolean>} A promise that resolves to `true` if the court ID is valid and open; otherwise, `false`.
    */
-  public async validateCourt(
-    complexId: number,
-    courtId: number,
-    dateIni: Date,
-  ): Promise<boolean> {
+  public async validateCourt(complexId: number, courtId: number, dateIni: Date): Promise<boolean> {
     // Obtener las pistas del complejo
     const courts = await this.prisma.courts.findMany({ where: { complex_id: complexId } });
 
@@ -56,20 +43,16 @@ export class ReservationsService {
       courts.map(async (court) => {
         const courtStatus = await this.courtsStatusService.getCourtStatus(complexId, court.id);
         return courtStatus.statusData;
-      })
+      }),
     );
 
     // Obtener la posición del 'id' de la pista en el array (si no se encuentra devolver -1)
     const index = courtIds.indexOf(courtId);
     return (
       index !== -1 &&
-      (
-        courtStatuses[index].status === CourtStatus.OPEN ||
-        (
-          courtStatuses[index].status === CourtStatus.WEATHER &&
-          this.utilitiesService.dateIsEqualOrGreater(courtStatuses[index].estimatedDryingTime, dateIni, new Date())
-        )
-      )
+      (courtStatuses[index].status === CourtStatus.OPEN ||
+        (courtStatuses[index].status === CourtStatus.WEATHER &&
+          this.utilitiesService.dateIsEqualOrGreater(courtStatuses[index].estimatedDryingTime, dateIni, new Date())))
     );
   }
 
@@ -90,11 +73,7 @@ export class ReservationsService {
     if (
       dto.courtId !== undefined &&
       dto.dateIni !== undefined &&
-      !(await this.validateCourt(
-        complexId,
-        dto.courtId,
-        dto.dateIni,
-      ))
+      !(await this.validateCourt(complexId, dto.courtId, dto.dateIni))
     ) {
       throw new BadRequestException('Requested court is not valid.');
     }
@@ -103,7 +82,7 @@ export class ReservationsService {
     const complex = await this.prisma.complexes.findUnique({ where: { id: complexId } });
     // Verificar los datos obtenidos
     if (!complex) {
-      throw new NotFoundException(`Complex with ID ${complexId} not found.`)
+      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
     }
 
     // Obtener el horario del complejo
@@ -112,16 +91,9 @@ export class ReservationsService {
     if (
       dto.dateIni !== undefined &&
       dto.dateEnd !== undefined &&
-      !this.isValidDate(
-        complexTime.timeIni,
-        complexTime.timeEnd,
-        dto.dateIni,
-        dto.dateEnd,
-      )
+      !this.isValidDate(complexTime.timeIni, complexTime.timeEnd, dto.dateIni, dto.dateEnd)
     ) {
-      throw new BadRequestException(
-        'Dates are not valid. Initial date must be previous to final date.',
-      );
+      throw new BadRequestException('Dates are not valid. Initial date must be previous to final date.');
     }
   }
 
@@ -134,12 +106,7 @@ export class ReservationsService {
    * @param {Date} dateEnd - The ending date and time to validate.
    * @return {boolean} Returns true if the date range and time constraints are valid, otherwise false.
    */
-  private isValidDate(
-    complexTimeIni: Date,
-    complexTimeEnd: Date,
-    dateIni: Date,
-    dateEnd: Date,
-  ): boolean {
+  private isValidDate(complexTimeIni: Date, complexTimeEnd: Date, dateIni: Date, dateEnd: Date): boolean {
     const afterComplexTimeIni = this.utilitiesService.timeIsEqualOrGreater(dateIni, complexTimeIni);
     const beforeComplexTimeEnd = this.utilitiesService.timeIsEqualOrLower(dateEnd, complexTimeEnd);
 
@@ -242,9 +209,8 @@ export class ReservationsService {
       filteredReservations.map(async (reservation) => {
         const timeFilter = this.utilitiesService.getTimeFilterFromDate(reservation.date_end);
 
-        const statusData = (
-          await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
-        ).statusData;
+        const statusData = (await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id))
+          .statusData;
 
         return new ResponseReservationDto({
           ...reservation,
@@ -273,13 +239,9 @@ export class ReservationsService {
 
     // Verificar los elementos obtenidos
     if (result.length === 0) {
-      throw new NotFoundException(
-        `Reservation with ID ${reservationId} not found.`,
-      );
+      throw new NotFoundException(`Reservation with ID ${reservationId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple reservations found with ID ${reservationId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple reservations found with ID ${reservationId}.`);
     }
 
     return result[0];
@@ -331,10 +293,7 @@ export class ReservationsService {
    * @return {Promise<ResponseReservationDto>} A promise resolving to the response DTO containing reservation details,
    * including time filter.
    */
-  async createReservation(
-    complexId: number,
-    dto: CreateReservationDto,
-  ): Promise<ResponseReservationDto> {
+  async createReservation(complexId: number, dto: CreateReservationDto): Promise<ResponseReservationDto> {
     // Verificar que los datos de la petición son correctos
     await this.validateReservationData(complexId, dto);
 
@@ -382,10 +341,7 @@ export class ReservationsService {
    * @return {Promise<ResponseReservationDto>} A promise resolving to the updated reservation details encapsulated in a
    * response DTO.
    */
-  async updateReservation(
-    reservationId: number,
-    dto: UpdateReservationDto,
-  ): Promise<ResponseReservationDto> {
+  async updateReservation(reservationId: number, dto: UpdateReservationDto): Promise<ResponseReservationDto> {
     // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
@@ -415,9 +371,8 @@ export class ReservationsService {
 
       const timeFilter = this.utilitiesService.getTimeFilterFromDate(reservation.date_end);
 
-      const statusData = (
-        await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
-      ).statusData;
+      const statusData = (await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id))
+        .statusData;
 
       return new ResponseReservationDto({
         ...reservation,

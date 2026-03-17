@@ -136,8 +136,7 @@ describe('AnalysisService', () => {
   });
 
   describe('calculateWindFactor (private)', () => {
-    const calc = (speed: number, gusts: number) =>
-      (service as any).calculateWindFactor(speed, gusts);
+    const calc = (speed: number, gusts: number) => (service as any).calculateWindFactor(speed, gusts);
 
     it('returns 1 when there is no wind at all', () => {
       // log(1+0)/log(1+25) = 0 → factor = 1 + 0.6 * 0 = 1
@@ -162,8 +161,7 @@ describe('AnalysisService', () => {
   });
 
   describe('calculateCloudCoverFactor (private)', () => {
-    const calc = (cover: number) =>
-      (service as any).calculateCloudCoverFactor(cover);
+    const calc = (cover: number) => (service as any).calculateCloudCoverFactor(cover);
 
     it('returns 1.2 when the sky is completely clear (0% cover)', () => {
       // 1 + 0.2 * (1 - 0) = 1.2
@@ -200,8 +198,13 @@ describe('AnalysisService', () => {
       alertLevelTicksPrev = 0,
     ) =>
       (service as any).calculateAlertLevel(
-        intensity, intensitySum, surfaceWater, tEstimated,
-        precipProbNext, alertLevelPrev, alertLevelTicksPrev,
+        intensity,
+        intensitySum,
+        surfaceWater,
+        tEstimated,
+        precipProbNext,
+        alertLevelPrev,
+        alertLevelTicksPrev,
       );
 
     // Raw level = 2 conditions
@@ -414,21 +417,17 @@ describe('AnalysisService', () => {
     it('throws and propagates when prisma.findMany rejects', async () => {
       mockPrisma.reservations.findMany.mockRejectedValue(new Error('DB error'));
 
-      await expect(
-        service.processAvailabilityTelemetry(false, timestamp, courtId),
-      ).rejects.toThrow('DB error');
+      await expect(service.processAvailabilityTelemetry(false, timestamp, courtId)).rejects.toThrow('DB error');
     });
 
     it('throws and propagates when setReservationStatus rejects', async () => {
       mockPrisma.reservations.findMany.mockResolvedValue([baseReservation]);
       mockUtilitiesService.dateIsBetween.mockReturnValue(true);
-      mockReservationsStatusService.setReservationStatus.mockRejectedValue(
-        new Error('Status update failed'),
-      );
+      mockReservationsStatusService.setReservationStatus.mockRejectedValue(new Error('Status update failed'));
 
-      await expect(
-        service.processAvailabilityTelemetry(false, timestamp, courtId),
-      ).rejects.toThrow('Status update failed');
+      await expect(service.processAvailabilityTelemetry(false, timestamp, courtId)).rejects.toThrow(
+        'Status update failed',
+      );
     });
   });
 
@@ -445,12 +444,10 @@ describe('AnalysisService', () => {
 
       await service.processRainTelemetry(complexId, null, 2.5, [1]);
 
-      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(
-        complexId, 1, { status: CourtStatus.WEATHER },
-      );
-      expect(mockNotificationsService.notifyCourtStatusChange).toHaveBeenCalledWith(
-        complexId, 1, CourtStatus.WEATHER,
-      );
+      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(complexId, 1, {
+        status: CourtStatus.WEATHER,
+      });
+      expect(mockNotificationsService.notifyCourtStatusChange).toHaveBeenCalledWith(complexId, 1, CourtStatus.WEATHER);
     });
 
     it('sets status to WEATHER when previous telemetry has a value > 0', async () => {
@@ -464,9 +461,9 @@ describe('AnalysisService', () => {
 
       await service.processRainTelemetry(complexId, previousTelemetry, 0, [1]);
 
-      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(
-        complexId, 1, { status: CourtStatus.WEATHER },
-      );
+      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(complexId, 1, {
+        status: CourtStatus.WEATHER,
+      });
     });
 
     it('sets status to OPEN when previous telemetry value is 0.0', async () => {
@@ -480,12 +477,8 @@ describe('AnalysisService', () => {
 
       await service.processRainTelemetry(complexId, previousTelemetry, 0, [1]);
 
-      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(
-        complexId, 1, { status: CourtStatus.OPEN },
-      );
-      expect(mockNotificationsService.notifyCourtStatusChange).toHaveBeenCalledWith(
-        complexId, 1, CourtStatus.OPEN,
-      );
+      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(complexId, 1, { status: CourtStatus.OPEN });
+      expect(mockNotificationsService.notifyCourtStatusChange).toHaveBeenCalledWith(complexId, 1, CourtStatus.OPEN);
     });
 
     it('sets status to OPEN when previous telemetry is <= 2.5 and >= 30 min old', async () => {
@@ -501,9 +494,7 @@ describe('AnalysisService', () => {
 
       await service.processRainTelemetry(complexId, previousTelemetry, 0, [1]);
 
-      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(
-        complexId, 1, { status: CourtStatus.OPEN },
-      );
+      expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(complexId, 1, { status: CourtStatus.OPEN });
     });
 
     it('does NOT call setCourtStatus when the status has not changed', async () => {
@@ -528,18 +519,14 @@ describe('AnalysisService', () => {
     it('throws and propagates when getCourtStatus rejects', async () => {
       mockCourtsStatusService.getCourtStatus.mockRejectedValue(new Error('Court not found'));
 
-      await expect(
-        service.processRainTelemetry(complexId, null, 2.5, [1]),
-      ).rejects.toThrow('Court not found');
+      await expect(service.processRainTelemetry(complexId, null, 2.5, [1])).rejects.toThrow('Court not found');
     });
 
     it('throws and propagates when setCourtStatus rejects', async () => {
       mockCourtsStatusService.getCourtStatus.mockResolvedValue(mockStatusOpen);
       mockCourtsStatusService.setCourtStatus.mockRejectedValue(new Error('Set failed'));
 
-      await expect(
-        service.processRainTelemetry(complexId, null, 2.5, [1]),
-      ).rejects.toThrow('Set failed');
+      await expect(service.processRainTelemetry(complexId, null, 2.5, [1])).rejects.toThrow('Set failed');
     });
   });
 });

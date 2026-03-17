@@ -1,29 +1,17 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
-import {
-  ResponseCourtDevicesDto,
-  ResponseCourtDto,
-  ResponseDeviceCourtsDto,
-  ResponseDeviceDto,
-} from '../common/dto';
+import { ResponseCourtDevicesDto, ResponseCourtDto, ResponseDeviceCourtsDto, ResponseDeviceDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
-import {
-  COURT_DEVICES_ORDER_FIELD_MAP,
-  GetCourtDevicesDto,
-} from '../courts/dto';
-import {
-  CreateDeviceCourtsDto,
-  DEVICE_COURTS_ORDER_FIELD_MAP,
-  GetDeviceCourtsDto,
-} from '../devices/dto';
+import { COURT_DEVICES_ORDER_FIELD_MAP, GetCourtDevicesDto } from '../courts/dto';
+import { CreateDeviceCourtsDto, DEVICE_COURTS_ORDER_FIELD_MAP, GetDeviceCourtsDto } from '../devices/dto';
 
 @Injectable()
 export class CourtsDevicesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-  ) { }
+  ) {}
 
   /**
    * Fetches court devices based on the provided parameters and conditions.
@@ -176,9 +164,7 @@ export class CourtsDevicesService {
     dto: CreateDeviceCourtsDto,
   ): Promise<ResponseDeviceCourtsDto> {
     // Obtener las pistas actuales asociadas con el dispositivo
-    let currentDeviceCourts = (
-      await this.getDeviceCourts(complexId, deviceId, {}, true)
-    ).courts;
+    let currentDeviceCourts = (await this.getDeviceCourts(complexId, deviceId, {}, true)).courts;
 
     try {
       let deviceCourts: ResponseCourtDto[] = [];
@@ -223,9 +209,7 @@ export class CourtsDevicesService {
           deviceCourts.push(court);
 
           // Eliminar el valor de la lista inicial
-          currentDeviceCourts = currentDeviceCourts.filter(
-            (court) => court.id !== courtId,
-          );
+          currentDeviceCourts = currentDeviceCourts.filter((court) => court.id !== courtId);
         }
 
         // Actualizar las entradas restantes para establecerlas como eliminadas

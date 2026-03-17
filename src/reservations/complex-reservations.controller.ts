@@ -1,19 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { Public } from 'src/auth/decorator';
 import { CreateReservationDto, GetReservationsDto } from './dto';
 import { ReservationsService } from './reservations.service';
 
 @Controller('complexes')
 export class ComplexReservationsController {
-  constructor(private reservationsService: ReservationsService) { }
+  constructor(private reservationsService: ReservationsService) {}
 
   @Public()
   @Get(':complexId/reservations')

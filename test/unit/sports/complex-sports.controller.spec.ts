@@ -26,9 +26,7 @@ describe('ComplexSportsController', () => {
     const query = { key: 'padel' };
     mockSportsService.getComplexSports.mockResolvedValue([{ key: 'padel' }]);
 
-    await expect(controller.getComplexSports(3, query as any)).resolves.toEqual([
-      { key: 'padel' },
-    ]);
+    await expect(controller.getComplexSports(3, query as any)).resolves.toEqual([{ key: 'padel' }]);
     expect(mockSportsService.getComplexSports).toHaveBeenCalledWith(3, query);
   });
 });

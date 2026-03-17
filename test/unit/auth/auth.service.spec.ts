@@ -7,10 +7,7 @@ jest.mock('uuid', () => ({
   v4: jest.fn(),
 }));
 
-import {
-  ForbiddenException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TokenExpiredError } from '@nestjs/jwt';
 import * as argon from 'argon2';
@@ -40,9 +37,7 @@ const mockJwt = {
 };
 
 const mockConfig = {
-  get: jest.fn((key: string) =>
-    key === 'JWT_SECRET' ? 'access-secret' : 'refresh-secret',
-  ),
+  get: jest.fn((key: string) => (key === 'JWT_SECRET' ? 'access-secret' : 'refresh-secret')),
 };
 
 const mockUsersService = {
@@ -84,52 +79,51 @@ describe('AuthService', () => {
       });
     });
 
-    it('rethrows TokenExpiredError', async () => {
-      mockJwt.verifyAsync.mockRejectedValue(
-        new TokenExpiredError('expired', new Date()),
-      );
+    it('verifies refresh tokens with refresh secret', async () => {
+      mockJwt.verifyAsync.mockResolvedValue({ sub: 1, mail: 'a@a.com', role: 'CLIENT' });
 
-      await expect(service.verifyToken('token')).rejects.toBeInstanceOf(
-        TokenExpiredError,
-      );
+      await expect(service.verifyToken('token', false)).resolves.toEqual({
+        sub: 1,
+        mail: 'a@a.com',
+        role: 'CLIENT',
+      });
+      expect(mockJwt.verifyAsync).toHaveBeenCalledWith('token', {
+        secret: 'refresh-secret',
+      });
+    });
+
+    it('rethrows TokenExpiredError', async () => {
+      mockJwt.verifyAsync.mockRejectedValue(new TokenExpiredError('expired', new Date()));
+
+      await expect(service.verifyToken('token')).rejects.toBeInstanceOf(TokenExpiredError);
     });
 
     it('throws UnauthorizedException for invalid tokens', async () => {
       mockJwt.verifyAsync.mockRejectedValue(new Error('invalid'));
 
-      await expect(service.verifyToken('token')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.verifyToken('token')).rejects.toThrow(UnauthorizedException);
     });
   });
 
   describe('validatePayload', () => {
     it('returns true for a complete payload', () => {
-      expect(
-        service.validatePayload({ sub: 1, mail: 'a@a.com', role: 'CLIENT' }),
-      ).toBe(true);
+      expect(service.validatePayload({ sub: 1, mail: 'a@a.com', role: 'CLIENT' })).toBe(true);
     });
 
     it('returns false when a required field is missing', () => {
-      expect(
-        service.validatePayload({ sub: 1, mail: '', role: 'CLIENT' }),
-      ).toBe(false);
+      expect(service.validatePayload({ sub: 1, mail: '', role: 'CLIENT' })).toBe(false);
     });
   });
 
   describe('validateApiKey', () => {
     it('throws when api key format is invalid', async () => {
-      await expect(service.validateApiKey('bad')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.validateApiKey('bad')).rejects.toThrow(UnauthorizedException);
     });
 
     it('throws when the device does not exist', async () => {
       mockPrisma.devices.findUnique.mockResolvedValue(null);
 
-      await expect(service.validateApiKey('id.secret')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.validateApiKey('id.secret')).rejects.toThrow(UnauthorizedException);
     });
 
     it('returns the device dto when the key is valid', async () => {
@@ -153,12 +147,8 @@ describe('AuthService', () => {
 
   describe('token creation helpers', () => {
     it('signs access and refresh tokens and persists the refresh token', async () => {
-      mockJwt.signAsync
-        .mockResolvedValueOnce('access-token')
-        .mockResolvedValueOnce('refresh-token');
-      const updateSpy = jest
-        .spyOn(service, 'updateDBRefreshToken')
-        .mockResolvedValue(undefined);
+      mockJwt.signAsync.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+      const updateSpy = jest.spyOn(service, 'updateDBRefreshToken').mockResolvedValue(undefined);
 
       const result = await service.getSignedTokens(1, 'a@a.com', Role.CLIENT);
 
@@ -181,9 +171,7 @@ describe('AuthService', () => {
     });
 
     it('builds an api key dto from uuid and argon hash', async () => {
-      (uuidV4 as jest.Mock)
-        .mockReturnValueOnce('id-key')
-        .mockReturnValueOnce('secret-source');
+      (uuidV4 as jest.Mock).mockReturnValueOnce('id-key').mockReturnValueOnce('secret-source');
       (argon.hash as jest.Mock).mockResolvedValue('hashed-secret');
 
       const result = await service.generateApiKey();
@@ -225,9 +213,7 @@ describe('AuthService', () => {
     it('throws when signin user does not exist', async () => {
       mockPrisma.users.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.signin({ mail: 'a@a.com', password: 'pw' } as any),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.signin({ mail: 'a@a.com', password: 'pw' } as any)).rejects.toThrow(ForbiddenException);
     });
 
     it('returns tokens and the mapped user when signin succeeds', async () => {
@@ -294,9 +280,7 @@ describe('AuthService', () => {
       });
       (argon.verify as jest.Mock).mockResolvedValue(true);
 
-      await expect(
-        service.refreshToken({ refreshToken: 'token' } as any),
-      ).resolves.toMatchObject({
+      await expect(service.refreshToken({ refreshToken: 'token' } as any)).resolves.toMatchObject({
         accessToken: 'new-access',
         refreshToken: 'new-refresh',
       });

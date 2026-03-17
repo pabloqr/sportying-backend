@@ -7,4 +7,4 @@ import { ReservationsStatusService } from './reservations-status.service';
   providers: [ReservationsStatusService],
   exports: [ReservationsStatusService],
 })
-export class ReservationsStatusModule { }
+export class ReservationsStatusModule {}

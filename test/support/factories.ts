@@ -30,9 +30,7 @@ export function buildCreateUserDto(overrides: Partial<Record<string, unknown>> =
   };
 }
 
-export function buildReservationDto(
-  overrides: Partial<CreateReservationDto> = {},
-): CreateReservationDto {
+export function buildReservationDto(overrides: Partial<CreateReservationDto> = {}): CreateReservationDto {
   const now = new Date();
   const dateIni = new Date(now);
   dateIni.setMinutes(0, 0, 0);

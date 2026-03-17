@@ -2,11 +2,7 @@ jest.mock('argon2', () => ({
   hash: jest.fn(),
 }));
 
-import {
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as argon from 'argon2';
 import { UsersService } from '../../../src/users/users.service';
@@ -85,9 +81,7 @@ describe('UsersService', () => {
   it('throws when multiple users are found by id', async () => {
     jest.spyOn(service, 'getUsers').mockResolvedValue([{} as any, {} as any]);
 
-    await expect(service.getUserById(1)).rejects.toThrow(
-      InternalServerErrorException,
-    );
+    await expect(service.getUserById(1)).rejects.toThrow(InternalServerErrorException);
   });
 
   it('throws when creating an admin without complexId', async () => {

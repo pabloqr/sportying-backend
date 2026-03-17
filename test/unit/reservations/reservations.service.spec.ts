@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { UtilitiesService } from '../../../src/common/utilities.service';
@@ -147,15 +143,11 @@ describe('ReservationsService', () => {
           updated_at: new Date(),
         },
       ]);
-      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(
-        ReservationTimeFilter.UPCOMING,
-      );
+      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(ReservationTimeFilter.UPCOMING);
       mockCourtsStatusService.getCourtStatus.mockResolvedValue({
         statusData: { status: CourtStatus.OPEN },
       });
-      mockUtilitiesService.getReservationStatus.mockReturnValue(
-        ReservationStatus.SCHEDULED,
-      );
+      mockUtilitiesService.getReservationStatus.mockReturnValue(ReservationStatus.SCHEDULED);
 
       const result = await service.getReservations({ complexId: 1 });
 
@@ -216,15 +208,11 @@ describe('ReservationsService', () => {
           updated_at: new Date(),
         },
       ]);
-      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(
-        ReservationTimeFilter.PAST,
-      );
+      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(ReservationTimeFilter.PAST);
       mockCourtsStatusService.getCourtStatus.mockResolvedValue({
         statusData: { status: CourtStatus.OPEN },
       });
-      mockUtilitiesService.getReservationStatus.mockReturnValue(
-        ReservationStatus.CANCELLED,
-      );
+      mockUtilitiesService.getReservationStatus.mockReturnValue(ReservationStatus.CANCELLED);
 
       const result = await service.getReservations({
         reservationStatus: ReservationStatus.CANCELLED,
@@ -243,14 +231,9 @@ describe('ReservationsService', () => {
     });
 
     it('throws when multiple reservations are found by id', async () => {
-      jest.spyOn(service, 'getReservations').mockResolvedValue([
-        {} as any,
-        {} as any,
-      ]);
+      jest.spyOn(service, 'getReservations').mockResolvedValue([{} as any, {} as any]);
 
-      await expect(service.getReservation(7)).rejects.toThrow(
-        InternalServerErrorException,
-      );
+      await expect(service.getReservation(7)).rejects.toThrow(InternalServerErrorException);
     });
 
     it('delegates user reservations to getReservations', async () => {
@@ -258,10 +241,7 @@ describe('ReservationsService', () => {
 
       await service.getUserReservations(4, { timeFilter: ReservationTimeFilter.UPCOMING });
 
-      expect(spy).toHaveBeenCalledWith(
-        { userId: 4, timeFilter: ReservationTimeFilter.UPCOMING },
-        false,
-      );
+      expect(spy).toHaveBeenCalledWith({ userId: 4, timeFilter: ReservationTimeFilter.UPCOMING }, false);
     });
 
     it('delegates complex reservations to getReservations', async () => {
@@ -269,10 +249,7 @@ describe('ReservationsService', () => {
 
       await service.getComplexReservations(1, { timeFilter: ReservationTimeFilter.PAST });
 
-      expect(spy).toHaveBeenCalledWith(
-        { complexId: 1, timeFilter: ReservationTimeFilter.PAST },
-        false,
-      );
+      expect(spy).toHaveBeenCalledWith({ complexId: 1, timeFilter: ReservationTimeFilter.PAST }, false);
     });
   });
 
@@ -308,9 +285,7 @@ describe('ReservationsService', () => {
         created_at: new Date(),
         updated_at: new Date(),
       });
-      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(
-        ReservationTimeFilter.UPCOMING,
-      );
+      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(ReservationTimeFilter.UPCOMING);
 
       const result = await service.createReservation(1, {
         userId: 4,
@@ -347,15 +322,11 @@ describe('ReservationsService', () => {
         created_at: new Date(),
         updated_at: new Date(),
       });
-      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(
-        ReservationTimeFilter.UPCOMING,
-      );
+      mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(ReservationTimeFilter.UPCOMING);
       mockCourtsStatusService.getCourtStatus.mockResolvedValue({
         statusData: { status: CourtStatus.OPEN },
       });
-      mockUtilitiesService.getReservationStatus.mockReturnValue(
-        ReservationStatus.SCHEDULED,
-      );
+      mockUtilitiesService.getReservationStatus.mockReturnValue(ReservationStatus.SCHEDULED);
 
       const result = await service.updateReservation(1, {
         courtId: 7,

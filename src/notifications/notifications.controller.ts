@@ -1,23 +1,13 @@
-import {
-  Controller,
-  MessageEvent,
-  Param,
-  ParseIntPipe,
-  Sse,
-} from '@nestjs/common';
+import { Controller, MessageEvent, Param, ParseIntPipe, Sse } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 import { NotificationsSseService } from './notifications-sse.service';
 
 @Controller('notifications')
 export class NotificationsController {
-  constructor(
-    private readonly notificationsSseService: NotificationsSseService,
-  ) { }
+  constructor(private readonly notificationsSseService: NotificationsSseService) {}
 
   @Sse(':complexId')
-  streamNotifications(
-    @Param('complexId', ParseIntPipe) complexId: number,
-  ): Observable<MessageEvent> {
+  streamNotifications(@Param('complexId', ParseIntPipe) complexId: number): Observable<MessageEvent> {
     return this.notificationsSseService.getNotificationStream(complexId).pipe(
       map(
         (event): MessageEvent => ({

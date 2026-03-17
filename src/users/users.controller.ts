@@ -18,7 +18,7 @@ import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Get()

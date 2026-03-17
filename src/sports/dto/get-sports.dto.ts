@@ -1,6 +1,6 @@
-import { Transform, Type } from "class-transformer";
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from "class-validator";
-import { ComplexOrderParamsDto } from "src/complexes/dto";
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { ComplexOrderParamsDto } from 'src/complexes/dto';
 import { OrderBy } from '../../common/enums';
 
 export enum SportOrderField {
@@ -17,7 +17,7 @@ export const SPORT_ORDER_FIELD_MAP: Record<string, string> = {
   maxPeople: 'max_people',
   createdAt: 'created_at',
   updatedAt: 'updated_at',
-}
+};
 
 export class SportOrderParamsDto {
   @Type(() => String)

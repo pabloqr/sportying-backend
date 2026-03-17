@@ -1,10 +1,10 @@
-import { Injectable, InternalServerErrorException, OnModuleInit } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
+import { Injectable, InternalServerErrorException, OnModuleInit } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import * as ngeohash from 'ngeohash';
-import { fetchWeatherApi } from "openmeteo";
-import { AnalysisService, WeatherData } from "src/common/analysis.service";
-import { ResponseWeatherDataDto } from "src/common/dto";
-import { PrismaService } from "src/prisma/prisma.service";
+import { fetchWeatherApi } from 'openmeteo';
+import { AnalysisService, WeatherData } from 'src/common/analysis.service';
+import { ResponseWeatherDataDto } from 'src/common/dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 interface RawWeatherData {
   // Datos actuales (current)
@@ -33,7 +33,7 @@ export class WeatherService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     private analysisService: AnalysisService,
-  ) { }
+  ) {}
 
   /**
    * Transforms raw weather API data into a WeatherDataDto for database persistence.
@@ -105,37 +105,37 @@ export class WeatherService implements OnModuleInit {
     const params = {
       latitude: loc.latitude,
       longitude: loc.longitude,
-      hourly: ["precipitation_probability", "precipitation"],
+      hourly: ['precipitation_probability', 'precipitation'],
       current: [
-        "temperature_2m",
-        "precipitation",
-        "cloud_cover",
-        "relative_humidity_2m",
-        "wind_speed_10m",
-        "wind_direction_10m",
-        "wind_gusts_10m",
-        "rain",
-        "showers",
-        "snowfall",
-        "apparent_temperature"
+        'temperature_2m',
+        'precipitation',
+        'cloud_cover',
+        'relative_humidity_2m',
+        'wind_speed_10m',
+        'wind_direction_10m',
+        'wind_gusts_10m',
+        'rain',
+        'showers',
+        'snowfall',
+        'apparent_temperature',
       ],
       minutely_15: [
-        "temperature_2m",
-        "rain",
-        "snowfall",
-        "precipitation",
-        "relative_humidity_2m",
-        "wind_speed_10m",
-        "wind_direction_10m",
-        "wind_gusts_10m",
-        "visibility"
+        'temperature_2m',
+        'rain',
+        'snowfall',
+        'precipitation',
+        'relative_humidity_2m',
+        'wind_speed_10m',
+        'wind_direction_10m',
+        'wind_gusts_10m',
+        'visibility',
       ],
       past_days: 1,
       forecast_days: 1,
       past_minutely_15: 4,
       forecast_minutely_15: 4,
     };
-    const url = "https://api.open-meteo.com/v1/forecast";
+    const url = 'https://api.open-meteo.com/v1/forecast';
     const responses = await fetchWeatherApi(url, params);
 
     // Obtener la primera ubicación
@@ -149,10 +149,7 @@ export class WeatherService implements OnModuleInit {
     // Calcular el array de horas proporcionado en la respuesta
     const hours = Array.from(
       { length: (Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval() },
-      (_, i) =>
-        new Date(
-          (Number(hourly.time()) + i * hourly.interval()) * 1000
-        )
+      (_, i) => new Date((Number(hourly.time()) + i * hourly.interval()) * 1000),
     );
 
     // Obtener el instante actual (tiempo UTC) y redondear a la hora actual
@@ -218,7 +215,7 @@ export class WeatherService implements OnModuleInit {
           surface_water_prev: true,
           alert_level: true,
           alert_level_ticks: true,
-        }
+        },
       });
 
       // Transformar a WeatherData y actualizar la cantidad de agua en superficie previa
@@ -245,7 +242,7 @@ export class WeatherService implements OnModuleInit {
       return new ResponseWeatherDataDto({
         ...weatherDto,
         estimated_drying_time: weatherResult.estimatedDryingTime,
-        alert_level: weatherResult.alertLevel
+        alert_level: weatherResult.alertLevel,
       });
     } catch (error) {
       throw new InternalServerErrorException(`Error updating data for geohash ${geohash}:`, error.message);
@@ -297,7 +294,7 @@ export class WeatherService implements OnModuleInit {
 
     // Generar geohashes únicos (Precisión 5 = ~4.9km x 4.9km)
     const geohashes = new Set<string>(
-      activeComplexes.map(complex => ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5))
+      activeComplexes.map((complex) => ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5)),
     );
 
     // Procesar los geohashes para obtener los datos de la API y actualizar la BD
@@ -321,7 +318,6 @@ export class WeatherService implements OnModuleInit {
       await this.prisma.weather.deleteMany({
         where: { created_at: { lt: expirationDate } },
       });
-
     } catch (error) {
       throw new InternalServerErrorException(`Error deleting old weather data:`, error.message);
     }
@@ -380,7 +376,7 @@ export class WeatherService implements OnModuleInit {
         precip_probability_next: true,
         alert_level: true,
         estimated_drying_time: true,
-      }
+      },
     });
 
     // Si se ha obtenido una entrada, devolver los datos

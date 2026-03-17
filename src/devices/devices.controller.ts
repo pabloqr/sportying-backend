@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
 import { Public } from 'src/auth/decorator';
 import { DevicesService } from './devices.service';
 import {
@@ -17,21 +7,16 @@ import {
   CreateDeviceTelemetryDto,
   GetDevicesDto,
   GetDeviceTelemetryDto,
-  UpdateDeviceDto
+  UpdateDeviceDto,
 } from './dto';
 
 @Controller('complexes')
 export class DevicesController {
-  constructor(
-    private devicesService: DevicesService,
-  ) { }
+  constructor(private devicesService: DevicesService) {}
 
   @Public()
   @Get(':complexId/devices')
-  async getDevices(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Query() query: GetDevicesDto,
-  ) {
+  async getDevices(@Param('complexId', ParseIntPipe) complexId: number, @Query() query: GetDevicesDto) {
     return this.devicesService.getDevices(complexId, query);
   }
 
@@ -46,10 +31,7 @@ export class DevicesController {
 
   @Public()
   @Post(':complexId/devices')
-  async createDevice(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Body() body: CreateDeviceDto,
-  ) {
+  async createDevice(@Param('complexId', ParseIntPipe) complexId: number, @Body() body: CreateDeviceDto) {
     return this.devicesService.createDevice(complexId, body);
   }
 

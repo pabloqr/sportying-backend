@@ -14,9 +14,7 @@ describe('NotificationsSseService', () => {
   });
 
   it('emits court status change events for the matching complex stream', async () => {
-    const eventPromise = firstValueFrom(
-      service.getNotificationStream(10).pipe(take(1), timeout(100)),
-    );
+    const eventPromise = firstValueFrom(service.getNotificationStream(10).pipe(take(1), timeout(100)));
 
     service.emitCourtStatusChange(10, 4, 'WEATHER', 9);
 
@@ -32,9 +30,7 @@ describe('NotificationsSseService', () => {
   });
 
   it('filters out notifications from other complexes', async () => {
-    const eventPromise = firstValueFrom(
-      service.getNotificationStream(10).pipe(take(1), timeout(50)),
-    );
+    const eventPromise = firstValueFrom(service.getNotificationStream(10).pipe(take(1), timeout(50)));
 
     service.emitReservationChange(99, 3, 'CANCELLED');
 

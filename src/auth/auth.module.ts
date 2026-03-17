@@ -9,13 +9,7 @@ import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
 @Module({
   imports: [JwtModule.register({}), UsersModule],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    ApiKeyStrategy,
-    RefreshJwtStrategy,
-    AccessControlService,
-  ],
+  providers: [AuthService, JwtStrategy, ApiKeyStrategy, RefreshJwtStrategy, AccessControlService],
   exports: [AuthService, AccessControlService],
 })
-export class AuthModule { }
+export class AuthModule {}

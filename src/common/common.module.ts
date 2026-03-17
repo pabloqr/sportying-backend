@@ -12,4 +12,4 @@ import { UtilitiesService } from './utilities.service';
   providers: [ErrorsService, UtilitiesService, AnalysisService],
   exports: [ErrorsService, UtilitiesService, AnalysisService],
 })
-export class CommonModule { }
+export class CommonModule {}

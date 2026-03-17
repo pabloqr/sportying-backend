@@ -122,9 +122,7 @@ describe('CourtsStatusService', () => {
       const error = new Error('db');
       jest.spyOn(service, 'getCourtStatus').mockRejectedValue(error);
 
-      await expect(
-        service.setCourtStatus(1, 2, { status: CourtStatus.OPEN }),
-      ).rejects.toThrow(error);
+      await expect(service.setCourtStatus(1, 2, { status: CourtStatus.OPEN })).rejects.toThrow(error);
       expect(mockErrorsService.dbError).toHaveBeenCalled();
     });
   });

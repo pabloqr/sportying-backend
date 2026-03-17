@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as argon from 'argon2';
@@ -21,7 +17,7 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigService,
     private usersService: UsersService,
-  ) { }
+  ) {}
 
   /**
    * Verifies the provided JWT token and decodes its payload.
@@ -75,11 +71,7 @@ export class AuthService {
    * @param {string} payload.mail - An email string within the payload.
    * @return {boolean} Returns true if the payload is valid and contains the required properties; otherwise, false.
    */
-  validatePayload(payload: {
-    sub: number;
-    mail: string;
-    role: string;
-  }): boolean {
+  validatePayload(payload: { sub: number; mail: string; role: string }): boolean {
     return !(!payload || !payload.sub || !payload.mail || !payload.role);
   }
 
@@ -133,11 +125,7 @@ export class AuthService {
    * @param {Role} role - The role assigned to the user.
    * @return {Promise<TokensDto>} A promise that resolves to an object containing the signed access and refresh tokens.
    */
-  async getSignedTokens(
-    userId: number,
-    mail: string,
-    role: Role,
-  ): Promise<TokensDto> {
+  async getSignedTokens(userId: number, mail: string, role: Role): Promise<TokensDto> {
     const payload = {
       sub: userId,
       mail,
@@ -171,10 +159,7 @@ export class AuthService {
    * @param {string} refreshToken - The new refresh token to be stored, which will be hashed before saving.
    * @return {Promise<void>} A promise that resolves when the operation is complete.
    */
-  async updateDBRefreshToken(
-    userId: number,
-    refreshToken: string,
-  ): Promise<void> {
+  async updateDBRefreshToken(userId: number, refreshToken: string): Promise<void> {
     const hash = await argon.hash(refreshToken);
     await this.prisma.users.update({
       where: {
@@ -298,17 +283,12 @@ export class AuthService {
    */
   async refreshToken(dto: RefreshTokenDto): Promise<TokensDto> {
     // Se obtienen los datos del token de refresco
-    const refreshTokenPayload = await this.verifyToken(
-      dto.refreshToken,
-      false,
-    ).catch((error: Error) => {
+    const refreshTokenPayload = await this.verifyToken(dto.refreshToken, false).catch((error: Error) => {
       if (error instanceof TokenExpiredError) {
         throw error;
       }
 
-      throw new UnauthorizedException(
-        'Invalid refresh token. Please try again.',
-      );
+      throw new UnauthorizedException('Invalid refresh token. Please try again.');
     });
 
     // Se trata de obtener el usuario con los datos del token de refresco
@@ -324,22 +304,15 @@ export class AuthService {
     }
 
     // Se compara el token de refresco dado con el almacenado
-    const refreshTokenMatch = await argon.verify(
-      user.refresh_token,
-      dto.refreshToken,
-    );
+    const refreshTokenMatch = await argon.verify(user.refresh_token, dto.refreshToken);
     if (!refreshTokenMatch) {
-      throw new UnauthorizedException(
-        'Invalid refresh token. Please try again.',
-      );
+      throw new UnauthorizedException('Invalid refresh token. Please try again.');
     }
 
     // Se validan los datos del token de refresco
     const validRefreshToken = this.validatePayload(refreshTokenPayload);
     if (!validRefreshToken) {
-      throw new UnauthorizedException(
-        'Invalid refresh token. Please try again.',
-      );
+      throw new UnauthorizedException('Invalid refresh token. Please try again.');
     }
 
     // Se obtiene el rol y los tokens

@@ -1,52 +1,27 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
 import { Public } from 'src/auth/decorator';
 import { CourtsService } from './courts.service';
-import {
-  CreateCourtDto,
-  GetCourtsDto,
-  UpdateCourtDto
-} from './dto';
+import { CreateCourtDto, GetCourtsDto, UpdateCourtDto } from './dto';
 
 @Controller('complexes')
 export class CourtsController {
-  constructor(
-    private courtsService: CourtsService,
-  ) { }
+  constructor(private courtsService: CourtsService) {}
 
   @Public()
   @Get(':complexId/courts')
-  async getCourts(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Query() query: GetCourtsDto,
-  ) {
+  async getCourts(@Param('complexId', ParseIntPipe) complexId: number, @Query() query: GetCourtsDto) {
     return this.courtsService.getCourts(complexId, query);
   }
 
   @Public()
   @Get(':complexId/courts/:courtId')
-  async getCourt(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Param('courtId', ParseIntPipe) courtId: number,
-  ) {
+  async getCourt(@Param('complexId', ParseIntPipe) complexId: number, @Param('courtId', ParseIntPipe) courtId: number) {
     return this.courtsService.getCourt(complexId, courtId);
   }
 
   @Public()
   @Post(':complexId/courts')
-  async createCourt(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Body() dto: CreateCourtDto,
-  ) {
+  async createCourt(@Param('complexId', ParseIntPipe) complexId: number, @Body() dto: CreateCourtDto) {
     return this.courtsService.createCourt(complexId, dto);
   }
 
@@ -76,10 +51,6 @@ export class CourtsController {
     @Param('courtId', ParseIntPipe) courtId: number,
     @Query('groupAvailability') groupAvailability: boolean = true,
   ) {
-    return this.courtsService.getCourtAvailability(
-      complexId,
-      courtId,
-      groupAvailability,
-    );
+    return this.courtsService.getCourtAvailability(complexId, courtId, groupAvailability);
   }
 }

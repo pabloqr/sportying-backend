@@ -62,9 +62,7 @@ describe('CourtsDevicesService', () => {
     mockPrisma.courts_devices.findMany.mockResolvedValue([{ device_id: 3 }]);
     mockPrisma.devices.findUnique.mockResolvedValue(null);
 
-    await expect(service.getCourtDevices(1, 2, {})).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(service.getCourtDevices(1, 2, {})).rejects.toThrow(NotFoundException);
   });
 
   it('returns the courts linked to the device', async () => {

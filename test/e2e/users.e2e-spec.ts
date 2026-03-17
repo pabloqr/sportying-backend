@@ -26,10 +26,7 @@ describe('Users e2e', () => {
   });
 
   async function signin(mail: string, password: string) {
-    const response = await request(app.getHttpServer())
-      .post('/auth/signin')
-      .send({ mail, password })
-      .expect(200);
+    const response = await request(app.getHttpServer()).post('/auth/signin').send({ mail, password }).expect(200);
 
     return response.body.accessToken as string;
   }
@@ -48,10 +45,7 @@ describe('Users e2e', () => {
 
     const token = await signin('client-users@sportying.test', 'client-pass');
 
-    await request(app.getHttpServer())
-      .get('/users')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(403);
+    await request(app.getHttpServer()).get('/users').set('Authorization', `Bearer ${token}`).expect(403);
   });
 
   it('allows an admin to list users', async () => {

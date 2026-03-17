@@ -63,20 +63,13 @@ describe('ReservationsStatusService', () => {
       created_at: new Date(),
       updated_at: new Date(),
     });
-    mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(
-      ReservationTimeFilter.UPCOMING,
-    );
-    mockUtilitiesService.getReservationStatus.mockReturnValue(
-      ReservationStatus.SCHEDULED,
-    );
+    mockUtilitiesService.getTimeFilterFromDate.mockReturnValue(ReservationTimeFilter.UPCOMING);
+    mockUtilitiesService.getReservationStatus.mockReturnValue(ReservationStatus.SCHEDULED);
     mockCourtsStatusService.getCourtStatus.mockResolvedValue({
       statusData: { status: CourtStatus.OPEN },
     });
 
-    const result = await service.setReservationStatus(
-      5,
-      ReservationAvailabilityStatus.OCCUPIED,
-    );
+    const result = await service.setReservationStatus(5, ReservationAvailabilityStatus.OCCUPIED);
 
     expect(mockPrisma.reservations.update).toHaveBeenCalled();
     expect(result.id).toBe(5);
@@ -87,9 +80,7 @@ describe('ReservationsStatusService', () => {
     const error = new Error('db');
     mockPrisma.reservations.update.mockRejectedValue(error);
 
-    await expect(
-      service.setReservationStatus(5, ReservationAvailabilityStatus.CANCELLED),
-    ).rejects.toThrow(error);
+    await expect(service.setReservationStatus(5, ReservationAvailabilityStatus.CANCELLED)).rejects.toThrow(error);
     expect(mockErrorsService.dbError).toHaveBeenCalled();
   });
 });

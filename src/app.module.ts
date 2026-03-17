@@ -50,4 +50,4 @@ import { ReservationsStatusModule } from './reservations-status/reservations-sta
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

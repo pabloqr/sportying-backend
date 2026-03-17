@@ -7,4 +7,4 @@ import { CourtsStatusService } from './courts-status.service';
   providers: [CourtsStatusService],
   exports: [CourtsStatusService],
 })
-export class CourtsStatusModule { }
+export class CourtsStatusModule {}

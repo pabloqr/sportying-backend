@@ -6,6 +6,6 @@ import { SportsService } from './sports.service';
 @Module({
   controllers: [SportsController, ComplexSportsController],
   providers: [SportsService],
-  exports: [SportsService]
+  exports: [SportsService],
 })
-export class SportsModule { }
+export class SportsModule {}

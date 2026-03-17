@@ -14,12 +14,8 @@ export class CourtAvailabilitySlotDto {
   available: boolean;
 
   constructor(availabilitySlot: any) {
-    this.dateIni = new Date(
-      availabilitySlot.date_ini ?? availabilitySlot.dateIni,
-    );
-    this.dateEnd = new Date(
-      availabilitySlot.date_end ?? availabilitySlot.dateEnd,
-    );
+    this.dateIni = new Date(availabilitySlot.date_ini ?? availabilitySlot.dateIni);
+    this.dateEnd = new Date(availabilitySlot.date_end ?? availabilitySlot.dateEnd);
     this.available = availabilitySlot.available;
   }
 }

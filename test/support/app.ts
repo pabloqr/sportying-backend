@@ -8,9 +8,7 @@ export async function createTestApp(): Promise<{
   app: INestApplication;
   prisma: PrismaService;
 }> {
-  jest
-    .spyOn(WeatherService.prototype, 'onModuleInit')
-    .mockResolvedValue(undefined);
+  jest.spyOn(WeatherService.prototype, 'onModuleInit').mockResolvedValue(undefined);
 
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],

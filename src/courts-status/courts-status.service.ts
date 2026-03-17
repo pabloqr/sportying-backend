@@ -10,7 +10,7 @@ export class CourtsStatusService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-  ) { }
+  ) {}
 
   /**
    * Retrieves the most recent status of a specific court.
@@ -20,10 +20,7 @@ export class CourtsStatusService {
    * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the most updated status of the court, or a
    * default status if no recent status is found.
    */
-  async getCourtStatus(
-    complexId: number,
-    courtId: number,
-  ): Promise<ResponseCourtStatusDto> {
+  async getCourtStatus(complexId: number, courtId: number): Promise<ResponseCourtStatusDto> {
     // Tratar de obtener el estatus más actualizado de la pista dada
     const status = await this.prisma.courts_status.findFirst({
       where: {
@@ -42,7 +39,7 @@ export class CourtsStatusService {
         status: CourtStatus.OPEN,
         alert_level: 0,
         estimated_drying_time: 0,
-      }
+      },
     });
   }
 
@@ -54,11 +51,7 @@ export class CourtsStatusService {
    * @param {CreateCourtStatusDto} dto - The data transfer object containing the new status information for the court.
    * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the updated court status object.
    */
-  async setCourtStatus(
-    complexId: number,
-    courtId: number,
-    dto: CreateCourtStatusDto,
-  ): Promise<ResponseCourtStatusDto> {
+  async setCourtStatus(complexId: number, courtId: number, dto: CreateCourtStatusDto): Promise<ResponseCourtStatusDto> {
     // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 

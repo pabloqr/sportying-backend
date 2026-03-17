@@ -1,19 +1,7 @@
 import { Transform, Type } from 'class-transformer';
-import {
-  IsArray,
-  IsDate,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { OrderBy } from '../../common/enums';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-  ReservationTimeFilter,
-} from '../enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../enums';
 
 export enum ReservationOrderField {
   ID = 'id',

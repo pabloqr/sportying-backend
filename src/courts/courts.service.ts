@@ -1,33 +1,15 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException
-} from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
-import {
-  CourtAvailabilitySlotDto,
-  ResponseCourtAvailabilityDto,
-  ResponseCourtDto
-} from '../common/dto';
+import { CourtAvailabilitySlotDto, ResponseCourtAvailabilityDto, ResponseCourtDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
 import { UtilitiesService } from '../common/utilities.service';
 import { ReservationOrderField } from '../reservations/dto';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-} from '../reservations/enums';
+import { ReservationAvailabilityStatus, ReservationStatus } from '../reservations/enums';
 import { ReservationsService } from '../reservations/reservations.service';
 import { WeatherService } from '../weather/weather.service';
-import {
-  COURT_ORDER_FIELD_MAP,
-  CreateCourtDto,
-  CreateCourtStatusDto,
-  GetCourtsDto,
-  UpdateCourtDto
-} from './dto';
+import { COURT_ORDER_FIELD_MAP, CreateCourtDto, CreateCourtStatusDto, GetCourtsDto, UpdateCourtDto } from './dto';
 import { CourtStatus, INACTIVE_COURT_STATUS } from './enums';
 
 @Injectable()
@@ -39,7 +21,7 @@ export class CourtsService {
     private weatherService: WeatherService,
     private courtsStatusService: CourtsStatusService,
     private reservationsService: ReservationsService,
-  ) { }
+  ) {}
 
   private async calculateCourtNumber(complexId: number, sportKey: string): Promise<number> {
     // Obtener el máximo para el complejo y deporte dados
@@ -59,14 +41,14 @@ export class CourtsService {
         complex_id: complexId,
         number,
         sport_key: sportKey,
-        is_delete: false
-      }
+        is_delete: false,
+      },
     });
 
     // Si existe, lanzar un error de conflicto
     if (exists) {
       throw new ConflictException(
-        `Court number ${number} alerady exists in complex with ID ${complexId} and SportKey ${sportKey}`
+        `Court number ${number} alerady exists in complex with ID ${complexId} and SportKey ${sportKey}`,
       );
     }
   }
@@ -185,23 +167,22 @@ export class CourtsService {
     // Filtrar las entradas del array si está definido el estatus
     let courtsWithStatusFiltered = courtsWithStatus;
     if (dto.statusData) {
-      courtsWithStatusFiltered = courtsWithStatus.filter(
-        (court) => {
-          // Obtener los datos sobre el estatus del DTO y del objeto
-          const dtoStatusData = dto.statusData;
-          const courtStatusData = court.status_data;
+      courtsWithStatusFiltered = courtsWithStatus.filter((court) => {
+        // Obtener los datos sobre el estatus del DTO y del objeto
+        const dtoStatusData = dto.statusData;
+        const courtStatusData = court.status_data;
 
-          // Verificar los datos para el estatus, el nivel de alerta y el tiempo de secado
-          const status = !dto.statusData.status || dtoStatusData.status === courtStatusData.status;
-          const alertLevel = !dto.statusData.alertLevel || dtoStatusData.alertLevel == courtStatusData.alertLevel;
-          const estimatedDryingTime = !dto.statusData.estimatedDryingTime ||
-            dtoStatusData.estimatedDryingTime == courtStatusData.estimatedDryingTime;
+        // Verificar los datos para el estatus, el nivel de alerta y el tiempo de secado
+        const status = !dto.statusData.status || dtoStatusData.status === courtStatusData.status;
+        const alertLevel = !dto.statusData.alertLevel || dtoStatusData.alertLevel == courtStatusData.alertLevel;
+        const estimatedDryingTime =
+          !dto.statusData.estimatedDryingTime ||
+          dtoStatusData.estimatedDryingTime == courtStatusData.estimatedDryingTime;
 
-          console.log(`${status} && ${alertLevel} && ${estimatedDryingTime}`);
+        console.log(`${status} && ${alertLevel} && ${estimatedDryingTime}`);
 
-          return status && alertLevel && estimatedDryingTime;
-        },
-      );
+        return status && alertLevel && estimatedDryingTime;
+      });
     }
 
     // Devolver la lista modificando los elementos obtenidos
@@ -217,11 +198,7 @@ export class CourtsService {
    * @throws {NotFoundException} If no court with the specified ID is found.
    * @throws {InternalServerErrorException} If multiple courts with the specified ID are found.
    */
-  async getCourt(
-    complexId: number,
-    courtId: number,
-    checkDeleted: boolean = false,
-  ): Promise<ResponseCourtDto> {
+  async getCourt(complexId: number, courtId: number, checkDeleted: boolean = false): Promise<ResponseCourtDto> {
     // Tratar de obtener la pista con el 'id' dado
     const result = await this.getCourts(complexId, { id: courtId }, checkDeleted);
 
@@ -229,9 +206,7 @@ export class CourtsService {
     if (result.length === 0) {
       throw new NotFoundException(`Court with ID ${courtId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple courts found with ID ${courtId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple courts found with ID ${courtId}.`);
     }
 
     return result[0];
@@ -246,10 +221,7 @@ export class CourtsService {
    * @return {Promise<ResponseCourtDto>} A promise that resolves to a ResponseCourtDto containing the details of the
    * created court, including its status.
    */
-  async createCourt(
-    complexId: number,
-    dto: CreateCourtDto,
-  ): Promise<ResponseCourtDto> {
+  async createCourt(complexId: number, dto: CreateCourtDto): Promise<ResponseCourtDto> {
     try {
       // Obtener de la petición o calcular el número de pista para la combinación complejo-deporte
       const number = dto.number ?? (await this.calculateCourtNumber(complexId, dto.sportKey));
@@ -320,11 +292,7 @@ export class CourtsService {
    * @return {Promise<ResponseCourtDto>} Returns a promise that resolves to a ResponseCourtDto object containing the
    * updated court information, including its current status.
    */
-  async updateCourt(
-    complexId: number,
-    courtId: number,
-    dto: UpdateCourtDto,
-  ): Promise<ResponseCourtDto> {
+  async updateCourt(complexId: number, courtId: number, dto: UpdateCourtDto): Promise<ResponseCourtDto> {
     // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
@@ -413,10 +381,7 @@ export class CourtsService {
     // Obtener las reservas para el complejo actual, ordenadas por su 'id' y la fecha de inicio
     const reservations = await this.reservationsService.getReservations({
       complexId,
-      orderParams: [
-        { field: ReservationOrderField.ID },
-        { field: ReservationOrderField.DATE_INI },
-      ],
+      orderParams: [{ field: ReservationOrderField.ID }, { field: ReservationOrderField.DATE_INI }],
     });
 
     // Filtrar las reservas para no procesar las canceladas
@@ -429,10 +394,7 @@ export class CourtsService {
     );
 
     // Agrupar las reservas en función del 'id' de la pista
-    const groupedReservations = this.utilitiesService.groupArrayByField(
-      filteredReservations,
-      'courtId',
-    );
+    const groupedReservations = this.utilitiesService.groupArrayByField(filteredReservations, 'courtId');
 
     // Formatear las reservas para que tengan la estructura correcta
     const formattedReservations = new Map<number, CourtAvailabilitySlotDto[]>();
@@ -482,8 +444,7 @@ export class CourtsService {
         const groupedAvailability: CourtAvailabilitySlotDto[] = [];
         if (reservations.length > 0) {
           // Intervalo actual
-          let currentAvailability: CourtAvailabilitySlotDto | undefined =
-            undefined;
+          let currentAvailability: CourtAvailabilitySlotDto | undefined = undefined;
 
           reservations.forEach((reservation) => {
             // Si el intervalo actual es indefinido, actualizarlo y devolverlo
@@ -493,11 +454,8 @@ export class CourtsService {
             }
 
             // Establecer las condiciones para verificar si los intervalos son contiguos
-            const equalEdgeDates =
-              currentAvailability.dateEnd.getTime() ===
-              reservation.dateIni.getTime();
-            const equalAvailability =
-              currentAvailability.available === reservation.available;
+            const equalEdgeDates = currentAvailability.dateEnd.getTime() === reservation.dateIni.getTime();
+            const equalAvailability = currentAvailability.available === reservation.available;
 
             if (equalEdgeDates && equalAvailability) {
               // Si son contiguos, extender el intervalo
@@ -538,14 +496,10 @@ export class CourtsService {
     courtId: number,
     groupAvailability: boolean = true,
   ): Promise<ResponseCourtAvailabilityDto> {
-    const availability = await this.getCourtsAvailability(
-      complexId,
-      groupAvailability,
-    );
+    const availability = await this.getCourtsAvailability(complexId, groupAvailability);
     return (
-      availability.find(
-        (courtAvailability) => courtAvailability.id === courtId,
-      ) ?? new ResponseCourtAvailabilityDto({ courtId, complexId })
+      availability.find((courtAvailability) => courtAvailability.id === courtId) ??
+      new ResponseCourtAvailabilityDto({ courtId, complexId })
     );
   }
 }

@@ -10,4 +10,4 @@ import { DevicesService } from './devices.service';
   providers: [DevicesService],
   exports: [DevicesService],
 })
-export class DevicesModule { }
+export class DevicesModule {}

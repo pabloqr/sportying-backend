@@ -32,10 +32,7 @@ describe('ReservationsService integration', () => {
   });
 
   it('creates a reservation inside opening hours', async () => {
-    const reservation = await reservationsService.createReservation(
-      1,
-      buildReservationDto(),
-    );
+    const reservation = await reservationsService.createReservation(1, buildReservationDto());
 
     expect(reservation.id).toBeGreaterThan(0);
     expect(reservation.reservationStatus).toBe(ReservationStatus.SCHEDULED);
@@ -145,14 +142,14 @@ describe('ReservationsService integration', () => {
 
     const reservations = await reservationsService.getReservations({});
 
-    expect(
-      reservations.find((reservation) => reservation.id === upcoming.id)?.reservationStatus,
-    ).toBe(ReservationStatus.WEATHER);
-    expect(
-      reservations.find((reservation) => reservation.id === past.id)?.reservationStatus,
-    ).toBe(ReservationStatus.COMPLETED);
-    expect(
-      reservations.find((reservation) => reservation.id === cancelled.id)?.reservationStatus,
-    ).toBe(ReservationStatus.CANCELLED);
+    expect(reservations.find((reservation) => reservation.id === upcoming.id)?.reservationStatus).toBe(
+      ReservationStatus.WEATHER,
+    );
+    expect(reservations.find((reservation) => reservation.id === past.id)?.reservationStatus).toBe(
+      ReservationStatus.COMPLETED,
+    );
+    expect(reservations.find((reservation) => reservation.id === cancelled.id)?.reservationStatus).toBe(
+      ReservationStatus.CANCELLED,
+    );
   });
 });

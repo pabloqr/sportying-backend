@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import { AuthService } from '../auth/auth.service';
@@ -11,7 +7,7 @@ import {
   DeviceTelemetrySlotDto,
   ResponseDeviceDto,
   ResponseDeviceStatusDto,
-  ResponseDeviceTelemetryDto
+  ResponseDeviceTelemetryDto,
 } from '../common/dto';
 import { OrderBy } from '../common/enums';
 import { ErrorsService } from '../common/errors.service';
@@ -25,7 +21,7 @@ import {
   DeviceTelemetryOrderField,
   GetDevicesDto,
   GetDeviceTelemetryDto,
-  UpdateDeviceDto
+  UpdateDeviceDto,
 } from './dto';
 import { DeviceType } from './enum';
 
@@ -37,7 +33,7 @@ export class DevicesService {
     private analysisService: AnalysisService,
     private authService: AuthService,
     private courtsDevicesService: CourtsDevicesService,
-  ) { }
+  ) {}
 
   /**
    * Processes the telemetry data for a given device, updating the system state based on the provided information.
@@ -58,44 +54,27 @@ export class DevicesService {
     // Se obtiene la información sobre el dispositivo actual
     const device = await this.getDevice(complexId, deviceId);
     // Se obtienen las pistas que tiene asignadas en dispositivo
-    const courtIds = (
-      await this.courtsDevicesService.getDeviceCourts(
-        complexId,
-        deviceId,
-        {},
-      )
-    ).courts;
+    const courtIds = (await this.courtsDevicesService.getDeviceCourts(complexId, deviceId, {})).courts;
 
     // Se procesa la telemetría para actualizar el estado del sistema
     if (!courtIds.length) return;
     switch (device.type) {
       case DeviceType.PRESENCE:
         // Se procesan los datos
-        return await this.analysisService.processAvailabilityTelemetry(
-          !value,
-          timestamp,
-          courtIds[0].id,
-        );
+        return await this.analysisService.processAvailabilityTelemetry(!value, timestamp, courtIds[0].id);
       case DeviceType.RAIN:
         // Se obtiene la telemetría anterior del dispositivo
-        const deviceTelemetry = await this.getDeviceTelemetry(
-          complexId,
-          deviceId,
-          {
-            orderParams: [
-              {
-                field: DeviceTelemetryOrderField.CREATED_AT,
-                order: OrderBy.ASC,
-              },
-            ],
-          },
-        );
+        const deviceTelemetry = await this.getDeviceTelemetry(complexId, deviceId, {
+          orderParams: [
+            {
+              field: DeviceTelemetryOrderField.CREATED_AT,
+              order: OrderBy.ASC,
+            },
+          ],
+        });
 
         // Se trata de obtener la telemetría previa, o se establece una por defecto
-        const previousTelemetry =
-          deviceTelemetry.telemetry.length >= 2
-            ? deviceTelemetry.telemetry[1]
-            : null;
+        const previousTelemetry = deviceTelemetry.telemetry.length >= 2 ? deviceTelemetry.telemetry[1] : null;
 
         // Se procesan los datos
         return await this.analysisService.processRainTelemetry(
@@ -172,10 +151,7 @@ export class DevicesService {
    * @throws {NotFoundException} If no device with the specified ID is found.
    * @throws {InternalServerErrorException} If multiple devices are found with the same ID.
    */
-  async getDevice(
-    complexId: number,
-    deviceId: number,
-  ): Promise<ResponseDeviceDto> {
+  async getDevice(complexId: number, deviceId: number): Promise<ResponseDeviceDto> {
     // Se trata de obtener el dispositivo con el 'id' dado
     const result = await this.getDevices(complexId, { id: deviceId });
 
@@ -183,9 +159,7 @@ export class DevicesService {
     if (result.length === 0) {
       throw new NotFoundException(`Device with ID ${deviceId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple devices found with ID ${deviceId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple devices found with ID ${deviceId}.`);
     }
 
     return result[0];
@@ -200,10 +174,7 @@ export class DevicesService {
    *
    * @return {Promise<ResponseDeviceDto>} A promise that resolves to the newly created device details.
    */
-  async createDevice(
-    complexId: number,
-    dto: CreateDeviceDto,
-  ): Promise<ResponseDeviceDto> {
+  async createDevice(complexId: number, dto: CreateDeviceDto): Promise<ResponseDeviceDto> {
     // Se crea la API Key para el dispositivo
     const apiKey = await this.authService.generateApiKey();
 
@@ -246,11 +217,7 @@ export class DevicesService {
    * @return {Promise<ResponseDeviceDto>} A promise that resolves with the updated device information encapsulated in a
    * ResponseDeviceDto object.
    */
-  async updateDevice(
-    complexId: number,
-    deviceId: number,
-    dto: UpdateDeviceDto,
-  ): Promise<ResponseDeviceDto> {
+  async updateDevice(complexId: number, deviceId: number, dto: UpdateDeviceDto): Promise<ResponseDeviceDto> {
     // Se verifica que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
@@ -376,9 +343,7 @@ export class DevicesService {
     return new ResponseDeviceTelemetryDto({
       deviceId,
       complexId,
-      telemetry: telemetry.map(
-        (t) => new DeviceTelemetrySlotDto({ ...t, type: device.type }),
-      ),
+      telemetry: telemetry.map((t) => new DeviceTelemetrySlotDto({ ...t, type: device.type })),
     });
   }
 
@@ -405,12 +370,7 @@ export class DevicesService {
         },
       });
 
-      this.processDeviceTelemetry(
-        complexId,
-        deviceId,
-        dto.value,
-        telemetry.created_at,
-      ).catch((error) =>
+      this.processDeviceTelemetry(complexId, deviceId, dto.value, telemetry.created_at).catch((error) =>
         console.error('Error processing device telemetry:', error),
       );
 
@@ -435,10 +395,7 @@ export class DevicesService {
    * @param {number} deviceId - The unique identifier of the device whose status is being requested.
    * @return {Promise<ResponseDeviceStatusDto>} A promise that resolves with the complete status of the device.
    */
-  async getDeviceStatus(
-    complexId: number,
-    deviceId: number,
-  ): Promise<ResponseDeviceStatusDto> {
+  async getDeviceStatus(complexId: number, deviceId: number): Promise<ResponseDeviceStatusDto> {
     // Se obtienen todos los datos del dispositivo
     const device = await this.getDevice(complexId, deviceId);
     // Se devuelven los datos apropiados

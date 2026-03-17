@@ -7,4 +7,4 @@ import { WeatherService } from './weather.service';
   providers: [WeatherService],
   exports: [WeatherService],
 })
-export class WeatherModule { }
+export class WeatherModule {}

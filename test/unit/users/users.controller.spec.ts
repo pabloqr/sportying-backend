@@ -46,9 +46,7 @@ describe('UsersController', () => {
   });
 
   it('throws when a client accesses a different user', async () => {
-    await expect(controller.getUser(8, 7, Role.CLIENT)).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(controller.getUser(8, 7, Role.CLIENT)).rejects.toThrow(ForbiddenException);
     expect(mockUsersService.getUserById).not.toHaveBeenCalled();
   });
 
@@ -81,9 +79,9 @@ describe('UsersController', () => {
   });
 
   it('throws when a client tries to update a different user', async () => {
-    await expect(
-      controller.updateUser(8, 7, Role.CLIENT, { name: 'Updated' } as any),
-    ).rejects.toThrow(ForbiddenException);
+    await expect(controller.updateUser(8, 7, Role.CLIENT, { name: 'Updated' } as any)).rejects.toThrow(
+      ForbiddenException,
+    );
     expect(mockUsersService.updateUser).not.toHaveBeenCalled();
   });
 
@@ -95,9 +93,7 @@ describe('UsersController', () => {
   });
 
   it('throws when a client tries to delete a different user', async () => {
-    await expect(controller.deleteUser(8, 7, Role.CLIENT)).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(controller.deleteUser(8, 7, Role.CLIENT)).rejects.toThrow(ForbiddenException);
     expect(mockUsersService.deleteUser).not.toHaveBeenCalled();
   });
 });

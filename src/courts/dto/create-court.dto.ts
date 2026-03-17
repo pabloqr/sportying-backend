@@ -1,15 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
-import {
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  ValidateNested
-} from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CourtStatusData } from './court-status-data.dto';
 
-class CreateCourtStatusDataDto extends PartialType(CourtStatusData) { }
+class CreateCourtStatusDataDto extends PartialType(CourtStatusData) {}
 
 export class CreateCourtDto {
   @Type(() => Number)

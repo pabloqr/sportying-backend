@@ -15,9 +15,7 @@ describe('ReservationsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReservationsController],
-      providers: [
-        { provide: ReservationsService, useValue: mockReservationsService },
-      ],
+      providers: [{ provide: ReservationsService, useValue: mockReservationsService }],
     }).compile();
 
     controller = module.get<ReservationsController>(ReservationsController);
@@ -31,9 +29,7 @@ describe('ReservationsController', () => {
     const query = { userId: 7 };
     mockReservationsService.getReservations.mockResolvedValue([{ id: 1 }]);
 
-    await expect(controller.getReservations(query as any)).resolves.toEqual([
-      { id: 1 },
-    ]);
+    await expect(controller.getReservations(query as any)).resolves.toEqual([{ id: 1 }]);
     expect(mockReservationsService.getReservations).toHaveBeenCalledWith(query);
   });
 

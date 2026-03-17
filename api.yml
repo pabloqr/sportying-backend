@@ -1,4 +1,4 @@
-openapi: "3.0.4"
+openapi: '3.0.4'
 info:
   title: Sports Facilities Management System
   description: |-
@@ -7,7 +7,7 @@ info:
     - Clientes: gestión del perfil y reserva de instalaciones.
   contact:
     email: pabloquesadarojo@gmail.com
-  version: "1.3.0"
+  version: '1.3.0'
 servers:
   - url: https://api.server.test/
 security:
@@ -45,31 +45,31 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: '#/components/schemas/User'
         required: true
       responses:
-        "201":
+        '201':
           description: Usuario creado exitosamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthToken"
-        "400":
+                $ref: '#/components/schemas/AuthToken'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "409":
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
           description: Conflicto, el usuario ya existe.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/signin:
     post:
       tags:
@@ -93,28 +93,28 @@ paths:
                   type: string
         required: true
       responses:
-        "200":
+        '200':
           description: Inicio de sesión exitoso, se devuelve el token de autenticación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthToken"
-        "400":
+                $ref: '#/components/schemas/AuthToken'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: Credenciales incorrectas.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/signout:
     post:
       tags:
@@ -128,28 +128,28 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Cierre de sesión exitoso.
           content:
             application/json: {}
-        "400":
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/refresh-token:
     post:
       tags:
@@ -163,30 +163,30 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Token de autenticación actualizado exitosamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthToken"
-        "400":
+                $ref: '#/components/schemas/AuthToken'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /users:
     get:
       tags:
@@ -203,7 +203,7 @@ paths:
           required: false
           description: Rol del usuario a filtrar.
           schema:
-            $ref: "#/components/schemas/UserRole"
+            $ref: '#/components/schemas/UserRole'
         - name: id
           in: query
           required: false
@@ -242,38 +242,38 @@ paths:
           schema:
             type: number
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de usuarios.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/UserWithoutPassword"
-        "400":
+                  $ref: '#/components/schemas/UserWithoutPassword'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - users
@@ -288,42 +288,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserWithRole"
+              $ref: '#/components/schemas/UserWithRole'
         required: true
       responses:
-        "201":
+        '201':
           description: El usuario se ha creado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserWithoutPassword"
-        "400":
+                $ref: '#/components/schemas/UserWithoutPassword'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /users/{userId}:
     parameters:
-      - $ref: "#/components/parameters/userId"
+      - $ref: '#/components/parameters/userId'
     get:
       tags:
         - users
@@ -338,40 +338,40 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la información del usuario pedido.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "400":
+                $ref: '#/components/schemas/User'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el usuario.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       tags:
         - users
@@ -390,43 +390,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: '#/components/schemas/User'
         required: true
       responses:
-        "200":
+        '200':
           description: La información del usuario se ha actualizado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "400":
+                $ref: '#/components/schemas/User'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el usuario.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       tags:
         - users
@@ -441,41 +441,41 @@ paths:
         - ADMIN
         - USER
       responses:
-        "204":
+        '204':
           description: El usuario se ha eliminado correctamente.
           content:
             application/json: {}
-        "400":
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el usuario.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /users/{userId}/notifications:
     parameters:
-      - $ref: "#/components/parameters/userId"
+      - $ref: '#/components/parameters/userId'
     get:
       tags:
         - notifications
@@ -489,38 +489,38 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de notificaciones.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Notification"
-        "400":
+                  $ref: '#/components/schemas/Notification'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes:
     get:
       tags:
@@ -532,38 +532,38 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de complejos deportivos.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ComplexInfo"
-        "400":
+                  $ref: '#/components/schemas/ComplexInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - complexes
@@ -577,42 +577,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ComplexInfo"
+              $ref: '#/components/schemas/ComplexInfo'
         required: true
       responses:
-        "200":
+        '200':
           description: El complejo deportivo se ha creado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ComplexInfo"
-        "400":
+                $ref: '#/components/schemas/ComplexInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}:
     parameters:
-      - $ref: "#/components/parameters/complexId"
+      - $ref: '#/components/parameters/complexId'
     get:
       tags:
         - complexes
@@ -623,40 +623,40 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la información del complejo deportivo pedido.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ComplexInfo"
-        "400":
+                $ref: '#/components/schemas/ComplexInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el complejo deportivo.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       tags:
         - complexes
@@ -670,43 +670,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ComplexInfo"
+              $ref: '#/components/schemas/ComplexInfo'
         required: true
       responses:
-        "200":
+        '200':
           description: La información del complejo deportivo se ha actualizado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ComplexInfo"
-        "400":
+                $ref: '#/components/schemas/ComplexInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el complejo deportivo.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       tags:
         - complexes
@@ -716,41 +716,41 @@ paths:
       x-security-roles:
         - SUPERADMIN
       responses:
-        "204":
+        '204':
           description: El complejo deportivo se ha eliminado correctamente.
           content:
             application/json: {}
-        "400":
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el complejo deportivo.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/time:
     parameters:
-      - $ref: "#/components/parameters/complexId"
+      - $ref: '#/components/parameters/complexId'
     get:
       tags:
         - complexes
@@ -761,36 +761,36 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la hora de apertura del complejo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TimeInfo"
-        "400":
+                $ref: '#/components/schemas/TimeInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - complexes
@@ -804,42 +804,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TimeInfo"
+              $ref: '#/components/schemas/TimeInfo'
         required: true
       responses:
-        "200":
+        '200':
           description: La hora de apertura del complejo se ha establecido correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TimeInfo"
-        "400":
+                $ref: '#/components/schemas/TimeInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/availability:
     parameters:
-      - $ref: "#/components/parameters/complexId"
+      - $ref: '#/components/parameters/complexId'
     get:
       tags:
         - complexes
@@ -850,41 +850,41 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la disponibilidad del complejo.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CourtAvailability"
-        "400":
+                  $ref: '#/components/schemas/CourtAvailability'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/weather:
     parameters:
-      - $ref: "#/components/parameters/complexId"
+      - $ref: '#/components/parameters/complexId'
     get:
       tags:
         - weather
@@ -895,43 +895,43 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la información meteorológica pedida.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WeatherInfo"
-        "400":
+                $ref: '#/components/schemas/WeatherInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el complejo deportivo.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/courts:
     parameters:
-      - $ref: "#/components/parameters/complexId"
+      - $ref: '#/components/parameters/complexId'
     get:
       tags:
         - courts
@@ -946,50 +946,50 @@ paths:
           in: query
           description: Deporte de la pista a filtrar.
           schema:
-            $ref: "#/components/schemas/CourtSport"
+            $ref: '#/components/schemas/CourtSport'
         - name: status
           in: query
           description: Estado de la pista a filtrar.
           schema:
-            $ref: "#/components/schemas/CourtStatus"
+            $ref: '#/components/schemas/CourtStatus'
         - name: maxPeople
           in: query
           description: Número máximo de personas que pueden usar la pista a filtrar.
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de pistas.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CourtInfo"
-        "400":
+                  $ref: '#/components/schemas/CourtInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - courts
@@ -1003,43 +1003,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CourtInfo"
+              $ref: '#/components/schemas/CourtInfo'
         required: true
       responses:
-        "201":
+        '201':
           description: La pista se ha creado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CourtInfo"
-        "400":
+                $ref: '#/components/schemas/CourtInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/courts/{courtId}:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/courtId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/courtId'
     get:
       tags:
         - courts
@@ -1050,40 +1050,40 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la información de la pista pedida.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CourtInfo"
-        "400":
+                $ref: '#/components/schemas/CourtInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la pista.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       tags:
         - courts
@@ -1097,43 +1097,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CourtInfo"
+              $ref: '#/components/schemas/CourtInfo'
         required: true
       responses:
-        "200":
+        '200':
           description: La información de la pista se ha actualizado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CourtInfo"
-        "400":
+                $ref: '#/components/schemas/CourtInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la pista.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       tags:
         - courts
@@ -1143,42 +1143,42 @@ paths:
       x-security-roles:
         - ADMIN
       responses:
-        "204":
+        '204':
           description: La pista se ha eliminado correctamente.
           content:
             application/json: {}
-        "400":
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la pista.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/courts/{courtId}/status:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/courtId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/courtId'
     get:
       tags:
         - courts
@@ -1189,40 +1189,40 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente el estado de la pista pedida.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CourtStatus"
-        "400":
+                $ref: '#/components/schemas/CourtStatus'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la pista.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - courts
@@ -1236,47 +1236,47 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CourtStatus"
+              $ref: '#/components/schemas/CourtStatus'
         required: true
       responses:
-        "200":
+        '200':
           description: El estado de la pista se ha actualizado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CourtStatus"
-        "400":
+                $ref: '#/components/schemas/CourtStatus'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la pista.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/courts/{courtId}/availability:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/courtId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/courtId'
     get:
       tags:
         - courts
@@ -1287,46 +1287,46 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la disponibilidad de la pista pedida.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CourtAvailability"
-        "400":
+                  $ref: '#/components/schemas/CourtAvailability'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la pista.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/courts/{courtId}/devices:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/courtId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/courtId'
     get:
       tags:
         - courts
@@ -1336,41 +1336,41 @@ paths:
       x-security-roles:
         - ADMIN
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de pistas.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CourtInfo"
-        "400":
+                  $ref: '#/components/schemas/CourtInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/devices:
     parameters:
-      - $ref: "#/components/parameters/complexId"
+      - $ref: '#/components/parameters/complexId'
     get:
       tags:
         - devices
@@ -1384,45 +1384,45 @@ paths:
           in: query
           description: Tipo de dispositivo a filtrar.
           schema:
-            $ref: "#/components/schemas/DeviceType"
+            $ref: '#/components/schemas/DeviceType'
         - name: status
           in: query
           description: Estado de funcionamiento del dispositivo a filtrar.
           schema:
-            $ref: "#/components/schemas/DeviceStatus"
+            $ref: '#/components/schemas/DeviceStatus'
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de dispositivos.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/DeviceInfo"
-        "400":
+                  $ref: '#/components/schemas/DeviceInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - devices
@@ -1436,43 +1436,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DeviceInfo"
+              $ref: '#/components/schemas/DeviceInfo'
         required: true
       responses:
-        "201":
+        '201':
           description: El dispositivo se ha creado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceInfo"
-        "400":
+                $ref: '#/components/schemas/DeviceInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/devices/{deviceId}:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/deviceId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/deviceId'
     get:
       tags:
         - devices
@@ -1482,42 +1482,42 @@ paths:
       x-security-roles:
         - ADMIN
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la información del dispositivo pedido.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceInfo"
-        "400":
+                $ref: '#/components/schemas/DeviceInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       tags:
         - devices
@@ -1531,45 +1531,45 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DeviceInfo"
+              $ref: '#/components/schemas/DeviceInfo'
         required: true
       responses:
-        "200":
+        '200':
           description: La información del dispositivo se ha actualizado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceInfo"
-        "400":
+                $ref: '#/components/schemas/DeviceInfo'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       tags:
         - devices
@@ -1579,44 +1579,44 @@ paths:
       x-security-roles:
         - ADMIN
       responses:
-        "204":
+        '204':
           description: El dispositivo se ha eliminado correctamente.
           content:
             application/json: {}
-        "400":
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/devices/{deviceId}/telemetry:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/deviceId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/deviceId'
     get:
       tags:
         - devices
@@ -1626,42 +1626,42 @@ paths:
       x-security-roles:
         - ADMIN
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la telemetría del dispositivo pedido.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceTelemetry"
-        "400":
+                $ref: '#/components/schemas/DeviceTelemetry'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - devices
@@ -1678,43 +1678,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DeviceTelemetry"
+              $ref: '#/components/schemas/DeviceTelemetry'
         required: true
       responses:
-        "201":
+        '201':
           description: La telemetría se ha cargado correctamente en el sistema.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceTelemetry"
-        "400":
+                $ref: '#/components/schemas/DeviceTelemetry'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/devices/{deviceId}/status:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/deviceId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/deviceId'
     get:
       tags:
         - devices
@@ -1728,42 +1728,42 @@ paths:
         - ADMIN
         - DEVICE
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente el estado del dispositivo pedido.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceStatus"
-        "400":
+                $ref: '#/components/schemas/DeviceStatus'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - devices
@@ -1778,43 +1778,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DeviceStatus"
+              $ref: '#/components/schemas/DeviceStatus'
         required: true
       responses:
-        "201":
+        '201':
           description: El estado se ha cargado correctamente en el sistema.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceStatus"
-        "400":
+                $ref: '#/components/schemas/DeviceStatus'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/devices/{deviceId}/courts:
     parameters:
-      - $ref: "#/components/parameters/complexId"
-      - $ref: "#/components/parameters/deviceId"
+      - $ref: '#/components/parameters/complexId'
+      - $ref: '#/components/parameters/deviceId'
     get:
       tags:
         - devices
@@ -1824,42 +1824,42 @@ paths:
       x-security-roles:
         - ADMIN
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de pistas asociadas al dispositivo pedido.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceCourts"
-        "400":
+                $ref: '#/components/schemas/DeviceCourts'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - devices
@@ -1873,48 +1873,48 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DeviceCourts"
+              $ref: '#/components/schemas/DeviceCourts'
         required: true
       responses:
-        "201":
+        '201':
           description: Las pistas se han asociado correctamente al dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeviceCourts"
-        "400":
+                $ref: '#/components/schemas/DeviceCourts'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado el dispositivo.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /users/{userId}/reservations:
     parameters:
-      - $ref: "#/components/parameters/userId"
+      - $ref: '#/components/parameters/userId'
     get:
       tags:
         - reservations
@@ -1928,45 +1928,45 @@ paths:
         - USER
         - SUPER_ADMIN
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de reservas.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Reservation"
-        "400":
+                  $ref: '#/components/schemas/Reservation'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: Usuario no encontrado o sin reservas.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /complexes/{complexId}/reservations:
     parameters:
-      - $ref: "#/components/parameters/complexId"
+      - $ref: '#/components/parameters/complexId'
     get:
       tags:
         - reservations
@@ -1993,42 +1993,42 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la lista de reservas.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Reservation"
-        "400":
+                  $ref: '#/components/schemas/Reservation'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se han encontrado reservas.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - reservations
@@ -2043,42 +2043,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Reservation"
+              $ref: '#/components/schemas/Reservation'
         required: true
       responses:
-        "201":
+        '201':
           description: La reserva se ha creado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
+                $ref: '#/components/schemas/Reservation'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /reservations/{reservationId}:
     parameters:
-      - $ref: "#/components/parameters/reservationId"
+      - $ref: '#/components/parameters/reservationId'
     get:
       tags:
         - reservations
@@ -2089,40 +2089,40 @@ paths:
         - ADMIN
         - USER
       responses:
-        "200":
+        '200':
           description: Se devuelve correctamente la información de la reserva pedida.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
+                $ref: '#/components/schemas/Reservation'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la reserva.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       tags:
         - reservations
@@ -2137,43 +2137,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Reservation"
+              $ref: '#/components/schemas/Reservation'
         required: true
       responses:
-        "200":
+        '200':
           description: La información de la reserva se ha actualizado correctamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
+                $ref: '#/components/schemas/Reservation'
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la reserva.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       tags:
         - reservations
@@ -2184,38 +2184,38 @@ paths:
         - ADMIN
         - USER
       responses:
-        "204":
+        '204':
           description: La reserva se ha eliminado correctamente.
           content:
             application/json: {}
-        "400":
+        '400':
           description: Petición incorrecta.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: No se ha podido autenticar al usuario.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "402":
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
           description: Sin permisos para realizar la operación.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: No se ha encontrado la reserva.
           content:
             application/json: {}
-        "500":
+        '500':
           description: Error interno del servidor.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     ErrorResponse:
@@ -2237,7 +2237,7 @@ components:
           type: integer
           description: Identificador del complejo.
         weather:
-          $ref: "#/components/schemas/WeatherData"
+          $ref: '#/components/schemas/WeatherData'
           description: Datos meteorológicos.
     WeatherData:
       type: object
@@ -2280,7 +2280,7 @@ components:
           type: integer
           description: Identificador único del dispositivo IoT.
         type:
-          $ref: "#/components/schemas/DeviceType"
+          $ref: '#/components/schemas/DeviceType'
       required:
         - type
     DeviceTelemetry:
@@ -2313,7 +2313,7 @@ components:
       type: object
       properties:
         credentials:
-          $ref: "#/components/schemas/UserCredentials"
+          $ref: '#/components/schemas/UserCredentials'
         name:
           type: string
           minLength: 2
@@ -2338,16 +2338,16 @@ components:
       type: object
       properties:
         role:
-          $ref: "#/components/schemas/UserRole"
+          $ref: '#/components/schemas/UserRole'
         user:
-          $ref: "#/components/schemas/User"
+          $ref: '#/components/schemas/User'
       required:
         - role
     UserWithoutPassword:
       type: object
       properties:
         role:
-          $ref: "#/components/schemas/UserRole"
+          $ref: '#/components/schemas/UserRole'
         mail:
           type: string
           format: email
@@ -2388,7 +2388,7 @@ components:
         name:
           type: string
         time:
-          $ref: "#/components/schemas/TimeInfo"
+          $ref: '#/components/schemas/TimeInfo'
         locLongitude:
           type: number
           format: double
@@ -2396,7 +2396,7 @@ components:
           type: number
           format: double
         weather:
-          $ref: "#/components/schemas/WeatherData"
+          $ref: '#/components/schemas/WeatherData'
     CourtSport:
       type: string
       enum:
@@ -2410,7 +2410,7 @@ components:
         id:
           type: integer
         sport:
-          $ref: "#/components/schemas/CourtSport"
+          $ref: '#/components/schemas/CourtSport'
         name:
           type: string
         description:
@@ -2429,7 +2429,7 @@ components:
       type: object
       properties:
         time:
-          $ref: "#/components/schemas/TimeInfo"
+          $ref: '#/components/schemas/TimeInfo'
         available:
           type: boolean
     Reservation:
@@ -2438,7 +2438,7 @@ components:
         courtId:
           type: integer
         time:
-          $ref: "#/components/schemas/TimeInfo"
+          $ref: '#/components/schemas/TimeInfo'
     NotificationType:
       type: string
       enum:
@@ -2456,7 +2456,7 @@ components:
         body:
           type: string
         type:
-          $ref: "#/components/schemas/NotificationType"
+          $ref: '#/components/schemas/NotificationType'
   parameters:
     complexId:
       name: complexId

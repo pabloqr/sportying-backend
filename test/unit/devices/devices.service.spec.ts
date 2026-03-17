@@ -1,7 +1,4 @@
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalysisService } from '../../../src/common/analysis.service';
 import { DevicesService } from '../../../src/devices/devices.service';
@@ -93,9 +90,7 @@ describe('DevicesService', () => {
   it('throws when multiple devices are found', async () => {
     jest.spyOn(service, 'getDevices').mockResolvedValue([{} as any, {} as any]);
 
-    await expect(service.getDevice(1, 2)).rejects.toThrow(
-      InternalServerErrorException,
-    );
+    await expect(service.getDevice(1, 2)).rejects.toThrow(InternalServerErrorException);
   });
 
   it('creates a device with a generated api key', async () => {
@@ -152,9 +147,7 @@ describe('DevicesService', () => {
       complexId: 2,
       type: DeviceType.RAIN,
     } as any);
-    mockPrisma.devices_telemetry.findMany.mockResolvedValue([
-      { value: 1.5, created_at: new Date() },
-    ]);
+    mockPrisma.devices_telemetry.findMany.mockResolvedValue([{ value: 1.5, created_at: new Date() }]);
 
     const result = await service.getDeviceTelemetry(2, 1, {});
 
@@ -167,9 +160,7 @@ describe('DevicesService', () => {
       value: 1.5,
       created_at: new Date(),
     });
-    const processSpy = jest
-      .spyOn(service as any, 'processDeviceTelemetry')
-      .mockResolvedValue(undefined);
+    const processSpy = jest.spyOn(service as any, 'processDeviceTelemetry').mockResolvedValue(undefined);
 
     const result = await service.setDeviceTelemetry(2, 1, { value: 1.5 } as any);
 
@@ -233,12 +224,7 @@ describe('DevicesService', () => {
         },
       ],
     });
-    expect(mockAnalysisService.processRainTelemetry).toHaveBeenCalledWith(
-      2,
-      previousTelemetry,
-      2.5,
-      [11, 12],
-    );
+    expect(mockAnalysisService.processRainTelemetry).toHaveBeenCalledWith(2, previousTelemetry, 2.5, [11, 12]);
   });
 
   it('processes rain telemetry with null previous telemetry when only one sample exists', async () => {
@@ -255,12 +241,7 @@ describe('DevicesService', () => {
 
     await (service as any).processDeviceTelemetry(2, 1, 1.5, new Date('2024-06-01T10:00:00Z'));
 
-    expect(mockAnalysisService.processRainTelemetry).toHaveBeenCalledWith(
-      2,
-      null,
-      1.5,
-      [11],
-    );
+    expect(mockAnalysisService.processRainTelemetry).toHaveBeenCalledWith(2, null, 1.5, [11]);
   });
 
   it('returns the device status dto from getDeviceStatus', async () => {

@@ -5,13 +5,13 @@ import { ResponseComplexWeatherDto } from 'src/common/dto';
 
 @Controller('complexes')
 export class WeatherController {
-  constructor(private weatherService: WeatherService) { }
+  constructor(private weatherService: WeatherService) {}
 
   @Public()
   @Get(':complexId/weather')
   async getComplexWeather(@Param('complexId', ParseIntPipe) complexId: number) {
     const weather = await this.weatherService.getWeatherFromId(complexId);
-    
+
     return new ResponseComplexWeatherDto({ id: complexId, weather });
   }
 }

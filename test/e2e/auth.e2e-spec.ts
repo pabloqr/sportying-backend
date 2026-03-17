@@ -59,10 +59,7 @@ describe('Auth e2e', () => {
     expect(refreshResponse.body.accessToken).toEqual(expect.any(String));
     expect(refreshResponse.body.refreshToken).toEqual(expect.any(String));
 
-    await request(app.getHttpServer())
-      .post('/auth/signout')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .expect(200);
+    await request(app.getHttpServer()).post('/auth/signout').set('Authorization', `Bearer ${accessToken}`).expect(200);
 
     const storedUser = await prisma.users.findUniqueOrThrow({
       where: {
@@ -96,9 +93,6 @@ describe('Auth e2e', () => {
       role: Role.CLIENT,
     });
 
-    await request(app.getHttpServer())
-      .post('/auth/refresh-token')
-      .send({ refreshToken: 'not-a-jwt' })
-      .expect(401);
+    await request(app.getHttpServer()).post('/auth/refresh-token').send({ refreshToken: 'not-a-jwt' }).expect(401);
   });
 });

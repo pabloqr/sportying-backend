@@ -13,9 +13,7 @@ describe('CourtsStatusController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CourtsStatusController],
-      providers: [
-        { provide: CourtsStatusService, useValue: mockCourtsStatusService },
-      ],
+      providers: [{ provide: CourtsStatusService, useValue: mockCourtsStatusService }],
     }).compile();
 
     controller = module.get<CourtsStatusController>(CourtsStatusController);
@@ -39,10 +37,6 @@ describe('CourtsStatusController', () => {
     await expect(controller.setCourtStatus(2, 9, dto as any)).resolves.toEqual({
       id: 9,
     });
-    expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(
-      2,
-      9,
-      dto,
-    );
+    expect(mockCourtsStatusService.setCourtStatus).toHaveBeenCalledWith(2, 9, dto);
   });
 });

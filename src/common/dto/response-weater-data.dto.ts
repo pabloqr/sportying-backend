@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsNumber } from "class-validator";
+import { IsInt, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class ResponseWeatherDataDto {
   @IsNumber()

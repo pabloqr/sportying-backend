@@ -1,11 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtStatus } from 'src/courts/enums';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-  ReservationTimeFilter,
-} from 'src/reservations/enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite
@@ -201,9 +197,7 @@ describe('UtilitiesService', () => {
         { id: 1, type: 'A', value: 'first' },
         { id: 3, type: 'A', value: 'third' },
       ]);
-      expect(result.get('B')).toEqual([
-        { id: 2, type: 'B', value: 'second' },
-      ]);
+      expect(result.get('B')).toEqual([{ id: 2, type: 'B', value: 'second' }]);
     });
 
     it('returns an empty map when the input array is empty', () => {

@@ -1,7 +1,4 @@
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { UtilitiesService } from '../../../src/common/utilities.service';
@@ -97,9 +94,7 @@ describe('ComplexesService', () => {
   it('throws when multiple complexes are found', async () => {
     jest.spyOn(service, 'getComplexes').mockResolvedValue([{} as any, {} as any]);
 
-    await expect(service.getComplex(1)).rejects.toThrow(
-      InternalServerErrorException,
-    );
+    await expect(service.getComplex(1)).rejects.toThrow(InternalServerErrorException);
   });
 
   it('creates or restores a complex and enriches it with weather', async () => {

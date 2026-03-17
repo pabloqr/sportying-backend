@@ -1,28 +1,18 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, user_role } from '../../prisma/generated/client';
 import { Role } from '../auth/enums';
 import { ResponseUserDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
-import {
-  CreateUserDto,
-  GetUsersDto,
-  UpdateUserDto,
-  USER_ORDER_FIELD_MAP,
-} from './dto';
+import { CreateUserDto, GetUsersDto, UpdateUserDto, USER_ORDER_FIELD_MAP } from './dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-  ) { }
+  ) {}
 
   /**
    * Retrieves a list of users based on the provided filters and ordering specifications.
@@ -33,10 +23,7 @@ export class UsersService {
    * @return {Promise<Array<ResponseUserDto>>} - A promise that resolves to an array of user data formatted as
    * `ResponseUserDto`.
    */
-  async getUsers(
-    dto: GetUsersDto,
-    checkDeleted: boolean = false,
-  ): Promise<Array<ResponseUserDto>> {
+  async getUsers(dto: GetUsersDto, checkDeleted: boolean = false): Promise<Array<ResponseUserDto>> {
     // Se construye el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.usersWhereInput = {
       // Se evita obtener los usuarios eliminados
@@ -49,11 +36,9 @@ export class UsersService {
         AND: [
           { role: dto.role as user_role },
           {
-            admins: (dto.role as Role) === Role.ADMIN
-              ? { some: { is_delete: false } }
-              : { none: { is_delete: false } },
-          }
-        ]
+            admins: (dto.role as Role) === Role.ADMIN ? { some: { is_delete: false } } : { none: { is_delete: false } },
+          },
+        ],
       }),
 
       // Se establecen las condiciones para los campos de tipo 'string'
@@ -121,9 +106,7 @@ export class UsersService {
     if (result.length === 0) {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple users found with ID ${userId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple users found with ID ${userId}.`);
     }
 
     return result[0];
@@ -145,9 +128,7 @@ export class UsersService {
     if (result.length === 0) {
       throw new NotFoundException(`User with mail ${userMail} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple users found with mail ${userMail}.`,
-      );
+      throw new InternalServerErrorException(`Multiple users found with mail ${userMail}.`);
     }
 
     return result[0];
@@ -181,8 +162,7 @@ export class UsersService {
         await this.prisma.complexes.findUniqueOrThrow({ where: { id: dto.complexId } });
       } catch (error) {
         this.errorsService.dbError(error, {
-          p2025:
-            `Complex with ID ${dto.complexId} not found.`,
+          p2025: `Complex with ID ${dto.complexId} not found.`,
         });
 
         throw error;
@@ -232,8 +212,7 @@ export class UsersService {
         };
       } catch (error) {
         this.errorsService.dbError(error, {
-          p2002:
-            'Credentials already exist. Please try again with different credentials.',
+          p2002: 'Credentials already exist. Please try again with different credentials.',
         });
 
         throw error;
@@ -286,8 +265,7 @@ export class UsersService {
         };
       } catch (error) {
         this.errorsService.dbError(error, {
-          p2002:
-            'Credentials already exist. Please try again with different credentials.',
+          p2002: 'Credentials already exist. Please try again with different credentials.',
         });
 
         throw error;
@@ -304,10 +282,7 @@ export class UsersService {
    * @param {UpdateUserDto} dto - An object containing the updated information for the user.
    * @return {Promise<ResponseUserDto>} A promise resolving to the updated user's information.
    */
-  async updateUser(
-    userId: number,
-    dto: UpdateUserDto,
-  ): Promise<ResponseUserDto> {
+  async updateUser(userId: number, dto: UpdateUserDto): Promise<ResponseUserDto> {
     this.errorsService.noBodyError(dto);
 
     // Se establecen las propiedades a actualizar
@@ -391,8 +366,7 @@ export class UsersService {
       };
     } catch (error) {
       this.errorsService.dbError(error, {
-        p2002:
-          'Credentials already exist. Please try again with different credentials.',
+        p2002: 'Credentials already exist. Please try again with different credentials.',
         p2025: `User with ID ${userId} not found.`,
       });
 

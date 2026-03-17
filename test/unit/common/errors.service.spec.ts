@@ -35,9 +35,7 @@ describe('ErrorsService', () => {
     });
 
     it('uses the provided context message when dto is undefined', () => {
-      expect(() => service.noBodyError(undefined, 'Custom message')).toThrow(
-        'Custom message',
-      );
+      expect(() => service.noBodyError(undefined, 'Custom message')).toThrow('Custom message');
     });
 
     it('does not throw when dto is defined', () => {
@@ -47,33 +45,25 @@ describe('ErrorsService', () => {
 
   describe('dbError', () => {
     it('maps P2002 to ConflictException', () => {
-      expect(() => service.dbError(buildKnownError('P2002'))).toThrow(
-        ConflictException,
-      );
+      expect(() => service.dbError(buildKnownError('P2002'))).toThrow(ConflictException);
     });
 
     it('maps P2003 to ConflictException', () => {
-      expect(() => service.dbError(buildKnownError('P2003'))).toThrow(
-        ConflictException,
-      );
+      expect(() => service.dbError(buildKnownError('P2003'))).toThrow(ConflictException);
     });
 
     it('maps P2025 to NotFoundException', () => {
-      expect(() => service.dbError(buildKnownError('P2025'))).toThrow(
-        NotFoundException,
-      );
+      expect(() => service.dbError(buildKnownError('P2025'))).toThrow(NotFoundException);
     });
 
     it('maps unknown prisma request errors to InternalServerErrorException', () => {
-      expect(() => service.dbError(buildUnknownError())).toThrow(
-        InternalServerErrorException,
-      );
+      expect(() => service.dbError(buildUnknownError())).toThrow(InternalServerErrorException);
     });
 
     it('uses custom context messages when provided', () => {
-      expect(() =>
-        service.dbError(buildKnownError('P2002'), { p2002: 'Duplicated data.' }),
-      ).toThrow('Duplicated data.');
+      expect(() => service.dbError(buildKnownError('P2002'), { p2002: 'Duplicated data.' })).toThrow(
+        'Duplicated data.',
+      );
     });
 
     it('does nothing for non-prisma errors', () => {

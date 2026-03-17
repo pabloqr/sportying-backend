@@ -5,15 +5,11 @@ import { SportsService } from './sports.service';
 
 @Controller('config/sports')
 export class SportsController {
-  constructor(
-    private sportsService: SportsService
-  ) { }
+  constructor(private sportsService: SportsService) {}
 
   @Public()
   @Get()
-  async getSports(
-    @Query(new ValidationPipe({ skipMissingProperties: true })) query: GetSportsDto,
-  ) {
+  async getSports(@Query(new ValidationPipe({ skipMissingProperties: true })) query: GetSportsDto) {
     return this.sportsService.getSports(query);
   }
 

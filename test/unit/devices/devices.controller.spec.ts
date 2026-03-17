@@ -34,9 +34,7 @@ describe('DevicesController', () => {
     const query = { type: 'sensor' };
     mockDevicesService.getDevices.mockResolvedValue([{ id: 1 }]);
 
-    await expect(controller.getDevices(2, query as any)).resolves.toEqual([
-      { id: 1 },
-    ]);
+    await expect(controller.getDevices(2, query as any)).resolves.toEqual([{ id: 1 }]);
     expect(mockDevicesService.getDevices).toHaveBeenCalledWith(2, query);
   });
 
@@ -78,14 +76,8 @@ describe('DevicesController', () => {
     const query = { limit: 10 };
     mockDevicesService.getDeviceTelemetry.mockResolvedValue([{ id: 1 }]);
 
-    await expect(controller.getDeviceTelemetry(2, 6, query as any)).resolves.toEqual([
-      { id: 1 },
-    ]);
-    expect(mockDevicesService.getDeviceTelemetry).toHaveBeenCalledWith(
-      2,
-      6,
-      query,
-    );
+    await expect(controller.getDeviceTelemetry(2, 6, query as any)).resolves.toEqual([{ id: 1 }]);
+    expect(mockDevicesService.getDeviceTelemetry).toHaveBeenCalledWith(2, 6, query);
   });
 
   it('delegates setDeviceTelemetry to DevicesService', async () => {

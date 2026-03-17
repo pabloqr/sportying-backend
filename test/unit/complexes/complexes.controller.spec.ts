@@ -92,9 +92,6 @@ describe('ComplexesController', () => {
     await expect(controller.getComplexAvailability(2, false)).resolves.toEqual({
       id: 2,
     });
-    expect(mockComplexesService.getComplexAvailability).toHaveBeenCalledWith(
-      2,
-      false,
-    );
+    expect(mockComplexesService.getComplexAvailability).toHaveBeenCalledWith(2, false);
   });
 });

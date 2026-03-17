@@ -7,4 +7,4 @@ import { CourtsDevicesController } from './courts-devices.controller';
   providers: [CourtsDevicesService],
   exports: [CourtsDevicesService],
 })
-export class CourtsDevicesModule { }
+export class CourtsDevicesModule {}

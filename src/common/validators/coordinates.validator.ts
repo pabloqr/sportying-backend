@@ -7,17 +7,14 @@ import {
 
 @ValidatorConstraint({ async: false })
 export class CoordinatesValidator implements ValidatorConstraintInterface {
-  validate(
-    value: any,
-    validationArguments?: ValidationArguments,
-  ): Promise<boolean> | boolean {
+  validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> | boolean {
     const dto = validationArguments?.object as any;
-    const { locLatitude, locLongitude  } = dto;
+    const { locLatitude, locLongitude } = dto;
 
     const isLatitudeDefined = locLatitude !== undefined && locLatitude !== null;
     const isLongitudeDefined = locLongitude !== undefined && locLongitude !== null;
 
-    return ((isLatitudeDefined && isLongitudeDefined) || (!isLatitudeDefined && !isLongitudeDefined));
+    return (isLatitudeDefined && isLongitudeDefined) || (!isLatitudeDefined && !isLongitudeDefined);
   }
 
   defaultMessage(validationArguments?: ValidationArguments): string {

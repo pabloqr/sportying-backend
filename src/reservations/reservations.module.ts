@@ -7,12 +7,8 @@ import { UserReservationsController } from './user-reservations.controller';
 
 @Module({
   imports: [CourtsStatusModule],
-  controllers: [
-    ReservationsController,
-    UserReservationsController,
-    ComplexReservationsController,
-  ],
+  controllers: [ReservationsController, UserReservationsController, ComplexReservationsController],
   providers: [ReservationsService],
   exports: [ReservationsService],
 })
-export class ReservationsModule { }
+export class ReservationsModule {}

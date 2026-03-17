@@ -8,38 +8,24 @@ export class UtilitiesService {
     return date >= start && date <= end;
   }
 
-  public dateIsEqualOrLower(
-    minutes: number,
-    dateA: Date,
-    dateB: Date,
-  ): boolean {
+  public dateIsEqualOrLower(minutes: number, dateA: Date, dateB: Date): boolean {
     const diff = Math.abs(dateA.getTime() - dateB.getTime());
     return diff <= minutes * 60 * 1000;
   }
 
-  public dateIsEqualOrGreater(
-    minutes: number,
-    dateA: Date,
-    dateB: Date,
-  ): boolean {
+  public dateIsEqualOrGreater(minutes: number, dateA: Date, dateB: Date): boolean {
     const diff = Math.abs(dateA.getTime() - dateB.getTime());
     return diff >= minutes * 60 * 1000;
   }
 
-  public timeIsEqualOrLower(
-    dateA: Date,
-    dateB: Date,
-  ): boolean {
+  public timeIsEqualOrLower(dateA: Date, dateB: Date): boolean {
     const timeA = dateA.getHours() * 60 + dateA.getMinutes();
     const timeB = dateB.getHours() * 60 + dateB.getMinutes();
 
     return timeA <= timeB;
   }
 
-  public timeIsEqualOrGreater(
-    dateA: Date,
-    dateB: Date,
-  ): boolean {
+  public timeIsEqualOrGreater(dateA: Date, dateB: Date): boolean {
     const timeA = dateA.getHours() * 60 + dateA.getMinutes();
     const timeB = dateB.getHours() * 60 + dateB.getMinutes();
 
@@ -79,10 +65,7 @@ export class UtilitiesService {
     return { dateIni, dateEnd };
   }
 
-  public groupArrayByField<T>(
-    array: T[],
-    field: keyof T,
-  ): Map<T[typeof field], T[]> {
+  public groupArrayByField<T>(array: T[], field: keyof T): Map<T[typeof field], T[]> {
     const map = new Map<T[typeof field], T[]>();
 
     array.forEach((item) => {
@@ -107,9 +90,7 @@ export class UtilitiesService {
    *  otherwise returns UPCOMING.
    */
   public getTimeFilterFromDate(date: Date): ReservationTimeFilter {
-    return date < new Date()
-      ? ReservationTimeFilter.PAST
-      : ReservationTimeFilter.UPCOMING;
+    return date < new Date() ? ReservationTimeFilter.PAST : ReservationTimeFilter.UPCOMING;
   }
 
   public getReservationStatus(

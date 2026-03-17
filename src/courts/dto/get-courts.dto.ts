@@ -1,13 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import {
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { OrderBy } from '../../common/enums';
 import { OptionalCourtStatusData } from './optional-court-status-data.dto';
 
@@ -53,9 +45,9 @@ export class GetCourtsDto {
   @IsOptional()
   sportKey?: string;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  number?: string;
+  number?: number;
 
   @Type(() => Number)
   @IsNumber()

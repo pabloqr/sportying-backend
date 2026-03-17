@@ -32,31 +32,18 @@ describe('NotificationsService', () => {
   it('delegates court status notifications to the SSE service', () => {
     service.notifyCourtStatusChange(1, 2, 'WEATHER', 3);
 
-    expect(mockNotificationsSseService.emitCourtStatusChange).toHaveBeenCalledWith(
-      1,
-      2,
-      'WEATHER',
-      3,
-    );
+    expect(mockNotificationsSseService.emitCourtStatusChange).toHaveBeenCalledWith(1, 2, 'WEATHER', 3);
   });
 
   it('delegates reservation notifications to the SSE service', () => {
     service.notifyReservationChange(1, 2, 'CANCELLED');
 
-    expect(mockNotificationsSseService.emitReservationChange).toHaveBeenCalledWith(
-      1,
-      2,
-      'CANCELLED',
-    );
+    expect(mockNotificationsSseService.emitReservationChange).toHaveBeenCalledWith(1, 2, 'CANCELLED');
   });
 
   it('delegates device telemetry notifications to the SSE service', () => {
     service.notifyDeviceTelemetry(1, 2, 12.5);
 
-    expect(mockNotificationsSseService.emitDeviceTelemetry).toHaveBeenCalledWith(
-      1,
-      2,
-      12.5,
-    );
+    expect(mockNotificationsSseService.emitDeviceTelemetry).toHaveBeenCalledWith(1, 2, 12.5);
   });
 });

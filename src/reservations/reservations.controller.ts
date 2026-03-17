@@ -1,21 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Put,
-  Query,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Put, Query, ValidationPipe } from '@nestjs/common';
 import { Public } from 'src/auth/decorator';
 import { GetReservationsDto, UpdateReservationDto } from './dto';
 import { ReservationsService } from './reservations.service';
 
 @Controller('reservations')
 export class ReservationsController {
-  constructor(private reservationsService: ReservationsService) { }
+  constructor(private reservationsService: ReservationsService) {}
 
   @Public()
   @Get()
@@ -25,9 +15,7 @@ export class ReservationsController {
 
   @Public()
   @Get(':reservationId')
-  async getReservation(
-    @Param('reservationId', ParseIntPipe) reservationId: number,
-  ) {
+  async getReservation(@Param('reservationId', ParseIntPipe) reservationId: number) {
     return this.reservationsService.getReservation(reservationId);
   }
 
@@ -43,9 +31,7 @@ export class ReservationsController {
 
   @Public()
   @Delete(':reservationId')
-  async deleteReservation(
-    @Param('reservationId', ParseIntPipe) reservationId: number,
-  ) {
+  async deleteReservation(@Param('reservationId', ParseIntPipe) reservationId: number) {
     return this.reservationsService.deleteReservation(reservationId);
   }
 }

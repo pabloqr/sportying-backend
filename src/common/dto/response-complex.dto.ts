@@ -56,7 +56,7 @@ export class ResponseComplexDto {
 
   @IsArray()
   @IsNotEmpty()
-  sports: string[]
+  sports: string[];
 
   @Type(() => ResponseWeatherDataDto)
   @ValidateNested()

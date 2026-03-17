@@ -1,15 +1,5 @@
-import {
-  IsDate,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-} from 'class-validator';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-  ReservationTimeFilter,
-} from '../../reservations/enums';
+import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../../reservations/enums';
 
 export class ResponseReservationDto {
   @IsNumber()
@@ -64,8 +54,7 @@ export class ResponseReservationDto {
     this.dateIni = new Date(reservation.date_ini ?? reservation.dateIni);
     this.dateEnd = new Date(reservation.date_end ?? reservation.dateEnd);
     this.status = reservation.status ?? reservation.status;
-    this.reservationStatus =
-      reservation.reservation_status ?? reservation.reservationStatus;
+    this.reservationStatus = reservation.reservation_status ?? reservation.reservationStatus;
     this.timeFilter = reservation.time_filter ?? reservation.timeFilter;
     this.createdAt = new Date(reservation.created_at ?? reservation.createdAt);
     this.updatedAt = new Date(reservation.updated_at ?? reservation.updatedAt);

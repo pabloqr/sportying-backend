@@ -158,9 +158,7 @@ describe('AuthService integration', () => {
       },
     });
 
-    const validated = await authService.validateApiKey(
-      `${device.id_key}.${apiKey}`,
-    );
+    const validated = await authService.validateApiKey(`${device.id_key}.${apiKey}`);
 
     expect(validated.id).toBe(device.id);
     expect(validated.complexId).toBe(1);

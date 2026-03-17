@@ -1,7 +1,4 @@
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { SportsService } from '../../../src/sports/sports.service';
@@ -20,10 +17,7 @@ describe('SportsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        SportsService,
-        { provide: PrismaService, useValue: mockPrisma },
-      ],
+      providers: [SportsService, { provide: PrismaService, useValue: mockPrisma }],
     }).compile();
 
     service = module.get<SportsService>(SportsService);
@@ -90,9 +84,7 @@ describe('SportsService', () => {
     it('throws InternalServerErrorException when multiple sports match the key', async () => {
       jest.spyOn(service, 'getSports').mockResolvedValue([{ key: 'tennis' } as any, { key: 'tennis' } as any]);
 
-      await expect(service.getSport('tennis')).rejects.toThrow(
-        InternalServerErrorException,
-      );
+      await expect(service.getSport('tennis')).rejects.toThrow(InternalServerErrorException);
     });
   });
 });

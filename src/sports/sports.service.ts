@@ -6,14 +6,9 @@ import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto';
 
 @Injectable()
 export class SportsService {
-  constructor(
-    private prisma: PrismaService,
-  ) { }
+  constructor(private prisma: PrismaService) {}
 
-  async getComplexSports(
-    complexId: number,
-    dto: GetSportsDto,
-  ): Promise<Array<ResponseSportDto>> {
+  async getComplexSports(complexId: number, dto: GetSportsDto): Promise<Array<ResponseSportDto>> {
     // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.sportsWhereInput = {
       ...(dto.minPeople && { min_people: dto.minPeople }),
@@ -32,17 +27,14 @@ export class SportsService {
       where: {
         key: { in: filteredSportKeys },
         ...where,
-        is_delete: false
-      }
+        is_delete: false,
+      },
     });
 
     return sports.map((sport) => new ResponseSportDto(sport));
   }
 
-  async getSports(
-    dto: GetSportsDto,
-    checkDeleted: boolean = false,
-  ): Promise<Array<ResponseSportDto>> {
+  async getSports(dto: GetSportsDto, checkDeleted: boolean = false): Promise<Array<ResponseSportDto>> {
     // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.sportsWhereInput = {
       // Evitar obtener los deportes eliminados
@@ -90,9 +82,7 @@ export class SportsService {
     if (result.length === 0) {
       throw new NotFoundException(`Sport with Key ${sportKey} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple sports found with Key ${sportKey}.`,
-      );
+      throw new InternalServerErrorException(`Multiple sports found with Key ${sportKey}.`);
     }
 
     return result[0];

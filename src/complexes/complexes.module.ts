@@ -11,4 +11,4 @@ import { ComplexesService } from './complexes.service';
   providers: [ComplexesService],
   exports: [ComplexesService],
 })
-export class ComplexesModule { }
+export class ComplexesModule {}

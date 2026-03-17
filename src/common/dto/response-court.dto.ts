@@ -1,11 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsDate,
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  ValidateNested
-} from 'class-validator';
+import { IsDate, IsInt, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { CourtStatusData } from 'src/courts/dto';
 import { ResponseWeatherDataDto } from './response-weater-data.dto';
 

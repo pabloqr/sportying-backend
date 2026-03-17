@@ -6,9 +6,7 @@ import { CourtsDevicesService } from './courts-devices.service';
 
 @Controller('complexes')
 export class CourtsDevicesController {
-  constructor(
-    private courtsDevicesService: CourtsDevicesService,
-  ) { }
+  constructor(private courtsDevicesService: CourtsDevicesService) {}
 
   @Public()
   @Get(':complexId/courts/:courtId/devices')
@@ -17,11 +15,7 @@ export class CourtsDevicesController {
     @Param('courtId', ParseIntPipe) courtId: number,
     @Query() query: GetCourtDevicesDto,
   ) {
-    return this.courtsDevicesService.getCourtDevices(
-      complexId,
-      courtId,
-      query,
-    );
+    return this.courtsDevicesService.getCourtDevices(complexId, courtId, query);
   }
 
   @Public()
@@ -31,11 +25,7 @@ export class CourtsDevicesController {
     @Param('deviceId', ParseIntPipe) deviceId: number,
     @Query() query: GetDeviceCourtsDto,
   ) {
-    return this.courtsDevicesService.getDeviceCourts(
-      complexId,
-      deviceId,
-      query,
-    );
+    return this.courtsDevicesService.getDeviceCourts(complexId, deviceId, query);
   }
 
   @Public()
@@ -45,10 +35,6 @@ export class CourtsDevicesController {
     @Param('deviceId', ParseIntPipe) deviceId: number,
     @Body() body: CreateDeviceCourtsDto,
   ) {
-    return this.courtsDevicesService.setDeviceCourts(
-      complexId,
-      deviceId,
-      body,
-    );
+    return this.courtsDevicesService.setDeviceCourts(complexId, deviceId, body);
   }
 }

@@ -5,9 +5,7 @@ import { CourtsStatusService } from './courts-status.service';
 
 @Controller('complexes')
 export class CourtsStatusController {
-  constructor(
-    private courtsStatusService: CourtsStatusService,
-  ) { }
+  constructor(private courtsStatusService: CourtsStatusService) {}
 
   @Public()
   @Get(':complexId/courts/:courtId/status')

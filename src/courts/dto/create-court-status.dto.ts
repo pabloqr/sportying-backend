@@ -1,3 +1,3 @@
 import { OptionalCourtStatusData } from './optional-court-status-data.dto';
 
-export class CreateCourtStatusDto extends OptionalCourtStatusData { }
+export class CreateCourtStatusDto extends OptionalCourtStatusData {}

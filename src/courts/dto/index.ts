@@ -6,4 +6,3 @@ export * from './get-courts.dto';
 export * from './get_court-devices.dto';
 export * from './optional-court-status-data.dto';
 export * from './update-court.dto';
-

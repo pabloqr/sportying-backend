@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -34,7 +30,7 @@ export class ComplexesService {
     private weatherService: WeatherService,
     private sportsService: SportsService,
     private courtsService: CourtsService,
-  ) { }
+  ) {}
 
   /**
    * Retrieves a list of complexes based on the provided filters and conditions.
@@ -48,10 +44,7 @@ export class ComplexesService {
    * @return {Promise<Array<ResponseComplexDto>>} - A promise that resolves to an array of ResponseComplexDto instances
    * representing the matching complexes.
    */
-  async getComplexes(
-    dto: GetComplexesDto,
-    checkDeleted: boolean = false,
-  ): Promise<Array<ResponseComplexDto>> {
+  async getComplexes(dto: GetComplexesDto, checkDeleted: boolean = false): Promise<Array<ResponseComplexDto>> {
     // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.complexesWhereInput = {
       // Evitar obtener los complejos eliminados
@@ -102,19 +95,21 @@ export class ComplexesService {
     const weatherData: Map<string, ResponseWeatherDataDto> = new Map<string, ResponseWeatherDataDto>();
 
     // Devolver la lista modificando los elementos obtenidos
-    return Promise.all(complexes.map(async (complex) => {
-      // Obtener el listado de los deportes que se pueden practicar en el complejo
-      const sportDatas = await this.sportsService.getComplexSports(complex.id, {});
-      // Mapear a un listado de string
-      const sports = sportDatas.map((sport) => sport.key);
+    return Promise.all(
+      complexes.map(async (complex) => {
+        // Obtener el listado de los deportes que se pueden practicar en el complejo
+        const sportDatas = await this.sportsService.getComplexSports(complex.id, {});
+        // Mapear a un listado de string
+        const sports = sportDatas.map((sport) => sport.key);
 
-      // Obtener el geohash de las coordenadas dadas
-      const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);
-      // Obtener la meteorología si no existe previamente
-      if (!weatherData.has(geohash)) weatherData[geohash] = await this.weatherService.getWeatherFromGeohash(geohash);
+        // Obtener el geohash de las coordenadas dadas
+        const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);
+        // Obtener la meteorología si no existe previamente
+        if (!weatherData.has(geohash)) weatherData[geohash] = await this.weatherService.getWeatherFromGeohash(geohash);
 
-      return new ResponseComplexDto({ ...complex, sports, weather: weatherData[geohash] });
-    }));
+        return new ResponseComplexDto({ ...complex, sports, weather: weatherData[geohash] });
+      }),
+    );
   }
 
   /**
@@ -133,9 +128,7 @@ export class ComplexesService {
     if (result.length === 0) {
       throw new NotFoundException(`Complex with ID ${complexId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple complexes found with ID ${complexId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple complexes found with ID ${complexId}.`);
     }
 
     return result[0];
@@ -157,7 +150,7 @@ export class ComplexesService {
           loc_latitude_loc_longitude: {
             loc_latitude: dto.locLatitude,
             loc_longitude: dto.locLongitude,
-          }
+          },
         },
         create: {
           complex_name: dto.complexName,
@@ -206,10 +199,7 @@ export class ComplexesService {
    * @return {Promise<ResponseComplexDto>} A promise that resolves to a ResponseComplexDto containing the updated
    * complex details.
    */
-  async updateComplex(
-    complexId: number,
-    dto: UpdateComplexDto,
-  ): Promise<ResponseComplexDto> {
+  async updateComplex(complexId: number, dto: UpdateComplexDto): Promise<ResponseComplexDto> {
     // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
@@ -289,10 +279,7 @@ export class ComplexesService {
    * @param {UpdateComplexTimeDto} dto - The data transfer object containing the updated time information.
    * @return {Promise<ResponseComplexTimeDto>} A promise that resolves to an object containing the updated time fields.
    */
-  async setComplexTime(
-    complexId: number,
-    dto: UpdateComplexTimeDto,
-  ): Promise<ResponseComplexTimeDto> {
+  async setComplexTime(complexId: number, dto: UpdateComplexTimeDto): Promise<ResponseComplexTimeDto> {
     // Actualizar la información del complejo y devolver los campos con el horario
     const complex = await this.updateComplex(complexId, dto);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
@@ -309,9 +296,6 @@ export class ComplexesService {
     complexId: number,
     groupAvailability: boolean = true,
   ): Promise<Array<ResponseCourtAvailabilityDto>> {
-    return this.courtsService.getCourtsAvailability(
-      complexId,
-      groupAvailability,
-    );
+    return this.courtsService.getCourtsAvailability(complexId, groupAvailability);
   }
 }

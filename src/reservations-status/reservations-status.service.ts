@@ -13,7 +13,7 @@ export class ReservationsStatusService {
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
     private courtsStatusService: CourtsStatusService,
-  ) { }
+  ) {}
 
   /**
    * Updates the status of a reservation.
@@ -40,9 +40,8 @@ export class ReservationsStatusService {
 
       const timeFilter = this.utilitiesService.getTimeFilterFromDate(reservation.date_end);
 
-      const statusData = (
-        await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id)
-      ).statusData;
+      const statusData = (await this.courtsStatusService.getCourtStatus(reservation.complex_id, reservation.court_id))
+        .statusData;
 
       return new ResponseReservationDto({
         ...reservation,

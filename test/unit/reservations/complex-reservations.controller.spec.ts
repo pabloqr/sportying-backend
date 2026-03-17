@@ -13,14 +13,10 @@ describe('ComplexReservationsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ComplexReservationsController],
-      providers: [
-        { provide: ReservationsService, useValue: mockReservationsService },
-      ],
+      providers: [{ provide: ReservationsService, useValue: mockReservationsService }],
     }).compile();
 
-    controller = module.get<ComplexReservationsController>(
-      ComplexReservationsController,
-    );
+    controller = module.get<ComplexReservationsController>(ComplexReservationsController);
   });
 
   afterEach(() => {
@@ -31,13 +27,8 @@ describe('ComplexReservationsController', () => {
     const query = { courtId: 9 };
     mockReservationsService.getComplexReservations.mockResolvedValue([{ id: 1 }]);
 
-    await expect(
-      controller.getComplexReservations(2, query as any),
-    ).resolves.toEqual([{ id: 1 }]);
-    expect(mockReservationsService.getComplexReservations).toHaveBeenCalledWith(
-      2,
-      query,
-    );
+    await expect(controller.getComplexReservations(2, query as any)).resolves.toEqual([{ id: 1 }]);
+    expect(mockReservationsService.getComplexReservations).toHaveBeenCalledWith(2, query);
   });
 
   it('delegates createComplexReservation to ReservationsService', async () => {

@@ -12,92 +12,92 @@ export interface WeatherData {
   /**
    * Current air temperature at 2 meters above ground. Based on 15-minutely weather model data.
    */
-  temperatureCurr: number,
+  temperatureCurr: number;
 
   /**
    * Current relative humidity at 2 meters above ground. Based on 15-minutely weather model data.
    */
-  relativeHumidityCurr: number,
+  relativeHumidityCurr: number;
 
   /**
    * Current total cloud cover as an area fraction. Based on 15-minutely weather model data.
    */
-  cloudCoverCurr: number,
+  cloudCoverCurr: number;
 
   /**
    * Wind speed at 10 meters above ground. Based on 15-minutely weather model data.
    */
-  windSpeedCurr: number,
+  windSpeedCurr: number;
 
   /**
    * Gusts at 10 meters above ground as a maximum of the preceding hour. Based on 15-minutely weather model data.
    */
-  windGustsCurr: number,
+  windGustsCurr: number;
 
   /**
    * Current rain intensity. Based on 15-minutely weather model data.
    */
-  rainCurr: number,
+  rainCurr: number;
 
   /**
-   * 
+   *
    * Current showers intensity. Based on 15-minutely weather model data.
-   * 
+   *
    */
-  showersCurr: number,
+  showersCurr: number;
 
   /**
    * Rainfall intensity at 15-minute intervals for the hour before and after the current time.
    */
-  rain15Min: number[],
+  rain15Min: number[];
 
   /**
    * Precipitation intensity at 15-minute intervals for the hour before and after the current time. Represents the sum
    * of the intensity of rain, showers and snow.
    */
-  precipitation15Min: number[],
+  precipitation15Min: number[];
 
   /**
    * Previously calculated surface water.
    */
-  surfaceWaterPrev: number,
+  surfaceWaterPrev: number;
 
   /**
    * Precipitation probability for the next hour (0–100). Used for alert level 1 evaluation.
    */
-  precipitationProbabilityNext: number,
+  precipitationProbabilityNext: number;
 
   /**
    * Alert level persisted in the previous cycle, after hysteresis was applied (0, 1 or 2).
    */
-  alertLevelPrev: number,
+  alertLevelPrev: number;
 
   /**
    * Number of consecutive cycles in which the raw calculated level was lower than prevAlertLevel.
    */
-  alertLevelTicksPrev: number,
+  alertLevelTicksPrev: number;
 }
 
 export interface ResponseWeatherData {
   /**
    * Calculated surface water.
    */
-  surfaceWater: number,
+  surfaceWater: number;
 
   /**
    * Calculated estimated drying time.
    */
-  estimatedDryingTime: number,
+  estimatedDryingTime: number;
 
   /**
    * Alert level after hysteresis (0, 1 or 2). Must be persisted as alert_level.
    */
-  alertLevel: number,
+  alertLevel: number;
 
   /**
    * Updated hysteresis tick counter. Must be persisted as alert_level_ticks.
    */
-  alertLevelTicks: number,
+  alertLevelTicks: number;
 }
 
 const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max);
@@ -110,7 +110,7 @@ export class AnalysisService {
     private courtsStatusService: CourtsStatusService,
     private reservationsStatusService: ReservationsStatusService,
     private notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
   /**
    * Calculates a drying rate factor based on relative humidity.
@@ -124,7 +124,7 @@ export class AnalysisService {
     // Peso de la humedad relativa sobre la tasa de secado
     const wHumidity = 0.7;
     // Factor mínimo por humedad
-    const fHumidityMin = 0.15
+    const fHumidityMin = 0.15;
 
     return clamp(Math.pow(1 - relativeHumidity / 100, wHumidity), fHumidityMin, 1);
   }
@@ -147,9 +147,12 @@ export class AnalysisService {
     // Valor de saturación por agua superficial (mm)
     const surfaceWaterSaturation = 2;
 
-    return 1 + wTemperature
-      * Math.tanh((temperature - temperatureThreshold) / temperatureScale)
-      * (1 - Math.min(1, temperature / surfaceWaterSaturation));
+    return (
+      1 +
+      wTemperature *
+        Math.tanh((temperature - temperatureThreshold) / temperatureScale) *
+        (1 - Math.min(1, temperature / surfaceWaterSaturation))
+    );
   }
 
   /**
@@ -240,11 +243,7 @@ export class AnalysisService {
 
     // Calcular el nivel de alerta base
     let rawAlertLevel: number;
-    if (
-      intensity >= intensityThreshold ||
-      surfaceWater >= surfaceWaterCritical ||
-      tEstimated >= tEstimatedHigh
-    ) {
+    if (intensity >= intensityThreshold || surfaceWater >= surfaceWaterCritical || tEstimated >= tEstimatedHigh) {
       rawAlertLevel = 2;
     } else if (
       intensitySum >= intensitySumThreshold ||
@@ -309,15 +308,17 @@ export class AnalysisService {
     const intensity = weather.rainCurr + wShowers * weather.showersCurr;
     if (intensity >= intensityThreshold) {
       const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(
-        intensity, 0, 0, 0,
+        intensity,
+        0,
+        0,
+        0,
         weather.precipitationProbabilityNext,
         weather.alertLevelPrev,
         weather.alertLevelTicksPrev,
       );
 
       return { surfaceWater: 0.0, estimatedDryingTime: 0, alertLevel, alertLevelTicks };
-    }
-    else {
+    } else {
       // PASO 2.1: Calcular la intensidad efectiva del agua en función de los bloques de 15 minutos dados
       const intensityArray = weather.rain15Min.slice(0, 4).map((r, i) => {
         // Obtener la intensidad por 'precipitation'
@@ -333,15 +334,17 @@ export class AnalysisService {
       // suma total de la última hora supera el límite para establecer un bloqueo
       if (intensitySum < intensitySumThreshold) {
         const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(
-          intensity, intensitySum, 0, 0,
+          intensity,
+          intensitySum,
+          0,
+          0,
           weather.precipitationProbabilityNext,
           weather.alertLevelPrev,
           weather.alertLevelTicksPrev,
         );
 
         return { surfaceWater: 0.0, estimatedDryingTime: 0, alertLevel, alertLevelTicks };
-      }
-      else {
+      } else {
         // PASO 4: Si se supera el límite para establecer un bloqueo por acumulación de agua, calcular:
         //  a. Bloqueo de seguridad (tLock)
         //  b. Bloqueo por condiciones físicas (tDry)
@@ -378,7 +381,7 @@ export class AnalysisService {
         const dryinRate = clamp(
           dryinRateBase * fHumidity * fTemperature * fWind * fCloudCover,
           dryinRateMin,
-          dryinRateMax
+          dryinRateMax,
         );
 
         // PASO 4b.6: Calcular la cantidad de agua en superficie
@@ -405,7 +408,10 @@ export class AnalysisService {
         const tEstimated = clamp(Math.max(tLock, tDry), tMin, tMax);
 
         const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(
-          intensity, intensitySum, surfaceWater, tEstimated,
+          intensity,
+          intensitySum,
+          surfaceWater,
+          tEstimated,
           weather.precipitationProbabilityNext,
           weather.alertLevelPrev,
           weather.alertLevelTicksPrev,
@@ -424,50 +430,29 @@ export class AnalysisService {
    * @param {number} courtId - The unique identifier of the court for which telemetry is being processed.
    * @return {Promise<void>} - A promise that resolves once the operation is completed.
    */
-  async processAvailabilityTelemetry(
-    available: boolean,
-    timestamp: Date,
-    courtId: number,
-  ): Promise<void> {
+  async processAvailabilityTelemetry(available: boolean, timestamp: Date, courtId: number): Promise<void> {
     const reservations = await this.prisma.reservations.findMany({
-      where: { court_id: courtId, }
+      where: { court_id: courtId },
     });
 
     const current = reservations.find((reservation) =>
-      this.utilitiesService.dateIsBetween(
-        timestamp,
-        reservation.date_ini,
-        reservation.date_end,
-      ),
+      this.utilitiesService.dateIsBetween(timestamp, reservation.date_ini, reservation.date_end),
     );
 
     if (!current) return;
 
     let reservationStatus = ReservationAvailabilityStatus.OCCUPIED;
     if (available) {
-      if (
-        !this.utilitiesService.dateIsEqualOrGreater(
-          15,
-          current.date_ini,
-          timestamp,
-        )
-      ) {
+      if (!this.utilitiesService.dateIsEqualOrGreater(15, current.date_ini, timestamp)) {
         return;
       }
 
       reservationStatus = ReservationAvailabilityStatus.CANCELLED;
     }
 
-    await this.reservationsStatusService.setReservationStatus(
-      current.id,
-      reservationStatus,
-    );
+    await this.reservationsStatusService.setReservationStatus(current.id, reservationStatus);
 
-    this.notificationsService.notifyReservationChange(
-      current.complex_id,
-      current.id,
-      reservationStatus,
-    );
+    this.notificationsService.notifyReservationChange(current.complex_id, current.id, reservationStatus);
   }
 
   /**
@@ -488,20 +473,13 @@ export class AnalysisService {
   ): Promise<void> {
     for (const courtId of courtIds) {
       let courtStatus = CourtStatus.OPEN;
-      if (
-        rainIntensity >= 2.5 ||
-        (previousTelemetry && previousTelemetry.value > 0.0)
-      ) {
+      if (rainIntensity >= 2.5 || (previousTelemetry && previousTelemetry.value > 0.0)) {
         courtStatus = CourtStatus.WEATHER;
       } else if (
         previousTelemetry &&
         (previousTelemetry.value == 0.0 ||
           (previousTelemetry.value <= 2.5 &&
-            this.utilitiesService.dateIsEqualOrGreater(
-              30,
-              previousTelemetry.createdAt,
-              new Date(),
-            )))
+            this.utilitiesService.dateIsEqualOrGreater(30, previousTelemetry.createdAt, new Date())))
       ) {
         courtStatus = CourtStatus.OPEN;
       }
@@ -513,11 +491,7 @@ export class AnalysisService {
           status: courtStatus,
         });
 
-        this.notificationsService.notifyCourtStatusChange(
-          complexId,
-          courtId,
-          courtStatus,
-        );
+        this.notificationsService.notifyCourtStatusChange(complexId, courtId, courtStatus);
       }
     }
   }
