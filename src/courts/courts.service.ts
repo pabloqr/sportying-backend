@@ -59,34 +59,36 @@ export class CourtsService {
   ): CourtAvailabilitySlotDto[] {
     let { dateIni, dateEnd } = candidate;
 
+    if (dateIni >= dateEnd) return availability;
+
     for (const slot of availability) {
       // Caso 1: candidate completamente dentro de un bloque
       if (dateIni >= slot.dateIni && dateEnd <= slot.dateEnd) {
         return availability;
       }
 
-      // Caso 2: solapamiento por la izquierda
+      // Caso 2: solapamiento por ambos lados
+      if (dateIni < slot.dateIni && dateEnd > slot.dateEnd) {
+        const updatedAvailability = this.insertBlock(availability, { dateIni, dateEnd: slot.dateIni });
+        return this.insertBlock(updatedAvailability, { dateIni: slot.dateEnd, dateEnd });
+      }
+
+      // Caso 3a: solapamiento por la izquierda
       if (dateIni < slot.dateEnd && dateEnd > slot.dateEnd) {
         dateIni = new Date(slot.dateEnd);
       }
 
-      // Caso 3: solapamiento por la derecha
+      // Caso 3b: solapamiento por la derecha
       if (dateEnd > slot.dateIni && dateIni < slot.dateIni) {
         dateEnd = new Date(slot.dateIni);
       }
     }
 
-    if (dateIni >= dateEnd) {
-      return availability;
-    }
-
-    const newSlot = { dateIni, dateEnd };
-
     return [
       ...availability,
       new CourtAvailabilitySlotDto({
-        dateIni: newSlot.dateIni,
-        dateEnd: newSlot.dateEnd,
+        dateIni,
+        dateEnd,
         available: false,
       }),
     ].sort((a, b) => a.dateIni.getTime() - b.dateIni.getTime());
@@ -442,11 +444,11 @@ export class CourtsService {
         const groupedAvailability: CourtAvailabilitySlotDto[] = [];
         if (reservations.length > 0) {
           // Intervalo actual
-          let currentAvailability: CourtAvailabilitySlotDto | undefined = undefined;
+          let currentAvailability: CourtAvailabilitySlotDto = undefined;
 
           reservations.forEach((reservation) => {
             // Si el intervalo actual es indefinido, actualizarlo y devolverlo
-            if (currentAvailability === undefined) {
+            if (!currentAvailability) {
               currentAvailability = new CourtAvailabilitySlotDto(reservation);
               return;
             }

@@ -2,37 +2,30 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../prisma/generated/client';
 import { AuthService } from '../auth/auth.service';
-import { AnalysisService } from '../common/analysis.service';
 import {
   DeviceTelemetrySlotDto,
   ResponseDeviceDto,
   ResponseDeviceStatusDto,
   ResponseDeviceTelemetryDto,
 } from '../common/dto';
-import { OrderBy } from '../common/enums';
 import { ErrorsService } from '../common/errors.service';
-import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
 import {
   CreateDeviceDto,
   CreateDeviceStatusDto,
   CreateDeviceTelemetryDto,
   DEVICE_ORDER_FIELD_MAP,
   DEVICE_TELEMETRY_ORDER_FIELD_MAP,
-  DeviceTelemetryOrderField,
   GetDevicesDto,
   GetDeviceTelemetryDto,
   UpdateDeviceDto,
 } from './dto';
-import { DeviceType } from './enum';
 
 @Injectable({})
 export class DevicesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-    private analysisService: AnalysisService,
     private authService: AuthService,
-    private courtsDevicesService: CourtsDevicesService,
   ) {}
 
   /**
@@ -45,46 +38,46 @@ export class DevicesService {
    * @param {Function} getCourt - Function to get court details by complexId and courtId.
    * @return {Promise<void>} A promise that resolves once the telemetry data is processed.
    */
-  private async processDeviceTelemetry(
-    complexId: number,
-    deviceId: number,
-    value: number,
-    timestamp: Date,
-  ): Promise<void> {
-    // Se obtiene la información sobre el dispositivo actual
-    const device = await this.getDevice(complexId, deviceId);
-    // Se obtienen las pistas que tiene asignadas en dispositivo
-    const courtIds = (await this.courtsDevicesService.getDeviceCourts(complexId, deviceId, {})).courts;
+  // private async processDeviceTelemetry(
+  //   complexId: number,
+  //   deviceId: number,
+  //   value: number,
+  //   timestamp: Date,
+  // ): Promise<void> {
+  //   // Se obtiene la información sobre el dispositivo actual
+  //   const device = await this.getDevice(complexId, deviceId);
+  //   // Se obtienen las pistas que tiene asignadas en dispositivo
+  //   const courtIds = (await this.courtsDevicesService.getDeviceCourts(complexId, deviceId, {})).courts;
 
-    // Se procesa la telemetría para actualizar el estado del sistema
-    if (!courtIds.length) return;
-    switch (device.type) {
-      case DeviceType.PRESENCE:
-        // Se procesan los datos
-        return await this.analysisService.processAvailabilityTelemetry(!value, timestamp, courtIds[0].id);
-      case DeviceType.RAIN:
-        // Se obtiene la telemetría anterior del dispositivo
-        const deviceTelemetry = await this.getDeviceTelemetry(complexId, deviceId, {
-          orderParams: [
-            {
-              field: DeviceTelemetryOrderField.CREATED_AT,
-              order: OrderBy.ASC,
-            },
-          ],
-        });
+  //   // Se procesa la telemetría para actualizar el estado del sistema
+  //   if (!courtIds.length) return;
+  //   switch (device.type) {
+  //     case DeviceType.PRESENCE:
+  //       // Se procesan los datos
+  //       return await this.analysisService.processAvailabilityTelemetry(!value, timestamp, courtIds[0].id);
+  //     case DeviceType.RAIN:
+  //       // Se obtiene la telemetría anterior del dispositivo
+  //       const deviceTelemetry = await this.getDeviceTelemetry(complexId, deviceId, {
+  //         orderParams: [
+  //           {
+  //             field: DeviceTelemetryOrderField.CREATED_AT,
+  //             order: OrderBy.ASC,
+  //           },
+  //         ],
+  //       });
 
-        // Se trata de obtener la telemetría previa, o se establece una por defecto
-        const previousTelemetry = deviceTelemetry.telemetry.length >= 2 ? deviceTelemetry.telemetry[1] : null;
+  //       // Se trata de obtener la telemetría previa, o se establece una por defecto
+  //       const previousTelemetry = deviceTelemetry.telemetry.length >= 2 ? deviceTelemetry.telemetry[1] : null;
 
-        // Se procesan los datos
-        return await this.analysisService.processRainTelemetry(
-          complexId,
-          previousTelemetry,
-          value,
-          courtIds.map((court) => court.id),
-        );
-    }
-  }
+  //       // Se procesan los datos
+  //       return await this.analysisService.processRainTelemetry(
+  //         complexId,
+  //         previousTelemetry,
+  //         value,
+  //         courtIds.map((court) => court.id),
+  //       );
+  //   }
+  // }
 
   /**
    * Retrieves a list of devices based on the provided parameters.
@@ -370,9 +363,9 @@ export class DevicesService {
         },
       });
 
-      this.processDeviceTelemetry(complexId, deviceId, dto.value, telemetry.created_at).catch((error) =>
-        console.error('Error processing device telemetry:', error),
-      );
+      // this.processDeviceTelemetry(complexId, deviceId, dto.value, telemetry.created_at).catch((error) =>
+      //   console.error('Error processing device telemetry:', error),
+      // );
 
       return new ResponseDeviceTelemetryDto({
         deviceId,

@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
-import { CourtStatus } from '../courts/enums';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ReservationAvailabilityStatus } from '../reservations/enums';
-import { DeviceTelemetrySlotDto } from './dto';
 import { UtilitiesService } from './utilities.service';
 
 export interface WeatherData {
@@ -107,7 +104,6 @@ export class AnalysisService {
   constructor(
     private prisma: PrismaService,
     private utilitiesService: UtilitiesService,
-    private courtsStatusService: CourtsStatusService,
     private reservationsStatusService: ReservationsStatusService,
     private notificationsService: NotificationsService,
   ) {}

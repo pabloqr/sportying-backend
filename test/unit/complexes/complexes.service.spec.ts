@@ -72,72 +72,74 @@ describe('ComplexesService', () => {
     jest.resetAllMocks();
   });
 
-  it('returns complexes enriched with sports and weather', async () => {
-    mockPrisma.complexes.findMany.mockResolvedValue([
-      {
-        id: 1,
-        complex_name: 'Club',
-        time_ini: new Date('2024-06-01T08:00:00Z'),
-        time_end: new Date('2024-06-01T22:00:00Z'),
-        loc_latitude: 40.4,
-        loc_longitude: -3.7,
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-    ]);
-    mockSportsService.getComplexSports.mockResolvedValue([{ key: 'padel' }]);
-    mockWeatherService.getWeatherFromGeohash.mockResolvedValue({
-      alertLevel: 0,
+  describe('getComplexes', () => {
+    it('returns complexes enriched with sports and weather', async () => {
+      mockPrisma.complexes.findMany.mockResolvedValue([
+        {
+          id: 1,
+          complex_name: 'Club',
+          time_ini: new Date('2024-06-01T08:00:00Z'),
+          time_end: new Date('2024-06-01T22:00:00Z'),
+          loc_latitude: 40.4,
+          loc_longitude: -3.7,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ]);
+      mockSportsService.getComplexSports.mockResolvedValue([{ key: 'padel' }]);
+      mockWeatherService.getWeatherFromGeohash.mockResolvedValue({
+        alertLevel: 0,
+      });
+
+      const result = await service.getComplexes({ orderParams: [{ field: ComplexOrderField.ID, order: OrderBy.ASC }] });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].sports).toEqual(['padel']);
     });
 
-    const result = await service.getComplexes({ orderParams: [{ field: ComplexOrderField.ID, order: OrderBy.ASC }] });
+    it('reuses cached weather data for complexes sharing the same geohash', async () => {
+      mockPrisma.complexes.findMany.mockResolvedValue([
+        {
+          id: 1,
+          complex_name: 'Club A',
+          time_ini: new Date('2024-06-01T08:00:00Z'),
+          time_end: new Date('2024-06-01T22:00:00Z'),
+          loc_latitude: 40.4168,
+          loc_longitude: -3.7038,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 2,
+          complex_name: 'Club B',
+          time_ini: new Date('2024-06-01T08:00:00Z'),
+          time_end: new Date('2024-06-01T22:00:00Z'),
+          loc_latitude: 40.4168,
+          loc_longitude: -3.7038,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ]);
+      mockSportsService.getComplexSports.mockResolvedValue([]);
+      mockWeatherService.getWeatherFromGeohash.mockResolvedValue({ alertLevel: 0 });
 
-    expect(result).toHaveLength(1);
-    expect(result[0].sports).toEqual(['padel']);
-  });
+      const result = await service.getComplexes({});
 
-  it('reuses cached weather data for complexes sharing the same geohash', async () => {
-    mockPrisma.complexes.findMany.mockResolvedValue([
-      {
-        id: 1,
-        complex_name: 'Club A',
-        time_ini: new Date('2024-06-01T08:00:00Z'),
-        time_end: new Date('2024-06-01T22:00:00Z'),
-        loc_latitude: 40.4168,
-        loc_longitude: -3.7038,
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-      {
-        id: 2,
-        complex_name: 'Club B',
-        time_ini: new Date('2024-06-01T08:00:00Z'),
-        time_end: new Date('2024-06-01T22:00:00Z'),
-        loc_latitude: 40.4168,
-        loc_longitude: -3.7038,
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-    ]);
-    mockSportsService.getComplexSports.mockResolvedValue([]);
-    mockWeatherService.getWeatherFromGeohash.mockResolvedValue({ alertLevel: 0 });
+      expect(result).toHaveLength(2);
+      expect(mockWeatherService.getWeatherFromGeohash).toHaveBeenCalledTimes(1);
+    });
 
-    const result = await service.getComplexes({});
+    it('includes deleted complexes when checkDeleted is true', async () => {
+      mockPrisma.complexes.findMany.mockResolvedValue([]);
 
-    expect(result).toHaveLength(2);
-    expect(mockWeatherService.getWeatherFromGeohash).toHaveBeenCalledTimes(1);
-  });
+      await service.getComplexes({}, true);
 
-  it('includes deleted complexes when checkDeleted is true', async () => {
-    mockPrisma.complexes.findMany.mockResolvedValue([]);
-
-    await service.getComplexes({}, true);
-
-    expect(mockPrisma.complexes.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {},
-      }),
-    );
+      expect(mockPrisma.complexes.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {},
+        }),
+      );
+    });
   });
 
   describe('getComplex', () => {

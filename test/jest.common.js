@@ -33,4 +33,17 @@ module.exports = {
   collectCoverageFrom: ['<rootDir>/src/**/*.ts'],
   coverageDirectory: '<rootDir>/coverage',
   coverageProvider: 'v8',
+  coverageReporters: ['text', 'lcov', 'html'],
+  coveragePathIgnorePatterns: [
+    '\\.module\\.ts$',
+    '\\.dto\\.ts$',
+    '\\.enum\\.ts$',
+    '\\.entity\\.ts$',
+    '\\.schema\\.ts$',
+    '\\.interface\\.ts$',
+    '\\.type\\.ts$',
+    '\\.config\\.ts$',
+    'index\\.ts$',
+    'main\\.ts$',
+  ],
 };

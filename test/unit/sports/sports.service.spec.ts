@@ -25,6 +25,7 @@ describe('SportsService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('getComplexSports', () => {
@@ -40,6 +41,9 @@ describe('SportsService', () => {
 
       const result = await service.getComplexSports(1, { keys: ['tennis'] });
 
+      expect(mockPrisma.courts.findMany).toHaveBeenCalledWith({
+        where: { complex_id: 1 },
+      });
       expect(mockPrisma.sports.findMany).toHaveBeenCalledWith({
         where: {
           key: { in: ['tennis'] },
@@ -69,6 +73,21 @@ describe('SportsService', () => {
       });
       expect(result).toHaveLength(2);
     });
+
+    it('queries sports with an empty key list when the complex has no courts', async () => {
+      mockPrisma.courts.findMany.mockResolvedValue([]);
+      mockPrisma.sports.findMany.mockResolvedValue([]);
+
+      const result = await service.getComplexSports(1, {});
+
+      expect(mockPrisma.sports.findMany).toHaveBeenCalledWith({
+        where: {
+          key: { in: [] },
+          is_delete: false,
+        },
+      });
+      expect(result).toEqual([]);
+    });
   });
 
   describe('getSports', () => {
@@ -91,6 +110,32 @@ describe('SportsService', () => {
         orderBy: [],
       });
       expect(result[0].key).toBe('padel');
+    });
+
+    it('forwards people filters and ordering to prisma', async () => {
+      mockPrisma.sports.findMany.mockResolvedValue([]);
+
+      await service.getSports({
+        minPeople: 2,
+        maxPeople: 4,
+        orderParams: [{ field: 'maxPeople', order: 'desc' }],
+      } as any);
+
+      expect(mockPrisma.sports.findMany).toHaveBeenCalledWith({
+        where: {
+          is_delete: false,
+          min_people: 2,
+          max_people: 4,
+        },
+        select: {
+          key: true,
+          min_people: true,
+          max_people: true,
+          created_at: true,
+          updated_at: true,
+        },
+        orderBy: [{ max_people: 'desc' }],
+      });
     });
 
     it('keeps deleted filter disabled when checkDeleted is true and filters keys in memory', async () => {
@@ -134,6 +179,7 @@ describe('SportsService', () => {
       jest.spyOn(service, 'getSports').mockResolvedValue([{ key: 'tennis' } as any]);
 
       await expect(service.getSport('tennis')).resolves.toEqual({ key: 'tennis' });
+      expect(service.getSports).toHaveBeenCalledWith({ keys: ['tennis'] });
     });
   });
 });
