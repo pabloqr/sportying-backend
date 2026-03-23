@@ -23,6 +23,10 @@ const mockUser = {
 const TEST_MAIL_PREFIX = 'integration_test_';
 const TEST_PHONE_PREFIX = 34;
 const TEST_PHONE_NUMBER = 600000000;
+let uniqueSequence = 0;
+
+const getUniqueMail = (suffix: string) => `${TEST_MAIL_PREFIX}${suffix}_${Date.now()}_${uniqueSequence++}@test.com`;
+const getUniquePhoneNumber = () => TEST_PHONE_NUMBER + uniqueSequence;
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite
@@ -104,6 +108,35 @@ describe('UsersController (integration)', () => {
         expect(user.role).toBe(Role.CLIENT);
       });
     });
+
+    it('should return an empty array when no users match the filters', async () => {
+      const response = await request(httpServer).get('/users').query({ name: 'UserThatShouldNotExistAnywhere' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual([]);
+    });
+
+    it('should filter users by mail', async () => {
+      const mail = getUniqueMail('mail_filter');
+      const created = await prisma.users.create({
+        data: {
+          role: 'CLIENT',
+          password: 'hashed',
+          name: 'Integration',
+          surname: 'MailFilter',
+          mail,
+          phone_prefix: TEST_PHONE_PREFIX,
+          phone_number: getUniquePhoneNumber(),
+        },
+      });
+      createdUserIds.push(created.id);
+
+      const response = await request(httpServer).get('/users').query({ mail });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].mail).toBe(mail);
+    });
   });
 
   describe('GET /users/:id', () => {
@@ -177,6 +210,12 @@ describe('UsersController (integration)', () => {
 
       expect(response.status).toBe(404);
     });
+
+    it('should return 400 when user id is not numeric', async () => {
+      const response = await request(httpServer).get('/users/not-a-number');
+
+      expect(response.status).toBe(400);
+    });
   });
 
   describe('POST /users', () => {
@@ -233,6 +272,29 @@ describe('UsersController (integration)', () => {
 
       expect(response.status).not.toBe(500);
     });
+
+    it('should create an ADMIN user successfully when complexId is provided', async () => {
+      const complex = await prisma.complexes.findFirst();
+      expect(complex).toBeDefined();
+
+      const dto = {
+        role: Role.ADMIN,
+        complexId: complex!.id,
+        password: 'password123',
+        name: 'Integration',
+        surname: 'AdminCreate',
+        mail: getUniqueMail('admin_create'),
+        phonePrefix: TEST_PHONE_PREFIX,
+        phoneNumber: getUniquePhoneNumber(),
+      };
+
+      const response = await request(httpServer).post('/users').send(dto);
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('id');
+      expect(response.body.role).toBe(Role.ADMIN);
+      createdUserIds.push(response.body.id);
+    });
   });
 
   describe('PUT /users/:id', () => {
@@ -278,10 +340,39 @@ describe('UsersController (integration)', () => {
       expect(response.status).toBe(403);
     });
 
+    it('should update the authenticated CLIENT user', async () => {
+      const created = await prisma.users.create({
+        data: {
+          role: 'CLIENT',
+          password: 'hashed',
+          name: 'Integration',
+          surname: 'UpdateOwn',
+          mail: getUniqueMail('update_own'),
+          phone_prefix: TEST_PHONE_PREFIX,
+          phone_number: getUniquePhoneNumber(),
+        },
+      });
+      createdUserIds.push(created.id);
+
+      mockUser.id = created.id;
+      mockUser.role = Role.CLIENT;
+
+      const response = await request(httpServer).put(`/users/${created.id}`).send({ surname: 'UpdatedByOwner' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.surname).toBe('UpdatedByOwner');
+    });
+
     it('should return 404 when updating a non-existing user', async () => {
       const response = await request(httpServer).put('/users/999999999').send({ name: 'NotFound' });
 
       expect(response.status).toBe(404);
+    });
+
+    it('should return 400 when updating with a non-numeric user id', async () => {
+      const response = await request(httpServer).put('/users/not-a-number').send({ name: 'Invalid' });
+
+      expect(response.status).toBe(400);
     });
   });
 
@@ -335,6 +426,12 @@ describe('UsersController (integration)', () => {
       const response = await request(httpServer).delete('/users/999999999');
 
       expect(response.status).toBe(404);
+    });
+
+    it('should return 400 when deleting with a non-numeric user id', async () => {
+      const response = await request(httpServer).delete('/users/not-a-number');
+
+      expect(response.status).toBe(400);
     });
   });
 });
