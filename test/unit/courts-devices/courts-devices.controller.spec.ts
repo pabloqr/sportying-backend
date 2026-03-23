@@ -2,11 +2,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CourtsDevicesController } from '../../../src/courts-devices/courts-devices.controller';
 import { CourtsDevicesService } from '../../../src/courts-devices/courts-devices.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockCourtsDevicesService = {
   getCourtDevices: jest.fn(),
   getDeviceCourts: jest.fn(),
   setDeviceCourts: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CourtsDevicesController', () => {
   let controller: CourtsDevicesController;

@@ -1,8 +1,12 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ErrorsService } from '../../../src/common/errors.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
 import { CourtsDevicesService } from '../../../src/courts-devices/courts-devices.service';
+import { PrismaService } from '../../../src/prisma/prisma.service';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
 
 const mockPrisma = {
   courts_devices: {
@@ -21,6 +25,10 @@ const mockPrisma = {
 const mockErrorsService = {
   dbError: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CourtsDevicesService', () => {
   let service: CourtsDevicesService;
@@ -70,7 +78,12 @@ describe('CourtsDevicesService', () => {
     it('forwards device filters and ordering when loading court devices', async () => {
       mockPrisma.courts_devices.findMany.mockResolvedValue([]);
 
-      await service.getCourtDevices(1, 2, { deviceId: 3, orderParams: [{ field: 'deviceId', order: 'asc' }] } as any, true);
+      await service.getCourtDevices(
+        1,
+        2,
+        { deviceId: 3, orderParams: [{ field: 'deviceId', order: 'asc' }] } as any,
+        true,
+      );
 
       expect(mockPrisma.courts_devices.findMany).toHaveBeenCalledWith({
         where: {
@@ -123,7 +136,12 @@ describe('CourtsDevicesService', () => {
     it('forwards court filters and ordering when loading device courts', async () => {
       mockPrisma.courts_devices.findMany.mockResolvedValue([]);
 
-      await service.getDeviceCourts(1, 2, { courtId: 4, orderParams: [{ field: 'courtId', order: 'desc' }] } as any, true);
+      await service.getDeviceCourts(
+        1,
+        2,
+        { courtId: 4, orderParams: [{ field: 'courtId', order: 'desc' }] } as any,
+        true,
+      );
 
       expect(mockPrisma.courts_devices.findMany).toHaveBeenCalledWith({
         where: {

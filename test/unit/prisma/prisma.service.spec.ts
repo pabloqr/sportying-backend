@@ -1,3 +1,7 @@
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 jest.mock('@prisma/adapter-pg', () => ({
   PrismaPg: jest.fn().mockImplementation((config) => ({ config })),
 }));
@@ -11,6 +15,10 @@ jest.mock('../../../prisma/generated/client', () => ({
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../../prisma/generated/client';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('PrismaService', () => {
   it('creates PrismaClient with a PrismaPg adapter built from DATABASE_URL', () => {

@@ -3,6 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { SportsService } from '../../../src/sports/sports.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockPrisma = {
   courts: {
     findMany: jest.fn(),
@@ -11,6 +15,10 @@ const mockPrisma = {
     findMany: jest.fn(),
   },
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('SportsService', () => {
   let service: SportsService;

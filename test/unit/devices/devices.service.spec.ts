@@ -6,6 +6,10 @@ import { DevicesService } from '../../../src/devices/devices.service';
 import { DeviceStatus, DeviceType } from '../../../src/devices/enum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockPrisma = {
   devices: {
     findMany: jest.fn(),
@@ -26,6 +30,10 @@ const mockErrorsService = {
 const mockAuthService = {
   generateApiKey: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('DevicesService', () => {
   let service: DevicesService;

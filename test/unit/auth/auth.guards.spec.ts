@@ -2,8 +2,12 @@ import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { AccessControlService } from '../../../src/auth/access-control.service';
-import { JwtGuard, RolesGuard } from '../../../src/auth/guard';
 import { Role } from '../../../src/auth/enums';
+import { JwtGuard, RolesGuard } from '../../../src/auth/guard';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
 
 const mockReflector = {
   getAllAndOverride: jest.fn(),
@@ -12,6 +16,10 @@ const mockReflector = {
 const mockAccessControlService = {
   isAuthorized: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('Auth guards', () => {
   const buildContext = (request: Record<string, unknown> = {}) =>

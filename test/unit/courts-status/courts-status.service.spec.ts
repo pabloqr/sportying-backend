@@ -1,9 +1,13 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ErrorsService } from '../../../src/common/errors.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
 import { CourtsStatusService } from '../../../src/courts-status/courts-status.service';
 import { CourtStatus } from '../../../src/courts/enums';
+import { PrismaService } from '../../../src/prisma/prisma.service';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
 
 const mockPrisma = {
   courts_status: {
@@ -16,6 +20,10 @@ const mockErrorsService = {
   noBodyError: jest.fn(),
   dbError: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CourtsStatusService', () => {
   let service: CourtsStatusService;

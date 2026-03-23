@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DeviceTelemetrySlotDto } from 'src/common/dto';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
 import { AnalysisService, WeatherData } from '../../../src/common/analysis.service';
-import { CourtStatus } from '../../../src/courts/enums';
 import { ReservationAvailabilityStatus } from '../../../src/reservations/enums';
 
 //--------------------------------------------------------------------------------------------------------------------//

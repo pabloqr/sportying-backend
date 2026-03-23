@@ -1,6 +1,10 @@
-import { firstValueFrom, take, timeout } from 'rxjs';
 import { Test, TestingModule } from '@nestjs/testing';
+import { firstValueFrom, take, timeout } from 'rxjs';
 import { NotificationsSseService } from '../../../src/notifications/notifications-sse.service';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('NotificationsSseService', () => {
   let service: NotificationsSseService;

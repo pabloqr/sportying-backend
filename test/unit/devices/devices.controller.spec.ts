@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DevicesController } from '../../../src/devices/devices.controller';
 import { DevicesService } from '../../../src/devices/devices.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockDevicesService = {
   getDevices: jest.fn(),
   getDevice: jest.fn(),
@@ -13,6 +17,10 @@ const mockDevicesService = {
   getDeviceStatus: jest.fn(),
   setDeviceStatus: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('DevicesController', () => {
   let controller: DevicesController;

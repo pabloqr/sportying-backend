@@ -4,6 +4,10 @@ import { Role } from '../../../src/auth/enums';
 import { UsersController } from '../../../src/users/users.controller';
 import { UsersService } from '../../../src/users/users.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockUsersService = {
   getUsers: jest.fn(),
   getUserById: jest.fn(),
@@ -11,6 +15,10 @@ const mockUsersService = {
   updateUser: jest.fn(),
   deleteUser: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('UsersController', () => {
   let controller: UsersController;

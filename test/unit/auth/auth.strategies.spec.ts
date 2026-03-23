@@ -1,8 +1,12 @@
-import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../../../src/auth/auth.service';
 import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from '../../../src/auth/strategy';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
 
 const mockConfigService = {
   get: jest.fn((key: string) => key),
@@ -17,6 +21,10 @@ const mockPrisma = {
 const mockAuthService = {
   validateApiKey: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('Auth strategies', () => {
   afterEach(() => {

@@ -2,9 +2,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ComplexSportsController } from '../../../src/sports/complex-sports.controller';
 import { SportsService } from '../../../src/sports/sports.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockSportsService = {
   getComplexSports: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ComplexSportsController', () => {
   let controller: ComplexSportsController;

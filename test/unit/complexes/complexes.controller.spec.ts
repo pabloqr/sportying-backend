@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ComplexesController } from '../../../src/complexes/complexes.controller';
 import { ComplexesService } from '../../../src/complexes/complexes.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockComplexesService = {
   getComplexes: jest.fn(),
   getComplex: jest.fn(),
@@ -12,6 +16,10 @@ const mockComplexesService = {
   setComplexTime: jest.fn(),
   getComplexAvailability: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ComplexesController', () => {
   let controller: ComplexesController;

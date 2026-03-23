@@ -2,10 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ComplexReservationsController } from '../../../src/reservations/complex-reservations.controller';
 import { ReservationsService } from '../../../src/reservations/reservations.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockReservationsService = {
   getComplexReservations: jest.fn(),
   createReservation: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ComplexReservationsController', () => {
   let controller: ComplexReservationsController;

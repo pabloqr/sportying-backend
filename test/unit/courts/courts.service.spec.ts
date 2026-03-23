@@ -16,6 +16,10 @@ import { ReservationAvailabilityStatus, ReservationStatus } from '../../../src/r
 import { ReservationsService } from '../../../src/reservations/reservations.service';
 import { WeatherService } from '../../../src/weather/weather.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockPrisma = {
   courts: {
     aggregate: jest.fn(),
@@ -48,6 +52,10 @@ const mockCourtsStatusService = {
 const mockReservationsService = {
   getReservations: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CourtsService', () => {
   let service: CourtsService;

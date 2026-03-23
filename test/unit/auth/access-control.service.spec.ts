@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AccessControlService } from '../../../src/auth/access-control.service';
 import { Role } from '../../../src/auth/enums';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
+
 describe('AccessControlService', () => {
   let service: AccessControlService;
 

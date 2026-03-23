@@ -2,9 +2,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReservationsService } from '../../../src/reservations/reservations.service';
 import { UserReservationsController } from '../../../src/reservations/user-reservations.controller';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockReservationsService = {
   getUserReservations: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('UserReservationsController', () => {
   let controller: UserReservationsController;

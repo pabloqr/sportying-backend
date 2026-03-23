@@ -16,6 +16,10 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { SportsService } from '../../../src/sports/sports.service';
 import { WeatherService } from '../../../src/weather/weather.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockPrisma = {
   complexes: {
     findMany: jest.fn(),
@@ -45,6 +49,10 @@ const mockSportsService = {
 const mockCourtsService = {
   getCourtsAvailability: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ComplexesService', () => {
   let service: ComplexesService;

@@ -1,8 +1,9 @@
-jest.mock('argon2', () => ({
-  hash: jest.fn(),
-}));
-
-import { BadRequestException, ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as argon from 'argon2';
 import { OrderBy } from 'src/common/enums';
@@ -11,6 +12,14 @@ import { Role } from '../../../src/auth/enums';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { UsersService } from '../../../src/users/users.service';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
+jest.mock('argon2', () => ({
+  hash: jest.fn(),
+}));
 
 const mockPrisma = {
   users: {
@@ -33,6 +42,10 @@ const mockErrorsService = {
   dbError: jest.fn(),
   noBodyError: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -397,7 +410,9 @@ describe('UsersService', () => {
 
     it('throws the mapped error when restoring an existing user fails', async () => {
       const error = new Error('db');
-      const mappedError = new ConflictException('Credentials already exist. Please try again with different credentials.');
+      const mappedError = new ConflictException(
+        'Credentials already exist. Please try again with different credentials.',
+      );
       jest.spyOn(service, 'getUsers').mockResolvedValue([{ id: 7, role: Role.CLIENT } as any]);
       (argon.hash as jest.Mock).mockResolvedValue('hashed');
       mockPrisma.users.update.mockRejectedValue(error);
@@ -423,7 +438,9 @@ describe('UsersService', () => {
 
     it('throws the mapped error when creating a new user fails', async () => {
       const error = new Error('db');
-      const mappedError = new ConflictException('Credentials already exist. Please try again with different credentials.');
+      const mappedError = new ConflictException(
+        'Credentials already exist. Please try again with different credentials.',
+      );
       jest.spyOn(service, 'getUsers').mockResolvedValue([]);
       (argon.hash as jest.Mock).mockResolvedValue('hashed');
       mockPrisma.users.create.mockRejectedValue(error);

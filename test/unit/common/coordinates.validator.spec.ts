@@ -1,7 +1,10 @@
-import 'reflect-metadata';
-import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { getMetadataStorage, validateSync } from 'class-validator';
+import 'reflect-metadata';
 import { Coordinates, CoordinatesValidator } from '../../../src/common/validators/coordinates.validator';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CoordinatesValidator', () => {
   let validator: CoordinatesValidator;

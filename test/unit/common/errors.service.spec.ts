@@ -8,6 +8,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '../../../prisma/generated/client';
 import { ErrorsService } from '../../../src/common/errors.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Helpers
+//--------------------------------------------------------------------------------------------------------------------//
+
 function buildKnownError(code: string) {
   const error = Object.create(Prisma.PrismaClientKnownRequestError.prototype);
   error.code = code;
@@ -17,6 +21,10 @@ function buildKnownError(code: string) {
 function buildUnknownError() {
   return Object.create(Prisma.PrismaClientUnknownRequestError.prototype);
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ErrorsService', () => {
   let service: ErrorsService;

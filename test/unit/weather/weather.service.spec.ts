@@ -1,14 +1,17 @@
-jest.mock('openmeteo', () => ({
-  fetchWeatherApi: jest.fn(),
-}));
-
 import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from 'openmeteo';
 import { AnalysisService } from '../../../src/common/analysis.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { WeatherService } from '../../../src/weather/weather.service';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
+jest.mock('openmeteo', () => ({
+  fetchWeatherApi: jest.fn(),
+}));
 
 const mockPrisma = {
   weather: {
@@ -25,6 +28,10 @@ const mockPrisma = {
 const mockAnalysisService = {
   processWeatherData: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Helpers
+//--------------------------------------------------------------------------------------------------------------------//
 
 function buildWeatherApiResponse({
   startUnix,
@@ -64,6 +71,10 @@ function buildWeatherApiResponse({
     }),
   };
 }
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('WeatherService', () => {
   let service: WeatherService;

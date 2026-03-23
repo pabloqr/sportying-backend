@@ -12,6 +12,10 @@ import {
 } from '../../../src/reservations/enums';
 import { ReservationsService } from '../../../src/reservations/reservations.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockPrisma = {
   courts: {
     findMany: jest.fn(),
@@ -42,6 +46,10 @@ const mockUtilitiesService = {
 const mockCourtsStatusService = {
   getCourtStatus: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ReservationsService', () => {
   let service: ReservationsService;

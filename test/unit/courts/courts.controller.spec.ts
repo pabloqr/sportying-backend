@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CourtsController } from '../../../src/courts/courts.controller';
 import { CourtsService } from '../../../src/courts/courts.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockCourtsService = {
   getCourts: jest.fn(),
   getCourt: jest.fn(),
@@ -10,6 +14,10 @@ const mockCourtsService = {
   deleteCourt: jest.fn(),
   getCourtAvailability: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CourtsController', () => {
   let controller: CourtsController;

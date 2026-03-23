@@ -2,11 +2,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsSseService } from '../../../src/notifications/notifications-sse.service';
 import { NotificationsService } from '../../../src/notifications/notifications.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockNotificationsSseService = {
   emitCourtStatusChange: jest.fn(),
   emitReservationChange: jest.fn(),
   emitDeviceTelemetry: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
