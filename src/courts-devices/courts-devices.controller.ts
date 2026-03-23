@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 import { GetCourtDevicesDto } from 'src/courts/dto';
 import { CreateDeviceCourtsDto, GetDeviceCourtsDto } from 'src/devices/dto';
 import { CourtsDevicesService } from './courts-devices.service';
@@ -8,7 +9,7 @@ import { CourtsDevicesService } from './courts-devices.service';
 export class CourtsDevicesController {
   constructor(private courtsDevicesService: CourtsDevicesService) {}
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Get(':complexId/courts/:courtId/devices')
   async getCourtDevices(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -18,7 +19,7 @@ export class CourtsDevicesController {
     return this.courtsDevicesService.getCourtDevices(complexId, courtId, query);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Get(':complexId/devices/:deviceId/courts')
   async getDeviceCourts(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -28,7 +29,7 @@ export class CourtsDevicesController {
     return this.courtsDevicesService.getDeviceCourts(complexId, deviceId, query);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Post(':complexId/devices/:deviceId/courts')
   async setDeviceCourts(
     @Param('complexId', ParseIntPipe) complexId: number,

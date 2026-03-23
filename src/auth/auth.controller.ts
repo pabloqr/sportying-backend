@@ -22,7 +22,6 @@ export class AuthController {
     return this.authService.signin(dto);
   }
 
-  @Public()
   @UseGuards(JwtRefreshGuard)
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)

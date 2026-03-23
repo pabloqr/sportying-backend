@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 import { CreateCourtStatusDto } from 'src/courts/dto';
 import { CourtsStatusService } from './courts-status.service';
 
@@ -7,7 +8,7 @@ import { CourtsStatusService } from './courts-status.service';
 export class CourtsStatusController {
   constructor(private courtsStatusService: CourtsStatusService) {}
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId/courts/:courtId/status')
   async getCourtStatus(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -16,7 +17,7 @@ export class CourtsStatusController {
     return this.courtsStatusService.getCourtStatus(complexId, courtId);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Post(':complexId/courts/:courtId/status')
   async setCourtStatus(
     @Param('complexId', ParseIntPipe) complexId: number,

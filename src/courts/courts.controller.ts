@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 import { CourtsService } from './courts.service';
 import { CreateCourtDto, GetCourtsDto, UpdateCourtDto } from './dto';
 
@@ -7,25 +8,25 @@ import { CreateCourtDto, GetCourtsDto, UpdateCourtDto } from './dto';
 export class CourtsController {
   constructor(private courtsService: CourtsService) {}
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId/courts')
   async getCourts(@Param('complexId', ParseIntPipe) complexId: number, @Query() query: GetCourtsDto) {
     return this.courtsService.getCourts(complexId, query);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId/courts/:courtId')
   async getCourt(@Param('complexId', ParseIntPipe) complexId: number, @Param('courtId', ParseIntPipe) courtId: number) {
     return this.courtsService.getCourt(complexId, courtId);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Post(':complexId/courts')
   async createCourt(@Param('complexId', ParseIntPipe) complexId: number, @Body() dto: CreateCourtDto) {
     return this.courtsService.createCourt(complexId, dto);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Put(':complexId/courts/:courtId')
   async updateCourt(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -35,7 +36,7 @@ export class CourtsController {
     return this.courtsService.updateCourt(complexId, courtId, dto);
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Delete(':complexId/courts/:courtId')
   async deleteCourt(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -44,7 +45,7 @@ export class CourtsController {
     return this.courtsService.deleteCourt(complexId, courtId);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId/courts/:courtId/availability')
   async getCourtAvailability(
     @Param('complexId', ParseIntPipe) complexId: number,

@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 import { CreateReservationDto, GetReservationsDto } from './dto';
 import { ReservationsService } from './reservations.service';
 
@@ -7,7 +8,7 @@ import { ReservationsService } from './reservations.service';
 export class ComplexReservationsController {
   constructor(private reservationsService: ReservationsService) {}
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId/reservations')
   async getComplexReservations(
     @Param('complexId', ParseIntPipe) complexId: number,
@@ -16,7 +17,7 @@ export class ComplexReservationsController {
     return this.reservationsService.getComplexReservations(complexId, query);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Post(':complexId/reservations')
   async createComplexReservation(
     @Param('complexId', ParseIntPipe) complexId: number,

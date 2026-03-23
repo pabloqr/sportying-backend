@@ -1,5 +1,6 @@
 import { Controller, Get, Param, ParseIntPipe, Query, ValidationPipe } from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 import { GetSportsDto } from './dto';
 import { SportsService } from './sports.service';
 
@@ -7,7 +8,7 @@ import { SportsService } from './sports.service';
 export class ComplexSportsController {
   constructor(private sportsService: SportsService) {}
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get()
   async getComplexSports(
     @Param('complexId', ParseIntPipe) complexId: number,

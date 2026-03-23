@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query, ValidationPipe } from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 import { GetSportsDto } from './dto/get-sports.dto';
 import { SportsService } from './sports.service';
 
@@ -7,13 +8,13 @@ import { SportsService } from './sports.service';
 export class SportsController {
   constructor(private sportsService: SportsService) {}
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get()
   async getSports(@Query(new ValidationPipe({ skipMissingProperties: true })) query: GetSportsDto) {
     return this.sportsService.getSports(query);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':sportKey')
   async getSport(@Param('sportKey') sportKey: string) {
     return this.sportsService.getSport(sportKey);
