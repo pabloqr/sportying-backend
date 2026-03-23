@@ -3,9 +3,17 @@ import { ResponseComplexWeatherDto } from '../../../src/common/dto';
 import { WeatherController } from '../../../src/weather/weather.controller';
 import { WeatherService } from '../../../src/weather/weather.service';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const mockWeatherService = {
   getWeatherFromId: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('WeatherController', () => {
   let controller: WeatherController;
