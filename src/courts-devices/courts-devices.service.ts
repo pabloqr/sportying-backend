@@ -5,12 +5,14 @@ import { ResponseCourtDevicesDto, ResponseCourtDto, ResponseDeviceCourtsDto, Res
 import { ErrorsService } from '../common/errors.service';
 import { COURT_DEVICES_ORDER_FIELD_MAP, GetCourtDevicesDto } from '../courts/dto';
 import { CreateDeviceCourtsDto, DEVICE_COURTS_ORDER_FIELD_MAP, GetDeviceCourtsDto } from '../devices/dto';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 
 @Injectable()
 export class CourtsDevicesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private courtsStatusService: CourtsStatusService,
   ) {}
 
   /**
@@ -188,8 +190,11 @@ export class CourtsDevicesService {
             throw new NotFoundException(`Court with ID ${courtId} not found.`);
           }
 
+          const courtStatus = await this.courtsStatusService.getCourtStatus(complexId, courtId);
+          const newCourtWithStatus = { ...newCourt, status_data: courtStatus.statusData };
+
           // Añadir a la lista final
-          deviceCourts.push(new ResponseCourtDto(newCourt));
+          deviceCourts.push(new ResponseCourtDto(newCourtWithStatus));
         } else {
           // Si la pista actual está incluida en la lista, actualizar la entrada para asegurar que no se ha
           // establecido como eliminada
