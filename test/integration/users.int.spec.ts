@@ -6,15 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersController } from 'src/users/users.controller';
 import { UsersService } from 'src/users/users.service';
 import request from 'supertest';
-
-//--------------------------------------------------------------------------------------------------------------------//
-// Mock factories
-//--------------------------------------------------------------------------------------------------------------------//
-
-const mockUser = {
-  id: 9999,
-  role: Role.SUPERADMIN,
-};
+import { mockUser } from './mock/factories';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Helpers

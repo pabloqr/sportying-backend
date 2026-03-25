@@ -87,6 +87,7 @@ export class CourtsStatusService {
           status: statusData.status,
           alert_level: statusData.alertLevel,
           estimated_drying_time: statusData.estimatedDryingTime,
+          created_at: new Date(),
         },
       });
 
