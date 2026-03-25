@@ -22,17 +22,6 @@ jest.mock('uuid', () => ({
   v4: jest.fn(),
 }));
 
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
-import * as argon from 'argon2';
-import { v4 as uuidV4 } from 'uuid';
-import { AuthService } from '../../../src/auth/auth.service';
-import { Role } from '../../../src/auth/enums';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { UsersService } from '../../../src/users/users.service';
-
 const mockPrisma = {
   devices: {
     findUnique: jest.fn(),
