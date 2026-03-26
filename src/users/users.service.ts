@@ -249,7 +249,7 @@ export class UsersService {
           await this.prisma.admins.create({
             data: {
               id: user.id,
-              complex_id: 1,
+              complex_id: dto.complexId,
             },
           });
         }
