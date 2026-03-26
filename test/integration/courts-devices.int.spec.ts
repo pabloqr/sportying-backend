@@ -17,6 +17,10 @@ import {
   resetMockUser,
 } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
+
 describe('CourtsDevicesController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
@@ -26,6 +30,10 @@ describe('CourtsDevicesController (integration)', () => {
   const createdComplexIds: number[] = [];
   const createdCourtIds: number[] = [];
   const createdDeviceIds: number[] = [];
+
+  //------------------------------------------------------------------------------------------------------------------//
+  // Helpers
+  //------------------------------------------------------------------------------------------------------------------//
 
   const createCourtDeviceFixture = async ({ withRelation = false }: { withRelation?: boolean } = {}) => {
     const complex = await createComplexRecord(prisma, createdComplexIds);

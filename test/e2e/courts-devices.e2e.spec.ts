@@ -17,6 +17,10 @@ import {
   createSportRecord,
 } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
+
 describe('CourtsDevicesController (e2e)', () => {
   let app: INestApplication;
   let httpServer: any;
@@ -28,6 +32,10 @@ describe('CourtsDevicesController (e2e)', () => {
   const createdComplexIds: number[] = [];
   const createdCourtIds: number[] = [];
   const createdDeviceIds: number[] = [];
+
+  //------------------------------------------------------------------------------------------------------------------//
+  // Helpers
+  //------------------------------------------------------------------------------------------------------------------//
 
   const createCourtDeviceFixture = async ({ withRelation = false }: { withRelation?: boolean } = {}) => {
     const complex = await createComplexRecord(prisma, createdComplexIds);

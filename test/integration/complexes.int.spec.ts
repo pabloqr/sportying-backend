@@ -9,6 +9,10 @@ import { CourtsService } from 'src/courts/courts.service';
 import request from 'supertest';
 import { createIntegrationApp, resetMockUser } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const weatherServiceMock = {
   getWeatherFromGeohash: jest.fn().mockResolvedValue({
     alertLevel: 0,
@@ -23,6 +27,10 @@ const weatherServiceMock = {
 const courtsServiceMock = {
   getCourtsAvailability: jest.fn().mockResolvedValue([]),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ComplexesController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];

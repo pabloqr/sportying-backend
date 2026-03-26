@@ -117,14 +117,14 @@ export const createComplexRecord = async (
   createdComplexIds: number[],
   data: Record<string, unknown> = {},
 ) => {
-  const offset = uniqueSequence++;
+  const offset = Date.now() + uniqueSequence++;
   const complex = await prisma.complexes.create({
     data: {
       complex_name: `Integration Complex ${Date.now()}_${offset}`,
       time_ini: new Date('1970-01-01T08:00:00.000Z'),
       time_end: new Date('1970-01-01T22:00:00.000Z'),
-      loc_latitude: 40.1234 + offset / 10000,
-      loc_longitude: -3.1234 - offset / 10000,
+      loc_latitude: 40 + (offset % 1000000) / 10000000,
+      loc_longitude: -3 - (offset % 1000000) / 10000000,
       ...data,
     },
   });

@@ -18,6 +18,10 @@ import {
   resetMockUser,
 } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const weatherServiceMock = {
   getWeatherFromId: jest.fn().mockResolvedValue({
     alert_level: 0,
@@ -28,6 +32,10 @@ const weatherServiceMock = {
 const reservationsServiceMock = {
   getReservations: jest.fn().mockResolvedValue([]),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CourtsController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];

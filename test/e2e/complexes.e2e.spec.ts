@@ -7,6 +7,10 @@ import { WeatherService } from 'src/weather/weather.service';
 import request from 'supertest';
 import { cleanupUsers, createAuthHeader, createE2EApp, createWeatherServiceMock } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const weatherServiceMock = createWeatherServiceMock({
   getWeatherFromGeohash: jest.fn().mockResolvedValue({
     alertLevel: 0,
@@ -21,6 +25,10 @@ const weatherServiceMock = createWeatherServiceMock({
 const courtsServiceMock = {
   getCourtsAvailability: jest.fn().mockResolvedValue([]),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('ComplexesController (e2e)', () => {
   let app: INestApplication;

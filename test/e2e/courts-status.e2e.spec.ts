@@ -15,6 +15,10 @@ import {
   createSportRecord,
 } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
+
 describe('CourtsStatusController (e2e)', () => {
   let app: INestApplication;
   let httpServer: any;
@@ -25,6 +29,10 @@ describe('CourtsStatusController (e2e)', () => {
   const createdSportKeys: string[] = [];
   const createdComplexIds: number[] = [];
   const createdCourtIds: number[] = [];
+
+  //------------------------------------------------------------------------------------------------------------------//
+  // Helpers
+  //------------------------------------------------------------------------------------------------------------------//
 
   beforeAll(async () => {
     const setup = await createE2EApp();

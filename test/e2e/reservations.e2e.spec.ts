@@ -19,6 +19,10 @@ import {
   signAuthHeader,
 } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
+
 describe('ReservationsController (e2e)', () => {
   let app: INestApplication;
   let httpServer: any;
@@ -30,6 +34,10 @@ describe('ReservationsController (e2e)', () => {
   const createdSportKeys: string[] = [];
   const createdCourtIds: number[] = [];
   const createdReservationIds: number[] = [];
+
+  //------------------------------------------------------------------------------------------------------------------//
+  // Helpers
+  //------------------------------------------------------------------------------------------------------------------//
 
   beforeAll(async () => {
     const setup = await createE2EApp();

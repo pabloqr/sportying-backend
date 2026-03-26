@@ -23,6 +23,10 @@ import {
   resetMockUser,
 } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
+
 describe('ReservationsController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
@@ -33,6 +37,10 @@ describe('ReservationsController (integration)', () => {
   const createdSportKeys: string[] = [];
   const createdCourtIds: number[] = [];
   const createdReservationIds: number[] = [];
+
+  //------------------------------------------------------------------------------------------------------------------//
+  // Helpers
+  //------------------------------------------------------------------------------------------------------------------//
 
   beforeAll(async () => {
     const setup = await createIntegrationApp({

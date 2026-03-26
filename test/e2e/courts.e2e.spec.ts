@@ -18,6 +18,10 @@ import {
   createWeatherServiceMock,
 } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const weatherServiceMock = createWeatherServiceMock({
   getWeatherFromId: jest.fn().mockResolvedValue({
     alert_level: 0,
@@ -28,6 +32,10 @@ const weatherServiceMock = createWeatherServiceMock({
 const reservationsServiceMock = {
   getReservations: jest.fn().mockResolvedValue([]),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('CourtsController (e2e)', () => {
   let app: INestApplication;

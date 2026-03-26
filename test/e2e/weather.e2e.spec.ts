@@ -1,14 +1,22 @@
 import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Role } from 'src/auth/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { WeatherService } from 'src/weather/weather.service';
 import request from 'supertest';
 import { cleanupUsers, createAuthHeader, createE2EApp, createWeatherServiceMock } from './mock/factories';
-import { JwtService } from '@nestjs/jwt';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
 
 const weatherServiceMock = createWeatherServiceMock({
   getWeatherFromId: jest.fn(),
 });
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('WeatherController (e2e)', () => {
   let app: INestApplication;

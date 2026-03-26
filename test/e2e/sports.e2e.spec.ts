@@ -3,13 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { Role } from 'src/auth/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 import request from 'supertest';
-import {
-  cleanupSports,
-  cleanupUsers,
-  createAuthHeader,
-  createE2EApp,
-  createSportRecord,
-} from './mock/factories';
+import { cleanupSports, cleanupUsers, createAuthHeader, createE2EApp, createSportRecord } from './mock/factories';
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('SportsController (e2e)', () => {
   let app: INestApplication;

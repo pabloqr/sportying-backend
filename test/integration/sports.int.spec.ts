@@ -4,6 +4,10 @@ import { SportsService } from 'src/sports/sports.service';
 import request from 'supertest';
 import { cleanupSports, createIntegrationApp, createSportRecord, resetMockUser } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
+
 describe('SportsController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;

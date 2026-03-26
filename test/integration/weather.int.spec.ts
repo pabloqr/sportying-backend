@@ -3,9 +3,17 @@ import { WeatherService } from 'src/weather/weather.service';
 import request from 'supertest';
 import { createIntegrationApp, resetMockUser } from './mock/factories';
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Mock factories
+//--------------------------------------------------------------------------------------------------------------------//
+
 const weatherServiceMock = {
   getWeatherFromId: jest.fn(),
 };
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Test suite
+//--------------------------------------------------------------------------------------------------------------------//
 
 describe('WeatherController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
