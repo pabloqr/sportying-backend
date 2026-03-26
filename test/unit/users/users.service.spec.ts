@@ -309,7 +309,7 @@ describe('UsersService', () => {
       expect(mockPrisma.admins.create).toHaveBeenCalledWith({
         data: {
           id: 1,
-          complex_id: 1,
+          complex_id: 9,
         },
       });
       expect(result.role).toBe(Role.ADMIN);
