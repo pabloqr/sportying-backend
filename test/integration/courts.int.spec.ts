@@ -7,7 +7,16 @@ import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { ReservationsService } from 'src/reservations/reservations.service';
 import { WeatherService } from 'src/weather/weather.service';
 import request from 'supertest';
-import { createIntegrationApp, resetMockUser } from './mock/factories';
+import {
+  cleanupComplexes,
+  cleanupCourts,
+  cleanupSports,
+  createComplexRecord,
+  createCourtRecord,
+  createIntegrationApp,
+  createSportRecord,
+  resetMockUser,
+} from './mock/factories';
 
 const weatherServiceMock = {
   getWeatherFromId: jest.fn().mockResolvedValue({
@@ -24,6 +33,9 @@ describe('CourtsController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
   let prisma: PrismaService;
+
+  const createdComplexIds: number[] = [];
+  const createdSportKeys: string[] = [];
   const createdCourtIds: number[] = [];
 
   beforeAll(async () => {
@@ -50,22 +62,25 @@ describe('CourtsController (integration)', () => {
   });
 
   afterEach(async () => {
-    if (createdCourtIds.length > 0) {
-      await prisma.courts_status.deleteMany({ where: { court_id: { in: createdCourtIds } } });
-      await prisma.courts.deleteMany({ where: { id: { in: createdCourtIds } } });
-      createdCourtIds.length = 0;
-    }
-
+    await cleanupCourts(prisma, createdCourtIds);
+    await cleanupComplexes(prisma, createdComplexIds);
+    await cleanupSports(prisma, createdSportKeys);
     resetMockUser();
     jest.clearAllMocks();
   });
 
   describe('GET /complexes/:complexId/courts', () => {
     it('should list courts for a complex', async () => {
-      const complex = await prisma.complexes.findFirst({ where: { is_delete: false } });
-      expect(complex).toBeDefined();
+      const complex = await createComplexRecord(prisma, createdComplexIds);
+      const sport = await createSportRecord(prisma, createdSportKeys);
+      await createCourtRecord(prisma, createdCourtIds, {
+        complex_id: complex.id,
+        sport_key: sport.key,
+        description: 'Integration listed court',
+        max_people: sport.max_people,
+      });
 
-      const response = await request(httpServer).get(`/complexes/${complex!.id}/courts`);
+      const response = await request(httpServer).get(`/complexes/${complex.id}/courts`);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -74,21 +89,21 @@ describe('CourtsController (integration)', () => {
 
   describe('POST /complexes/:complexId/courts', () => {
     it('should create a court', async () => {
-      const complex = await prisma.complexes.findFirst({ where: { is_delete: false } });
-      const sport = await prisma.sports.findFirst({ where: { is_delete: false } });
-      expect(complex).toBeDefined();
-      expect(sport).toBeDefined();
+      const complex = await createComplexRecord(prisma, createdComplexIds);
+      const sport = await createSportRecord(prisma, createdSportKeys, { max_people: 4 });
 
-      const response = await request(httpServer).post(`/complexes/${complex!.id}/courts`).send({
-        sportKey: sport!.key,
-        description: 'Integration created court',
-        maxPeople: sport!.max_people,
-        statusData: { status: 'OPEN', alertLevel: 0, estimatedDryingTime: 0 },
-      });
+      const response = await request(httpServer)
+        .post(`/complexes/${complex.id}/courts`)
+        .send({
+          sportKey: sport.key,
+          description: 'Integration created court',
+          maxPeople: sport.max_people,
+          statusData: { status: 'OPEN', alertLevel: 0, estimatedDryingTime: 0 },
+        });
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('id');
-      expect(response.body.sportKey).toBe(sport!.key);
+      expect(response.body.sportKey).toBe(sport.key);
       createdCourtIds.push(response.body.id);
     });
   });

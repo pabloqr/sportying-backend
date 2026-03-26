@@ -1,46 +1,44 @@
-import { randomUUID } from 'crypto';
 import { ErrorsService } from 'src/common/errors.service';
 import { CourtsDevicesController } from 'src/courts-devices/courts-devices.controller';
 import { CourtsDevicesService } from 'src/courts-devices/courts-devices.service';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import request from 'supertest';
-import { createIntegrationApp, resetMockUser } from './mock/factories';
+import {
+  cleanupComplexes,
+  cleanupCourts,
+  cleanupDevices,
+  cleanupSports,
+  createComplexRecord,
+  createCourtRecord,
+  createDeviceRecord,
+  createIntegrationApp,
+  createSportRecord,
+  resetMockUser,
+} from './mock/factories';
 
 describe('CourtsDevicesController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
   let prisma: PrismaService;
+
+  const createdSportKeys: string[] = [];
+  const createdComplexIds: number[] = [];
   const createdCourtIds: number[] = [];
   const createdDeviceIds: number[] = [];
 
   const createCourtDeviceFixture = async ({ withRelation = false }: { withRelation?: boolean } = {}) => {
-    const complex = await prisma.complexes.findFirst({ where: { is_delete: false } });
-    const sport = await prisma.sports.findFirst({ where: { is_delete: false } });
-    expect(complex).toBeDefined();
-    expect(sport).toBeDefined();
-
-    const court = await prisma.courts.create({
-      data: {
-        complex_id: complex!.id,
-        sport_key: sport!.key,
-        number: Math.floor(1000 + Math.random() * 1000),
-        description: 'Integration court device',
-        max_people: sport!.max_people,
-      },
+    const complex = await createComplexRecord(prisma, createdComplexIds);
+    const sport = await createSportRecord(prisma, createdSportKeys);
+    const court = await createCourtRecord(prisma, createdCourtIds, {
+      complex_id: complex.id,
+      sport_key: sport.key,
+      description: 'Integration court device',
+      max_people: sport.max_people,
     });
-    createdCourtIds.push(court.id);
-
-    const device = await prisma.devices.create({
-      data: {
-        complex_id: complex!.id,
-        id_key: randomUUID(),
-        api_key: 'hashed-secret',
-        type: 'RAIN',
-        status: 'NORMAL',
-      },
+    const device = await createDeviceRecord(prisma, createdDeviceIds, {
+      complex_id: complex.id,
     });
-    createdDeviceIds.push(device.id);
 
     if (withRelation) {
       await prisma.courts_devices.create({
@@ -70,25 +68,10 @@ describe('CourtsDevicesController (integration)', () => {
   });
 
   afterEach(async () => {
-    if (createdDeviceIds.length > 0 || createdCourtIds.length > 0) {
-      await prisma.courts_devices.deleteMany({
-        where: {
-          OR: [{ device_id: { in: createdDeviceIds } }, { court_id: { in: createdCourtIds } }],
-        },
-      });
-    }
-
-    if (createdDeviceIds.length > 0) {
-      await prisma.devices.deleteMany({ where: { id: { in: createdDeviceIds } } });
-      createdDeviceIds.length = 0;
-    }
-
-    if (createdCourtIds.length > 0) {
-      await prisma.courts_status.deleteMany({ where: { court_id: { in: createdCourtIds } } });
-      await prisma.courts.deleteMany({ where: { id: { in: createdCourtIds } } });
-      createdCourtIds.length = 0;
-    }
-
+    await cleanupDevices(prisma, createdDeviceIds);
+    await cleanupCourts(prisma, createdCourtIds);
+    await cleanupComplexes(prisma, createdComplexIds);
+    await cleanupSports(prisma, createdSportKeys);
     resetMockUser();
   });
 
@@ -97,7 +80,7 @@ describe('CourtsDevicesController (integration)', () => {
       const { complex, court, device } = await createCourtDeviceFixture();
 
       const response = await request(httpServer)
-        .post(`/complexes/${complex!.id}/devices/${device.id}/courts`)
+        .post(`/complexes/${complex.id}/devices/${device.id}/courts`)
         .send({ courts: [court.id] });
 
       expect(response.status).toBe(201);
@@ -111,7 +94,7 @@ describe('CourtsDevicesController (integration)', () => {
     it('should return the devices assigned to a court', async () => {
       const { complex, court, device } = await createCourtDeviceFixture({ withRelation: true });
 
-      const response = await request(httpServer).get(`/complexes/${complex!.id}/courts/${court.id}/devices`);
+      const response = await request(httpServer).get(`/complexes/${complex.id}/courts/${court.id}/devices`);
 
       expect(response.status).toBe(200);
       expect(response.body.id).toBe(court.id);

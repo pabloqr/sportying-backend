@@ -4,13 +4,26 @@ import { CourtsStatusController } from 'src/courts-status/courts-status.controll
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import request from 'supertest';
-import { createIntegrationApp, mockUser, resetMockUser } from './mock/factories';
+import {
+  cleanupComplexes,
+  cleanupCourts,
+  cleanupSports,
+  createComplexRecord,
+  createCourtRecord,
+  createIntegrationApp,
+  createSportRecord,
+  mockUser,
+  resetMockUser,
+} from './mock/factories';
 
 describe('CourtsStatusController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
   let prisma: PrismaService;
-  const touchedCourtIds = new Set<number>();
+
+  const createdSportKeys: string[] = [];
+  const createdComplexIds: number[] = [];
+  const createdCourtIds: number[] = [];
 
   beforeAll(async () => {
     const setup = await createIntegrationApp({
@@ -28,24 +41,29 @@ describe('CourtsStatusController (integration)', () => {
   });
 
   afterEach(async () => {
-    if (touchedCourtIds.size > 0) {
-      await prisma.courts_status.deleteMany({
-        where: {
-          court_id: { in: Array.from(touchedCourtIds) },
-        },
-      });
-      touchedCourtIds.clear();
-    }
-
+    await cleanupCourts(prisma, createdCourtIds);
+    await cleanupComplexes(prisma, createdComplexIds);
+    await cleanupSports(prisma, createdSportKeys);
     resetMockUser();
   });
 
+  const createCourtFixture = async () => {
+    const complex = await createComplexRecord(prisma, createdComplexIds);
+    const sport = await createSportRecord(prisma, createdSportKeys);
+    const court = await createCourtRecord(prisma, createdCourtIds, {
+      complex_id: complex.id,
+      sport_key: sport.key,
+      max_people: sport.max_people,
+    });
+
+    return { complex, court };
+  };
+
   describe('GET /complexes/:complexId/courts/:courtId/status', () => {
     it('should return the default OPEN status when no status exists', async () => {
-      const court = await prisma.courts.findFirst({ where: { is_delete: false } });
-      expect(court).toBeDefined();
+      const { complex, court } = await createCourtFixture();
 
-      const response = await request(httpServer).get(`/complexes/${court!.complex_id}/courts/${court!.id}/status`);
+      const response = await request(httpServer).get(`/complexes/${complex.id}/courts/${court.id}/status`);
 
       expect(response.status).toBe(200);
       expect(response.body.statusData.status).toBeDefined();
@@ -60,19 +78,17 @@ describe('CourtsStatusController (integration)', () => {
 
   describe('POST /complexes/:complexId/courts/:courtId/status', () => {
     it('should create a court status entry', async () => {
-      const court = await prisma.courts.findFirst({ where: { is_delete: false } });
-      expect(court).toBeDefined();
+      const { complex, court } = await createCourtFixture();
 
       mockUser.role = Role.ADMIN;
 
       const response = await request(httpServer)
-        .post(`/complexes/${court!.complex_id}/courts/${court!.id}/status`)
+        .post(`/complexes/${complex.id}/courts/${court.id}/status`)
         .send({ status: 'MAINTENANCE', alertLevel: 1, estimatedDryingTime: 10 });
 
       expect(response.status).toBe(201);
-      expect(response.body.id).toBe(court!.id);
+      expect(response.body.id).toBe(court.id);
       expect(response.body.statusData.status).toBe('MAINTENANCE');
-      touchedCourtIds.add(court!.id);
     });
   });
 });

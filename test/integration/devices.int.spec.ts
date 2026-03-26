@@ -1,10 +1,17 @@
 import { AuthService } from 'src/auth/auth.service';
 import { ErrorsService } from 'src/common/errors.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { DevicesController } from 'src/devices/devices.controller';
 import { DevicesService } from 'src/devices/devices.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import request from 'supertest';
-import { createIntegrationApp, resetMockUser } from './mock/factories';
+import {
+  cleanupComplexes,
+  cleanupDevices,
+  createComplexRecord,
+  createDeviceRecord,
+  createIntegrationApp,
+  resetMockUser,
+} from './mock/factories';
 
 const authServiceMock = {
   generateApiKey: jest.fn().mockResolvedValue({
@@ -17,6 +24,8 @@ describe('DevicesController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
   let prisma: PrismaService;
+
+  const createdComplexIds: number[] = [];
   const createdDeviceIds: number[] = [];
 
   beforeAll(async () => {
@@ -35,23 +44,17 @@ describe('DevicesController (integration)', () => {
   });
 
   afterEach(async () => {
-    if (createdDeviceIds.length > 0) {
-      await prisma.courts_devices.deleteMany({ where: { device_id: { in: createdDeviceIds } } });
-      await prisma.devices_telemetry.deleteMany({ where: { device_id: { in: createdDeviceIds } } });
-      await prisma.devices.deleteMany({ where: { id: { in: createdDeviceIds } } });
-      createdDeviceIds.length = 0;
-    }
-
+    await cleanupDevices(prisma, createdDeviceIds);
+    await cleanupComplexes(prisma, createdComplexIds);
     resetMockUser();
     jest.clearAllMocks();
   });
 
   describe('GET /complexes/:complexId/devices', () => {
     it('should return an array of devices', async () => {
-      const complex = await prisma.complexes.findFirst({ where: { is_delete: false } });
-      expect(complex).toBeDefined();
+      const complex = await createComplexRecord(prisma, createdComplexIds);
 
-      const response = await request(httpServer).get(`/complexes/${complex!.id}/devices`);
+      const response = await request(httpServer).get(`/complexes/${complex.id}/devices`);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -60,11 +63,10 @@ describe('DevicesController (integration)', () => {
 
   describe('POST /complexes/:complexId/devices', () => {
     it('should create a device', async () => {
-      const complex = await prisma.complexes.findFirst({ where: { is_delete: false } });
-      expect(complex).toBeDefined();
+      const complex = await createComplexRecord(prisma, createdComplexIds);
 
       const response = await request(httpServer)
-        .post(`/complexes/${complex!.id}/devices`)
+        .post(`/complexes/${complex.id}/devices`)
         .send({ type: 'RAIN', status: 'NORMAL' });
 
       expect(response.status).toBe(201);
@@ -76,19 +78,12 @@ describe('DevicesController (integration)', () => {
 
   describe('GET /complexes/:complexId/devices/:deviceId/telemetry', () => {
     it('should return telemetry for a device', async () => {
-      const complex = await prisma.complexes.findFirst({ where: { is_delete: false } });
-      expect(complex).toBeDefined();
+      const complex = await createComplexRecord(prisma, createdComplexIds);
 
-      const device = await prisma.devices.create({
-        data: {
-          complex_id: complex!.id,
-          id_key: '22222222-2222-2222-2222-222222222222',
-          api_key: 'hashed-secret',
-          type: 'RAIN',
-          status: 'NORMAL',
-        },
+      const device = await createDeviceRecord(prisma, createdDeviceIds, {
+        complex_id: complex.id,
+        id_key: '22222222-2222-2222-2222-222222222222',
       });
-      createdDeviceIds.push(device.id);
 
       await prisma.devices_telemetry.create({
         data: {
@@ -97,7 +92,7 @@ describe('DevicesController (integration)', () => {
         },
       });
 
-      const response = await request(httpServer).get(`/complexes/${complex!.id}/devices/${device.id}/telemetry`);
+      const response = await request(httpServer).get(`/complexes/${complex.id}/devices/${device.id}/telemetry`);
 
       expect(response.status).toBe(200);
       expect(response.body.id).toBe(device.id);

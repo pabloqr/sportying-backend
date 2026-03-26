@@ -1,21 +1,36 @@
+import { Role } from 'src/auth/enums';
 import { ErrorsService } from 'src/common/errors.service';
 import { UtilitiesService } from 'src/common/utilities.service';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ComplexReservationsController } from 'src/reservations/complex-reservations.controller';
+import { CreateReservationDto } from 'src/reservations/dto';
 import { ReservationsController } from 'src/reservations/reservations.controller';
 import { ReservationsService } from 'src/reservations/reservations.service';
 import { UserReservationsController } from 'src/reservations/user-reservations.controller';
-import { ComplexReservationsController } from 'src/reservations/complex-reservations.controller';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { Role } from 'src/auth/enums';
 import request from 'supertest';
-import { createIntegrationApp, mockUser, resetMockUser } from './mock/factories';
-import { CreateReservationDto } from 'src/reservations/dto';
+import {
+  cleanupComplexes,
+  cleanupCourts,
+  cleanupSports,
+  cleanupUsers,
+  createComplexRecord,
+  createCourtRecord,
+  createIntegrationApp,
+  createSportRecord,
+  createUserRecord,
+  mockUser,
+  resetMockUser,
+} from './mock/factories';
 
 describe('ReservationsController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
   let prisma: PrismaService;
+
   const createdUserIds: number[] = [];
+  const createdComplexIds: number[] = [];
+  const createdSportKeys: string[] = [];
   const createdCourtIds: number[] = [];
   const createdReservationIds: number[] = [];
 
@@ -40,49 +55,27 @@ describe('ReservationsController (integration)', () => {
       createdReservationIds.length = 0;
     }
 
-    if (createdCourtIds.length > 0) {
-      await prisma.courts_status.deleteMany({ where: { court_id: { in: createdCourtIds } } });
-      await prisma.courts.deleteMany({ where: { id: { in: createdCourtIds } } });
-      createdCourtIds.length = 0;
-    }
-
-    if (createdUserIds.length > 0) {
-      await prisma.users.deleteMany({ where: { id: { in: createdUserIds } } });
-      createdUserIds.length = 0;
-    }
-
+    await cleanupCourts(prisma, createdCourtIds);
+    await cleanupComplexes(prisma, createdComplexIds);
+    await cleanupSports(prisma, createdSportKeys);
+    await cleanupUsers(prisma, createdUserIds);
     resetMockUser();
   });
 
   const createReservationFixture = async () => {
-    const complex = await prisma.complexes.findFirst({ where: { is_delete: false } });
-    const sport = await prisma.sports.findFirst({ where: { is_delete: false } });
-    expect(complex).toBeDefined();
-    expect(sport).toBeDefined();
+    const complex = await createComplexRecord(prisma, createdComplexIds);
+    const sport = await createSportRecord(prisma, createdSportKeys, { max_people: 4 });
 
-    const user = await prisma.users.create({
-      data: {
-        role: 'CLIENT',
-        password: 'hashed',
-        name: 'Reservation',
-        surname: 'Integration',
-        mail: `reservation_${Date.now()}_${Math.random()}@test.com`,
-        phone_prefix: 34,
-        phone_number: Math.floor(600000000 + Math.random() * 1000000),
-      },
+    const user = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+      name: 'Reservation',
+      surname: 'Integration',
     });
-    createdUserIds.push(user.id);
-
-    const court = await prisma.courts.create({
-      data: {
-        complex_id: complex!.id,
-        sport_key: sport!.key,
-        number: Math.floor(1000 + Math.random() * 1000),
-        description: 'Reservation integration court',
-        max_people: sport!.max_people,
-      },
+    const court = await createCourtRecord(prisma, createdCourtIds, {
+      complex_id: complex.id,
+      sport_key: sport.key,
+      description: 'Reservation integration court',
+      max_people: sport.max_people,
     });
-    createdCourtIds.push(court.id);
 
     const start = new Date();
     start.setHours(12, 0, 0, 0);
@@ -97,7 +90,7 @@ describe('ReservationsController (integration)', () => {
       const { complex, user, court, start, end } = await createReservationFixture();
 
       const createResponse = await request(httpServer)
-        .post(`/complexes/${complex!.id}/reservations`)
+        .post(`/complexes/${complex.id}/reservations`)
         .send({
           userId: user.id,
           courtId: court.id,
@@ -116,7 +109,7 @@ describe('ReservationsController (integration)', () => {
       const { complex, user, court, start, end } = await createReservationFixture();
 
       const createResponse = await request(httpServer)
-        .post(`/complexes/${complex!.id}/reservations`)
+        .post(`/complexes/${complex.id}/reservations`)
         .send({
           userId: user.id,
           courtId: court.id,
@@ -150,7 +143,7 @@ describe('ReservationsController (integration)', () => {
     it('should list reservations for a complex', async () => {
       const { complex } = await createReservationFixture();
 
-      const response = await request(httpServer).get(`/complexes/${complex!.id}/reservations`);
+      const response = await request(httpServer).get(`/complexes/${complex.id}/reservations`);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);

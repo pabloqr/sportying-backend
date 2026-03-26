@@ -1,13 +1,15 @@
+import { PrismaService } from 'src/prisma/prisma.service';
 import { SportsController } from 'src/sports/sports.controller';
 import { SportsService } from 'src/sports/sports.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import request from 'supertest';
-import { createIntegrationApp, resetMockUser } from './mock/factories';
+import { cleanupSports, createIntegrationApp, createSportRecord, resetMockUser } from './mock/factories';
 
 describe('SportsController (integration)', () => {
   let app: Awaited<ReturnType<typeof createIntegrationApp>>['app'];
   let httpServer: any;
   let prisma: PrismaService;
+
+  const createdSportKeys: string[] = [];
 
   beforeAll(async () => {
     const setup = await createIntegrationApp({
@@ -24,7 +26,8 @@ describe('SportsController (integration)', () => {
     await app?.close();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await cleanupSports(prisma, createdSportKeys);
     resetMockUser();
   });
 
@@ -37,10 +40,11 @@ describe('SportsController (integration)', () => {
     });
 
     it('should filter sports by key', async () => {
-      const sport = await prisma.sports.findFirst({ where: { is_delete: false } });
-      expect(sport).toBeDefined();
+      const sport = await createSportRecord(prisma, createdSportKeys);
 
-      const response = await request(httpServer).get('/config/sports').query({ keys: [sport!.key] });
+      const response = await request(httpServer)
+        .get('/config/sports')
+        .query({ keys: [sport!.key] });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveLength(1);
@@ -50,8 +54,7 @@ describe('SportsController (integration)', () => {
 
   describe('GET /config/sports/:sportKey', () => {
     it('should return a sport by key', async () => {
-      const sport = await prisma.sports.findFirst({ where: { is_delete: false } });
-      expect(sport).toBeDefined();
+      const sport = await createSportRecord(prisma, createdSportKeys);
 
       const response = await request(httpServer).get(`/config/sports/${sport!.key}`);
 

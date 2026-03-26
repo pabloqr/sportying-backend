@@ -6,19 +6,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersController } from 'src/users/users.controller';
 import { UsersService } from 'src/users/users.service';
 import request from 'supertest';
-import { mockUser } from './mock/factories';
-
-//--------------------------------------------------------------------------------------------------------------------//
-// Helpers
-//--------------------------------------------------------------------------------------------------------------------//
-
-const TEST_MAIL_PREFIX = 'integration_test_';
-const TEST_PHONE_PREFIX = 34;
-const TEST_PHONE_NUMBER = 600000000;
-let uniqueSequence = 0;
-
-const getUniqueMail = (suffix: string) => `${TEST_MAIL_PREFIX}${suffix}_${Date.now()}_${uniqueSequence++}@test.com`;
-const getUniquePhoneNumber = () => TEST_PHONE_NUMBER + uniqueSequence;
+import {
+  cleanupComplexes,
+  cleanupUsers,
+  createComplexRecord,
+  createUserRecord,
+  getUniqueMail,
+  getUniquePhoneNumber,
+  mockUser,
+  resetMockUser,
+  TEST_PHONE_PREFIX,
+} from './mock/factories';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite
@@ -30,6 +28,7 @@ describe('UsersController (integration)', () => {
   let prisma: PrismaService;
 
   const createdUserIds: number[] = [];
+  const createdComplexIds: number[] = [];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -53,14 +52,9 @@ describe('UsersController (integration)', () => {
   });
 
   afterEach(async () => {
-    if (createdUserIds.length > 0) {
-      await prisma.admins.deleteMany({ where: { id: { in: createdUserIds } } });
-      await prisma.users.deleteMany({ where: { id: { in: createdUserIds } } });
-      createdUserIds.length = 0;
-    }
-
-    mockUser.id = 9999;
-    mockUser.role = Role.SUPERADMIN;
+    await cleanupComplexes(prisma, createdComplexIds);
+    await cleanupUsers(prisma, createdUserIds);
+    resetMockUser();
   });
 
   describe('GET /users', () => {
@@ -72,18 +66,10 @@ describe('UsersController (integration)', () => {
     });
 
     it('should filter users by name', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'IntegrationFilterName',
-          surname: 'Create',
-          mail: `${TEST_MAIL_PREFIX}create@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        name: 'IntegrationFilterName',
+        surname: 'Create',
       });
-      createdUserIds.push(created.id);
 
       const response = await request(httpServer).get('/users').query({ name: 'IntegrationFilterName' });
 
@@ -110,18 +96,10 @@ describe('UsersController (integration)', () => {
 
     it('should filter users by mail', async () => {
       const mail = getUniqueMail('mail_filter');
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'MailFilter',
-          mail,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: getUniquePhoneNumber(),
-        },
+      await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'MailFilter',
+        mail,
       });
-      createdUserIds.push(created.id);
 
       const response = await request(httpServer).get('/users').query({ mail });
 
@@ -133,18 +111,9 @@ describe('UsersController (integration)', () => {
 
   describe('GET /users/:id', () => {
     it('should return a user by id (SUPERADMIN)', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'GetById',
-          mail: `${TEST_MAIL_PREFIX}get_by_id@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'GetById',
       });
-      createdUserIds.push(created.id);
 
       const response = await request(httpServer).get(`/users/${created.id}`);
 
@@ -153,18 +122,9 @@ describe('UsersController (integration)', () => {
     });
 
     it('should return 200 when CLIENT accesses their own user', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'GetOwn',
-          mail: `${TEST_MAIL_PREFIX}get_own@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'GetOwn',
       });
-      createdUserIds.push(created.id);
 
       mockUser.id = created.id;
       mockUser.role = Role.CLIENT;
@@ -176,18 +136,9 @@ describe('UsersController (integration)', () => {
     });
 
     it('should return 403 when CLIENT tries to access another user', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'GetForbidden',
-          mail: `${TEST_MAIL_PREFIX}get_forbidden@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'GetForbidden',
       });
-      createdUserIds.push(created.id);
 
       mockUser.id = created.id + 1000;
       mockUser.role = Role.CLIENT;
@@ -217,9 +168,9 @@ describe('UsersController (integration)', () => {
         password: 'password123',
         name: 'Integration',
         surname: 'Create',
-        mail: `${TEST_MAIL_PREFIX}create@test.com`,
+        mail: getUniqueMail('create'),
         phonePrefix: TEST_PHONE_PREFIX,
-        phoneNumber: TEST_PHONE_NUMBER,
+        phoneNumber: getUniquePhoneNumber(),
       };
 
       const response = await request(httpServer).post('/users').send(dto);
@@ -236,9 +187,9 @@ describe('UsersController (integration)', () => {
         password: 'password123',
         name: 'Integration',
         surname: 'AdminNoComplex',
-        mail: `${TEST_MAIL_PREFIX}admin_no_complex@test.com`,
+        mail: getUniqueMail('admin_no_complex'),
         phonePrefix: TEST_PHONE_PREFIX,
-        phoneNumber: TEST_PHONE_NUMBER,
+        phoneNumber: getUniquePhoneNumber(),
       };
 
       const response = await request(httpServer).post('/users').send(dto);
@@ -252,9 +203,9 @@ describe('UsersController (integration)', () => {
         password: 'password123',
         name: 'Integration',
         surname: 'Duplicate',
-        mail: `${TEST_MAIL_PREFIX}duplicate@test.com`,
+        mail: getUniqueMail('duplicate'),
         phonePrefix: TEST_PHONE_PREFIX,
-        phoneNumber: TEST_PHONE_NUMBER,
+        phoneNumber: getUniquePhoneNumber(),
       };
 
       const first = await request(httpServer).post('/users').send(dto);
@@ -266,12 +217,11 @@ describe('UsersController (integration)', () => {
     });
 
     it('should create an ADMIN user successfully when complexId is provided', async () => {
-      const complex = await prisma.complexes.findFirst();
-      expect(complex).toBeDefined();
+      const complex = await createComplexRecord(prisma, createdComplexIds);
 
       const dto = {
         role: Role.ADMIN,
-        complexId: complex!.id,
+        complexId: complex.id,
         password: 'password123',
         name: 'Integration',
         surname: 'AdminCreate',
@@ -291,18 +241,9 @@ describe('UsersController (integration)', () => {
 
   describe('PUT /users/:id', () => {
     it('should update a user (SUPERADMIN)', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'Create',
-          mail: `${TEST_MAIL_PREFIX}create@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'Create',
       });
-      createdUserIds.push(created.id);
 
       const response = await request(httpServer).put(`/users/${created.id}`).send({ surname: 'Updated' });
 
@@ -311,18 +252,9 @@ describe('UsersController (integration)', () => {
     });
 
     it('should return 403 when CLIENT tries to update another user', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'UpdateForbidden',
-          mail: `${TEST_MAIL_PREFIX}update_forbidden@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'UpdateForbidden',
       });
-      createdUserIds.push(created.id);
 
       mockUser.id = created.id + 1000;
       mockUser.role = Role.CLIENT;
@@ -333,18 +265,10 @@ describe('UsersController (integration)', () => {
     });
 
     it('should update the authenticated CLIENT user', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'UpdateOwn',
-          mail: getUniqueMail('update_own'),
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: getUniquePhoneNumber(),
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'UpdateOwn',
+        mail: getUniqueMail('update_own'),
       });
-      createdUserIds.push(created.id);
 
       mockUser.id = created.id;
       mockUser.role = Role.CLIENT;
@@ -370,18 +294,9 @@ describe('UsersController (integration)', () => {
 
   describe('DELETE /users/:id', () => {
     it('should soft-delete a user (SUPERADMIN)', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'Delete',
-          mail: `${TEST_MAIL_PREFIX}delete@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'Delete',
       });
-      createdUserIds.push(created.id);
 
       const response = await request(httpServer).delete(`/users/${created.id}`);
 
@@ -393,18 +308,9 @@ describe('UsersController (integration)', () => {
     });
 
     it('should return 403 when CLIENT tries to delete another user', async () => {
-      const created = await prisma.users.create({
-        data: {
-          role: 'CLIENT',
-          password: 'hashed',
-          name: 'Integration',
-          surname: 'DeleteForbidden',
-          mail: `${TEST_MAIL_PREFIX}delete_forbidden@test.com`,
-          phone_prefix: TEST_PHONE_PREFIX,
-          phone_number: TEST_PHONE_NUMBER,
-        },
+      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+        surname: 'DeleteForbidden',
       });
-      createdUserIds.push(created.id);
 
       mockUser.id = created.id + 1000;
       mockUser.role = Role.CLIENT;
