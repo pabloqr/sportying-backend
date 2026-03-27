@@ -18,6 +18,7 @@ env:
   CI_POSTGRES_DB: tests
   CI_POSTGRES_USER: postgres
   CI_POSTGRES_PASSWORD: postgres
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tests?schema=public
 
 jobs:
   quality:
@@ -37,17 +38,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npx prisma generate
-
       - name: Create test environment file
         shell: bash
         run: |
           cat <<EOF > .env.test.local
-          DATABASE_URL=postgresql://${{ env.CI_POSTGRES_USER }}:${{ env.CI_POSTGRES_PASSWORD }}@${{ env.CI_POSTGRES_HOST }}:${{ env.CI_POSTGRES_PORT }}/${{ env.CI_POSTGRES_DB }}?schema=public
+          DATABASE_URL=${{ env.DATABASE_URL }}
           JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
           JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
           EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
 
       - name: Run typecheck
         run: npm run typecheck
@@ -88,17 +89,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npx prisma generate
-
       - name: Create test environment file
         shell: bash
         run: |
           cat <<EOF > .env.test.local
-          DATABASE_URL=postgresql://${{ env.CI_POSTGRES_USER }}:${{ env.CI_POSTGRES_PASSWORD }}@${{ env.CI_POSTGRES_HOST }}:${{ env.CI_POSTGRES_PORT }}/${{ env.CI_POSTGRES_DB }}?schema=public
+          DATABASE_URL=${{ env.DATABASE_URL }}
           JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
           JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
           EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
 
       - name: Apply database migrations
         run: npx prisma migrate deploy
@@ -139,17 +140,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npx prisma generate
-
       - name: Create test environment file
         shell: bash
         run: |
           cat <<EOF > .env.test.local
-          DATABASE_URL=postgresql://${{ env.CI_POSTGRES_USER }}:${{ env.CI_POSTGRES_PASSWORD }}@${{ env.CI_POSTGRES_HOST }}:${{ env.CI_POSTGRES_PORT }}/${{ env.CI_POSTGRES_DB }}?schema=public
+          DATABASE_URL=${{ env.DATABASE_URL }}
           JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
           JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
           EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
 
       - name: Apply database migrations
         run: npx prisma migrate deploy

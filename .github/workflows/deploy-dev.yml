@@ -3,7 +3,7 @@ name: Deploy Dev Backend
 on:
   workflow_run:
     workflows:
-      - CI Backend
+      - Run Tests
     types:
       - completed
     branches:
