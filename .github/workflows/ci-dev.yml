@@ -185,6 +185,7 @@ jobs:
       - name: Update repository on server
         run: |
           cd /srv/apps/sportying_backend
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_github -o StrictHostKeyChecking=no"
           git fetch origin
           git checkout dev
           git pull origin dev
