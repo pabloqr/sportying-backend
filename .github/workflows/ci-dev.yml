@@ -182,5 +182,12 @@ jobs:
       - name: Show Docker Compose version
         run: docker compose version
 
+      - name: Update repository on server
+        run: |
+          cd /srv/apps/sportying_backend
+          git fetch origin
+          git checkout dev
+          git pull origin dev
+
       - name: Deploy development stack
         run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev up -d --build
