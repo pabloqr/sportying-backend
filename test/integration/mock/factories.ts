@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ModuleMetadata } from '@nestjs/common/interfaces';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
+import { user_role } from 'prisma/generated/enums';
 import { Role } from 'src/auth/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -78,7 +79,7 @@ export const createUserRecord = async (
 ) => {
   const user = await prisma.users.create({
     data: {
-      role,
+      role: role as user_role,
       password: 'hashed',
       name: 'Integration',
       surname: 'User',

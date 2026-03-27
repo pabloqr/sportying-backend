@@ -121,6 +121,7 @@ describe('CourtsStatusService', () => {
           status: CourtStatus.WEATHER,
           alert_level: 2,
           estimated_drying_time: 50,
+          created_at: expect.any(Date),
         },
       });
       expect(result.statusData.status).toBe(CourtStatus.WEATHER);

@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { CourtsDevicesService } from '../../../src/courts-devices/courts-devices.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
@@ -26,6 +27,10 @@ const mockErrorsService = {
   dbError: jest.fn(),
 };
 
+const mockCourtsStatusService = {
+  getCourtStatus: jest.fn(),
+};
+
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite
 //--------------------------------------------------------------------------------------------------------------------//
@@ -39,6 +44,7 @@ describe('CourtsDevicesService', () => {
         CourtsDevicesService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: ErrorsService, useValue: mockErrorsService },
+        { provide: CourtsStatusService, useValue: mockCourtsStatusService },
       ],
     }).compile();
 
@@ -179,6 +185,9 @@ describe('CourtsDevicesService', () => {
         updated_at: new Date(),
         status_data: { status: 'OPEN', alert_level: 0, estimated_drying_time: 0 },
       });
+      mockCourtsStatusService.getCourtStatus.mockResolvedValue({
+        statusData: { status: 'OPEN', alert_level: 0, estimated_drying_time: 0 },
+      });
 
       const result = await service.setDeviceCourts(1, 2, { courts: [4] } as any);
 
@@ -245,6 +254,9 @@ describe('CourtsDevicesService', () => {
         courts: [],
       } as any);
       mockPrisma.courts.findUnique.mockResolvedValue(null);
+      mockCourtsStatusService.getCourtStatus.mockResolvedValue({
+        statusData: { status: 'OPEN', alert_level: 0, estimated_drying_time: 0 },
+      });
 
       await expect(service.setDeviceCourts(1, 2, { courts: [4] } as any)).rejects.toThrow(NotFoundException);
       expect(mockErrorsService.dbError).toHaveBeenCalled();
