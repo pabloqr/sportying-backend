@@ -183,4 +183,4 @@ jobs:
         run: docker compose version
 
       - name: Deploy development stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.dev.yml up -d --build
+        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev up -d --build
