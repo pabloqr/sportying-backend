@@ -142,14 +142,13 @@ export class UsersService {
    * @throws {Error} Rethrows a generic error or a specific Prisma client error if the database operation fails.
    */
   async createUser(dto: CreateUserDto): Promise<ResponseUserDto> {
-    // En caso de no proporcionar una contraseña, se establece una por defecto
+    // En caso de no proporcionar una contraseña, establecer una por defecto
     if (!dto.password) {
       dto.password = '1234';
     }
 
-    // Se verifica si es administrador para realizar algunas comprobaciones previas
-    const isAdmin = dto.role === Role.ADMIN;
-    if (isAdmin) {
+    // Verificar si es administrador para realizar algunas comprobaciones previas
+    if (dto.role === Role.ADMIN) {
       if (!dto.complexId) {
         throw new BadRequestException('Complex ID not included in request.');
       }
@@ -165,11 +164,11 @@ export class UsersService {
       }
     }
 
-    // Se verifica si hay un usuario con los datos proporcionados almacenado en la BD
+    // Verificar si hay un usuario con los datos proporcionados almacenado en la BD
     const existingUser = await this.getUsers({ mail: dto.mail }, true);
 
     if (existingUser.length > 0) {
-      // Si el usuario se encuentra en la BD, se actualiza su estado para habilitarlo
+      // Si el usuario se encuentra en la BD, actualizar su estado para habilitarlo
       try {
         const user = await this.prisma.users.update({
           where: {
@@ -214,9 +213,9 @@ export class UsersService {
         throw error;
       }
     } else {
-      // Si no se encuentra en la BD, se trata de almacenarlo
+      // Si no se encuentra en la BD, tratar de almacenarlo
       try {
-        // Se crea la entrada para el usuario en la BD
+        // Crear la entrada para el usuario en la BD
         const user = await this.prisma.users.create({
           data: {
             role: dto.role as user_role,
@@ -240,21 +239,21 @@ export class UsersService {
           },
         });
 
-        // Se obtiene el rol del usuario
+        // Obtener el rol del usuario
         const role = user.role as Role;
 
-        // Se verifica si el usuario que se crea es un administrador
+        // Verificar si el usuario que se crea es un administrador
         if (role === Role.ADMIN) {
           // Se crea la entrada para el administrador en la BD
           await this.prisma.admins.create({
             data: {
               id: user.id,
-              complex_id: dto.complexId,
+              complex_id: dto.complexId!,
             },
           });
         }
 
-        // Se devuelve el objeto creado formateando el campo para el rol de usuario
+        // Devolver el objeto creado formateando el campo para el rol de usuario
         return {
           ...user,
           role,

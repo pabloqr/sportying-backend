@@ -43,9 +43,7 @@ describe('UserReservationsController', () => {
   it('throws when a CLIENT requests another user reservations', async () => {
     const query = { timeFilter: 'UPCOMING' };
 
-    await expect(controller.getUserReservations(7, query as any, 1, Role.CLIENT)).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(controller.getUserReservations(7, query as any, 1, Role.CLIENT)).rejects.toThrow(ForbiddenException);
     expect(mockReservationsService.getUserReservations).not.toHaveBeenCalled();
   });
 });
