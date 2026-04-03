@@ -19,18 +19,21 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
   }
 
   async validate(payload: { sub: number; mail: string }) {
-    // Se trata de obtener el usuario dado su identificador
+    // Tratar de obtener el usuario dado su identificador
     const user = await this.prisma.users.findUnique({
       where: {
         id: payload.sub,
       },
     });
 
-    // Si no existe, se devuelve un objeto vacío
+    // Si no existe, devolver un objeto vacío
     if (!user) return null;
 
-    // Se elimina la contraseña y el token del objeto y se devuelve
-    const { password, refresh_token, ...userWithoutPrivateInfo } = user;
+    // Eliminar la contraseña y el token del objeto y devolver
+    const userWithoutPrivateInfo = { ...user } as Partial<typeof user>;
+    delete userWithoutPrivateInfo.password;
+    delete userWithoutPrivateInfo.refresh_token;
+
     return userWithoutPrivateInfo;
   }
 }

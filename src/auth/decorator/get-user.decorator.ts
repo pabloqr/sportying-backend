@@ -7,6 +7,9 @@ export const GetUser = createParamDecorator((data: string | undefined, ctx: Exec
     return request.user[data];
   }
 
-  const { password, refresh_token, ...userWithoutPrivateInfo } = request.user;
+  const userWithoutPrivateInfo = { ...request.user } as Partial<typeof request.user>;
+  delete userWithoutPrivateInfo.password;
+  delete userWithoutPrivateInfo.refresh_token;
+
   return userWithoutPrivateInfo;
 });

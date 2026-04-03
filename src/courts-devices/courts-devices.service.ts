@@ -44,7 +44,7 @@ export class CourtsDevicesService {
     };
 
     // Obtener el modo de ordenación de los elementos
-    let orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COURT_DEVICES_ORDER_FIELD_MAP[orderParam.field];
@@ -111,7 +111,7 @@ export class CourtsDevicesService {
     };
 
     // Obtener el modo de ordenación de los elementos
-    let orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.courts_devicesOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_COURTS_ORDER_FIELD_MAP[orderParam.field];
@@ -169,7 +169,7 @@ export class CourtsDevicesService {
     let currentDeviceCourts = (await this.getDeviceCourts(complexId, deviceId, {}, true)).courts;
 
     try {
-      let deviceCourts: ResponseCourtDto[] = [];
+      const deviceCourts: ResponseCourtDto[] = [];
 
       // Procesar todas las pistas
       for (const courtId of dto.courts) {

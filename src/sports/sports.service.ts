@@ -45,7 +45,7 @@ export class SportsService {
     };
 
     // Obtener el modo de ordenación de los elementos
-    let orderBy: Prisma.sportsOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.sportsOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = SPORT_ORDER_FIELD_MAP[orderParam.field];

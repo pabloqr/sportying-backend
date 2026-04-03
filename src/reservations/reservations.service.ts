@@ -154,7 +154,7 @@ export class ReservationsService {
     }
 
     // Obtener el modo de ordenación de los elementos
-    let orderBy: Prisma.reservationsOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.reservationsOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = RESERVATION_ORDER_FIELD_MAP[orderParam.field];

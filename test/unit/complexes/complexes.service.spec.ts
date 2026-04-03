@@ -7,7 +7,6 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderBy } from 'src/common/enums';
 import { ComplexOrderField } from 'src/complexes/dto';
-import { Prisma } from '../../../prisma/generated/client';
 import { ErrorsService } from '../../../src/common/errors.service';
 import { UtilitiesService } from '../../../src/common/utilities.service';
 import { ComplexesService } from '../../../src/complexes/complexes.service';

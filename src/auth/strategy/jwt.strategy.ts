@@ -18,21 +18,24 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: { sub: number; mail: string; role: string }) {
-    // Se trata de obtener el usuario dado su identificador
+    // Tratar de obtener el usuario dado su identificador
     const user = await this.prisma.users.findUnique({
       where: {
         id: payload.sub,
       },
     });
 
-    // Si no existe, se devuelve un objeto vacío
+    // Si no existe, devolver un objeto vacío
     if (!user) return null;
 
-    // Si el rol no coincide, se devuelve un objeto vacío
+    // Si el rol no coincide, devolver un objeto vacío
     if (payload.role !== user.role) return null;
 
-    // Se elimina la contraseña y el token del objeto y se devuelve
-    const { password, refresh_token, ...userWithoutPrivateInfo } = user;
-    return { ...userWithoutPrivateInfo };
+    // Eliminar la contraseña y el token del objeto y devolver
+    const userWithoutPrivateInfo = { ...user } as Partial<typeof user>;
+    delete userWithoutPrivateInfo.password;
+    delete userWithoutPrivateInfo.refresh_token;
+
+    return userWithoutPrivateInfo;
   }
 }

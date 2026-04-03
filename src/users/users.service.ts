@@ -51,7 +51,7 @@ export class UsersService {
     };
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.usersOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.usersOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = USER_ORDER_FIELD_MAP[orderParam.field];

@@ -1,11 +1,11 @@
 import { ErrorsService } from 'src/common/errors.service';
 import { UtilitiesService } from 'src/common/utilities.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { ComplexesController } from 'src/complexes/complexes.controller';
 import { ComplexesService } from 'src/complexes/complexes.service';
+import { CourtsService } from 'src/courts/courts.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { SportsService } from 'src/sports/sports.service';
 import { WeatherService } from 'src/weather/weather.service';
-import { CourtsService } from 'src/courts/courts.service';
 import request from 'supertest';
 import { createIntegrationApp, resetMockUser } from './mock/factories';
 
@@ -82,13 +82,15 @@ describe('ComplexesController (integration)', () => {
 
   describe('POST /complexes', () => {
     it('should create a complex', async () => {
-      const createResponse = await request(httpServer).post('/complexes').send({
-        complexName: `Integration Complex ${Date.now()}`,
-        timeIni: '08:00',
-        timeEnd: '22:00',
-        locLatitude: 40.1234 + Math.random() / 1000,
-        locLongitude: -3.1234 - Math.random() / 1000,
-      });
+      const createResponse = await request(httpServer)
+        .post('/complexes')
+        .send({
+          complexName: `Integration Complex ${Date.now()}`,
+          timeIni: '08:00',
+          timeEnd: '22:00',
+          locLatitude: 40.1234 + Math.random() / 1000,
+          locLongitude: -3.1234 - Math.random() / 1000,
+        });
 
       expect(createResponse.status).toBe(201);
       expect(createResponse.body).toHaveProperty('id');
@@ -98,13 +100,15 @@ describe('ComplexesController (integration)', () => {
 
   describe('PUT /complexes/:id', () => {
     it('should update a complex', async () => {
-      const createResponse = await request(httpServer).post('/complexes').send({
-        complexName: `Integration Complex ${Date.now()}`,
-        timeIni: '08:00',
-        timeEnd: '22:00',
-        locLatitude: 40.1234 + Math.random() / 1000,
-        locLongitude: -3.1234 - Math.random() / 1000,
-      });
+      const createResponse = await request(httpServer)
+        .post('/complexes')
+        .send({
+          complexName: `Integration Complex ${Date.now()}`,
+          timeIni: '08:00',
+          timeEnd: '22:00',
+          locLatitude: 40.1234 + Math.random() / 1000,
+          locLongitude: -3.1234 - Math.random() / 1000,
+        });
 
       expect(createResponse.status).toBe(201);
       createdComplexIds.push(createResponse.body.id);

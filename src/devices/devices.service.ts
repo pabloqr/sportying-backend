@@ -107,7 +107,7 @@ export class DevicesService {
     };
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.devicesOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.devicesOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_ORDER_FIELD_MAP[orderParam.field];
@@ -309,7 +309,7 @@ export class DevicesService {
 
     // Se obtiene el modo de ordenación de los elementos
     // En caso de no estar incluido, se ordena descendentemente por la fecha de creación
-    let orderBy: Prisma.devices_telemetryOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.devices_telemetryOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_TELEMETRY_ORDER_FIELD_MAP[orderParam.field];

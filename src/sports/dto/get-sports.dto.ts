@@ -1,6 +1,5 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
-import { ComplexOrderParamsDto } from 'src/complexes/dto';
 import { OrderBy } from '../../common/enums';
 
 export enum SportOrderField {

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Put, Query, ValidationPipe } from '@nestjs/common';
-import { Public, Roles } from 'src/auth/decorator';
+import { Roles } from 'src/auth/decorator';
 import { Role } from 'src/auth/enums';
 import { GetReservationsDto, UpdateReservationDto } from './dto';
 import { ReservationsService } from './reservations.service';

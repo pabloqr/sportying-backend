@@ -66,7 +66,7 @@ describe('UsersController (integration)', () => {
     });
 
     it('should filter users by name', async () => {
-      const created = await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
+      await createUserRecord(prisma, createdUserIds, Role.CLIENT, {
         name: 'IntegrationFilterName',
         surname: 'Create',
       });

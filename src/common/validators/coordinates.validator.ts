@@ -17,7 +17,7 @@ export class CoordinatesValidator implements ValidatorConstraintInterface {
     return (isLatitudeDefined && isLongitudeDefined) || (!isLatitudeDefined && !isLongitudeDefined);
   }
 
-  defaultMessage(validationArguments?: ValidationArguments): string {
+  defaultMessage(_validationArguments?: ValidationArguments): string {
     return 'Must provide both latitude and longitude';
   }
 }

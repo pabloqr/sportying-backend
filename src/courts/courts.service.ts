@@ -128,7 +128,7 @@ export class CourtsService {
     };
 
     // Obtener el modo de ordenación de los elementos
-    let orderBy: Prisma.courtsOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.courtsOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COURT_ORDER_FIELD_MAP[orderParam.field];

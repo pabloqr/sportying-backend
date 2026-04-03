@@ -64,7 +64,7 @@ export class ComplexesService {
     };
 
     // Obtener el modo de ordenación de los elementos
-    let orderBy: Prisma.complexesOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.complexesOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COMPLEX_ORDER_FIELD_MAP[orderParam.field];
@@ -90,7 +90,10 @@ export class ComplexesService {
       orderBy,
     });
 
-    const weatherData: Map<string, Promise<ResponseWeatherDataDto>> = new Map<string, Promise<ResponseWeatherDataDto>>();
+    const weatherData: Map<string, Promise<ResponseWeatherDataDto>> = new Map<
+      string,
+      Promise<ResponseWeatherDataDto>
+    >();
 
     // Devolver la lista modificando los elementos obtenidos
     return Promise.all(
