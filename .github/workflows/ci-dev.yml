@@ -17,6 +17,40 @@ env:
 
 jobs:
   #---------------------------------------------------------------------------------------------------------------------
+  # SECURITY - Ejecutar en paralelo a los tests
+  #---------------------------------------------------------------------------------------------------------------------
+  security:
+    name: Snyk Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Snyk test
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --sarif-file-output=snyk.sarif --all-projects
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk.sarif
+
+  #---------------------------------------------------------------------------------------------------------------------
   # TESTS - Ejecutar en paralelo
   #---------------------------------------------------------------------------------------------------------------------
   quality:
@@ -169,7 +203,7 @@ jobs:
     runs-on:
       - self-hosted
       - sportying-dev
-    needs: [quality, integration, e2e]
+    needs: [security, quality, integration, e2e]
     if: success()
 
     steps:
