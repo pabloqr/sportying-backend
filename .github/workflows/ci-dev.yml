@@ -17,9 +17,9 @@ env:
 
 jobs:
   #---------------------------------------------------------------------------------------------------------------------
-  # SECURITY - Ejecutar en paralelo a los tests
+  # SECURITY - Ejecutar en paralelo
   #---------------------------------------------------------------------------------------------------------------------
-  security:
+  snyk:
     name: Snyk Security Scanning
     runs-on: ubuntu-latest
 
@@ -46,9 +46,49 @@ jobs:
           args: --sarif-file-output=snyk.sarif --all-projects
 
       - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: snyk.sarif
+          sarif_file: snyk-oss.sarif
+          category: snyk-oss
+
+      - name: Build Docker image for scanning
+        run: docker build -t sportying-backend:ci .
+
+      - name: Run Snyk container scan
+        uses: snyk/actions/docker@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: sportying-backend:ci
+          args: --file=Dockerfile --sarif-file-output=snyk-container.sarif
+
+      - name: Upload container scan result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-container.sarif
+          category: snyk-container
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: codeql-typescript
 
   #---------------------------------------------------------------------------------------------------------------------
   # TESTS - Ejecutar en paralelo
@@ -203,7 +243,7 @@ jobs:
     runs-on:
       - self-hosted
       - sportying-dev
-    needs: [security, quality, integration, e2e]
+    needs: [snyk, codeql, quality, integration, e2e]
     if: success()
 
     steps:
