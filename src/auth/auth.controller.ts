@@ -1,20 +1,13 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SigninAuthDto, SignupAuthDto } from './dto';
 import { GetUser, Public } from './decorator';
-import { JwtRefreshGuard } from './guard';
+import { SigninAuthDto, SignupAuthDto } from './dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { JwtRefreshGuard } from './guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Public()
   @Post('signup')
@@ -29,7 +22,6 @@ export class AuthController {
     return this.authService.signin(dto);
   }
 
-  @Public()
   @UseGuards(JwtRefreshGuard)
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)

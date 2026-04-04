@@ -4,3 +4,5 @@ export enum CourtStatus {
   BLOCKED = 'BLOCKED',
   WEATHER = 'WEATHER',
 }
+
+export const INACTIVE_COURT_STATUS = new Set([CourtStatus.BLOCKED, CourtStatus.MAINTENANCE]);

@@ -1,14 +1,5 @@
-import {
-  IsDate,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-} from 'class-validator';
-import { Role } from '../../auth/enums/role.enum';
+import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Role } from '../../auth/enums';
 
 export class ResponseUserDto {
   @IsEnum(Role)

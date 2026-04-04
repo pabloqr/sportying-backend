@@ -7,25 +7,18 @@ import {
 
 @ValidatorConstraint({ async: false })
 export class CoordinatesValidator implements ValidatorConstraintInterface {
-  validate(
-    value: any,
-    validationArguments?: ValidationArguments,
-  ): Promise<boolean> | boolean {
+  validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> | boolean {
     const dto = validationArguments?.object as any;
-    const { locLongitude, locLatitude } = dto;
+    const { locLatitude, locLongitude } = dto;
 
-    const isLongitudeDefined =
-      locLongitude !== undefined && locLongitude !== null;
-    const isLatitudeDefined = locLatitude !== undefined && locLatitude !== null;
+    const isLatitudeDefined = locLatitude && locLatitude !== null;
+    const isLongitudeDefined = locLongitude && locLongitude !== null;
 
-    return (
-      (isLongitudeDefined && isLatitudeDefined) ||
-      (!isLongitudeDefined && !isLatitudeDefined)
-    );
+    return (isLatitudeDefined && isLongitudeDefined) || (!isLatitudeDefined && !isLongitudeDefined);
   }
 
-  defaultMessage(validationArguments?: ValidationArguments): string {
-    return 'Must provide both longitude and latitude';
+  defaultMessage(_validationArguments?: ValidationArguments): string {
+    return 'Must provide both latitude and longitude';
   }
 }
 

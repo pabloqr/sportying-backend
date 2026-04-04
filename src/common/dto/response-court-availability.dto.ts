@@ -20,8 +20,7 @@ export class ResponseCourtAvailabilityDto {
 
   constructor(courtAvailability: any) {
     this.id = courtAvailability.court_id ?? courtAvailability.courtId;
-    this.complexId =
-      courtAvailability.complex_id ?? courtAvailability.complexId;
-    this.availability = courtAvailability.availability;
+    this.complexId = courtAvailability.complex_id ?? courtAvailability.complexId;
+    this.availability = courtAvailability.availability ?? [];
   }
 }

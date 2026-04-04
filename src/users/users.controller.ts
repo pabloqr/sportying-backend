@@ -12,9 +12,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { GetUser, Roles } from 'src/auth/decorator';
-import { UsersService } from './users.service';
+import { Role } from '../auth/enums';
 import { CreateUserDto, GetUsersDto, UpdateUserDto } from './dto';
-import { Role } from '../auth/enums/role.enum';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -33,7 +33,7 @@ export class UsersController {
     @GetUser('id') id: number,
     @GetUser('role') userRole: Role,
   ) {
-    // Se verifica que el usuario está autorizado
+    // Verificar que el usuario está autorizado
     if (userRole === Role.CLIENT && id !== userId) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
@@ -56,7 +56,7 @@ export class UsersController {
     @Body(new ValidationPipe({ skipMissingProperties: true }))
     dto: UpdateUserDto,
   ) {
-    // Se verifica que el usuario está autorizado
+    // Verificar que el usuario está autorizado
     if (userRole === Role.CLIENT && id !== userId) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }
@@ -71,7 +71,7 @@ export class UsersController {
     @GetUser('id') id: number,
     @GetUser('role') userRole: Role,
   ) {
-    // Se verifica que el usuario está autorizado
+    // Verificar que el usuario está autorizado
     if (userRole === Role.CLIENT && id !== userId) {
       throw new ForbiddenException('You are not allowed to access this user.');
     }

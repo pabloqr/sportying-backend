@@ -1,14 +1,13 @@
 import { Global, Module } from '@nestjs/common';
+import { NotificationsModule } from 'src/notifications/notifications.module';
+import { ReservationsStatusModule } from 'src/reservations-status/reservations-status.module';
+import { AnalysisService } from './analysis.service';
 import { ErrorsService } from './errors.service';
 import { UtilitiesService } from './utilities.service';
-import { AnalysisService } from './analysis.service';
-import { CourtsModule } from '../courts/courts.module';
-import { ReservationsModule } from '../reservations/reservations.module';
-import { NotificationsModule } from '../notifications/notifications.module';
 
 @Global()
 @Module({
-  imports: [CourtsModule, ReservationsModule, NotificationsModule],
+  imports: [ReservationsStatusModule, NotificationsModule],
   providers: [ErrorsService, UtilitiesService, AnalysisService],
   exports: [ErrorsService, UtilitiesService, AnalysisService],
 })

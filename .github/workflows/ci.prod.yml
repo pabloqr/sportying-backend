@@ -1,0 +1,320 @@
+name: Build and Deploy Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: 24.13.1
+  CI_POSTGRES_HOST: localhost
+  CI_POSTGRES_PORT: 5432
+  CI_POSTGRES_DB: tests
+  CI_POSTGRES_USER: postgres
+  CI_POSTGRES_PASSWORD: postgres
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tests?schema=public
+
+jobs:
+  #---------------------------------------------------------------------------------------------------------------------
+  # SECURITY - Ejecutar en paralelo
+  #---------------------------------------------------------------------------------------------------------------------
+  snyk:
+    name: Snyk Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Snyk test
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --sarif-file-output=snyk-oss.sarif --all-projects
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-oss.sarif
+          category: snyk-oss
+
+      # - name: Build Docker image for scanning
+      #   run: docker build -t sportying-backend:ci .
+
+      # - name: Run Snyk container scan
+      #   uses: snyk/actions/docker@master
+      #   continue-on-error: true
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     image: sportying-backend:ci
+      #     args: --file=Dockerfile --sarif-file-output=snyk-container.sarif
+
+      # - name: Upload container scan result to GitHub Code Scanning
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   with:
+      #     sarif_file: snyk-container.sarif
+      #     category: snyk-container
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: codeql-typescript
+
+  #---------------------------------------------------------------------------------------------------------------------
+  # TESTS - Ejecutar en paralelo
+  #---------------------------------------------------------------------------------------------------------------------
+  quality:
+    name: Typecheck and unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create test environment file
+        shell: bash
+        run: |
+          cat <<EOF > .env.test.local
+          DATABASE_URL=${{ env.DATABASE_URL }}
+          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests with coverage
+        run: npm run test:unit -- --coverage
+
+      - name: Verify TypeScript build
+        run: |
+          npx prisma generate
+          npm run build
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-unit
+          path: coverage/
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.CI_POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create test environment file
+        shell: bash
+        run: |
+          cat <<EOF > .env.test.local
+          DATABASE_URL=${{ env.DATABASE_URL }}
+          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+
+      - name: Run integration tests
+        run: npm run test:int
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.CI_POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tests"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create test environment file
+        shell: bash
+        run: |
+          cat <<EOF > .env.test.local
+          DATABASE_URL=${{ env.DATABASE_URL }}
+          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+  #---------------------------------------------------------------------------------------------------------------------
+  # DEPLOY - Ejecutar solo si todos los tests pasan
+  #---------------------------------------------------------------------------------------------------------------------
+  deploy:
+    name: Deploy to development
+    runs-on:
+      - self-hosted
+      - sportying-dev
+    needs: [snyk, codeql, quality, integration, e2e]
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Docker version
+        run: docker --version
+
+      - name: Show Docker Compose version
+        run: docker compose version
+
+      - name: Update repository on server
+        run: |
+          cd /srv/apps/sportying_backend
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_github -o StrictHostKeyChecking=no"
+          git fetch origin
+          git checkout main
+          git pull origin main
+
+      - name: Deploy production stack
+        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d --build
+        
+  #---------------------------------------------------------------------------------------------------------------------
+  # SMOKE TESTS - Ejecutar solo si se realiza el despliegue
+  #---------------------------------------------------------------------------------------------------------------------
+  smoke-tests:
+    name: Smoke tests
+    runs-on:
+      - self-hosted
+      - sportying-prod
+    needs: deploy
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Wait for API to be ready
+        run: |
+          MAX_ATTEMPTS=15
+          ATTEMPT=0
+          until curl -sf -o /dev/null http://localhost:3000; do
+            ATTEMPT=$((ATTEMPT+1))
+            if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+              echo "API did not become ready after $MAX_ATTEMPTS attempts"
+              exit 1
+            fi
+            echo "Waiting for API... ($ATTEMPT/$MAX_ATTEMPTS)"
+            sleep 2
+          done
+          echo "API is ready"
+
+      - name: Smoke test on auth endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST http://localhost:3000/auth/signin \
+            -H "Content-Type: application/json" \
+            -d '{"mail":"smoke@test.com","password":"invalid"}')
+
+          echo "Response status: $STATUS"
+
+          if [ "$STATUS" -eq 400 ] || [ "$STATUS" -eq 401 ] || [ "$STATUS" -eq 404 ]; then
+            echo "Smoke test passed - API is alive and responding"
+            exit 0
+          else
+            echo "Smoke test failed - unexpected status $STATUS"
+            exit 1
+          fi

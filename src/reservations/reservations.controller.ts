@@ -1,37 +1,26 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Put,
-  Query,
-  ValidationPipe,
-} from '@nestjs/common';
-import { Public } from 'src/auth/decorator';
-import { ReservationsService } from './reservations.service';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Put, Query, ValidationPipe } from '@nestjs/common';
+import { Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 import { GetReservationsDto, UpdateReservationDto } from './dto';
+import { ReservationsService } from './reservations.service';
 
 @Controller('reservations')
 export class ReservationsController {
   constructor(private reservationsService: ReservationsService) {}
 
-  @Public()
+  @Roles(Role.CLIENT)
   @Get()
   async getReservations(@Query() query: GetReservationsDto) {
     return this.reservationsService.getReservations(query);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':reservationId')
-  async getReservation(
-    @Param('reservationId', ParseIntPipe) reservationId: number,
-  ) {
+  async getReservation(@Param('reservationId', ParseIntPipe) reservationId: number) {
     return this.reservationsService.getReservation(reservationId);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Put(':reservationId')
   async updateReservation(
     @Param('reservationId', ParseIntPipe) reservationId: number,
@@ -41,11 +30,9 @@ export class ReservationsController {
     return this.reservationsService.updateReservation(reservationId, dto);
   }
 
-  @Public()
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Delete(':reservationId')
-  async deleteReservation(
-    @Param('reservationId', ParseIntPipe) reservationId: number,
-  ) {
+  async deleteReservation(@Param('reservationId', ParseIntPipe) reservationId: number) {
     return this.reservationsService.deleteReservation(reservationId);
   }
 }

@@ -1,7 +1,8 @@
-# compiled output
+# Compiled output
 /dist
 /node_modules
 /build
+*/generated
 
 # Logs
 logs
@@ -20,7 +21,8 @@ lerna-debug.log*
 /.nyc_output
 
 # IDEs and editors
-/.idea
+.idea
+.vscode
 .project
 .classpath
 .c9/
@@ -35,14 +37,13 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+.devcontainer/*
 
-# temp directory
+# Dotenv environment variable files
+.env
+.env.*
+
+# Temp directory
 .temp
 .tmp
 
@@ -54,6 +55,3 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# Prisma ORM
-/generated/prisma

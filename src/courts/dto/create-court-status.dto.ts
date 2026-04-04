@@ -1,8 +1,3 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { CourtStatus } from '../enums';
+import { OptionalCourtStatusData } from './optional-court-status-data.dto';
 
-export class CreateCourtStatusDto {
-  @IsEnum(CourtStatus)
-  @IsNotEmpty()
-  status: CourtStatus;
-}
+export class CreateCourtStatusDto extends OptionalCourtStatusData {}

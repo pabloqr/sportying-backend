@@ -1,24 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Query,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, ValidationPipe } from '@nestjs/common';
 import { Roles } from 'src/auth/decorator';
+import { Role } from '../auth/enums';
 import { ComplexesService } from './complexes.service';
-import {
-  CreateComplexDto,
-  GetComplexesDto,
-  UpdateComplexDto,
-  UpdateComplexTimeDto,
-} from './dto';
-import { Role } from '../auth/enums/role.enum';
+import { CreateComplexDto, GetComplexesDto, UpdateComplexDto, UpdateComplexTimeDto } from './dto';
 
 @Controller('complexes')
 export class ComplexesController {
@@ -61,30 +45,24 @@ export class ComplexesController {
     return this.complexesService.deleteComplex(complexId);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId/time')
   async getComplexTime(@Param('complexId', ParseIntPipe) complexId: number) {
     return this.complexesService.getComplexTime(complexId);
   }
 
-  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @Roles(Role.ADMIN)
   @Post(':complexId/time')
-  async setComplexTime(
-    @Param('complexId', ParseIntPipe) complexId: number,
-    @Body() dto: UpdateComplexTimeDto,
-  ) {
+  async setComplexTime(@Param('complexId', ParseIntPipe) complexId: number, @Body() dto: UpdateComplexTimeDto) {
     return this.complexesService.setComplexTime(complexId, dto);
   }
 
-  @Roles(Role.CLIENT, Role.ADMIN, Role.SUPERADMIN)
+  @Roles(Role.CLIENT, Role.ADMIN)
   @Get(':complexId/availability')
   async getComplexAvailability(
     @Param('complexId', ParseIntPipe) complexId: number,
     @Query('groupAvailability') groupAvailability: boolean = true,
   ) {
-    return this.complexesService.getComplexAvailability(
-      complexId,
-      groupAvailability,
-    );
+    return this.complexesService.getComplexAvailability(complexId, groupAvailability);
   }
 }

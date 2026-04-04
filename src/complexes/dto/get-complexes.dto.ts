@@ -1,3 +1,4 @@
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -10,17 +11,16 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Coordinates } from '../../common/validators';
-import { Transform, Type } from 'class-transformer';
 import { OrderBy } from '../../common/enums';
+import { Coordinates } from '../../common/validators';
 
 export enum ComplexOrderField {
   ID = 'id',
   COMPLEX_NAME = 'complexId',
   TIME_INI = 'timeIni',
   TIME_END = 'timeEnd',
-  LOC_LONGITUDE = 'locLongitude',
   LOC_LATITUDE = 'locLatitude',
+  LOC_LONGITUDE = 'locLongitude',
   CREATED_AT = 'createdAt',
   UPDATED_AT = 'updatedAt',
 }
@@ -30,8 +30,8 @@ export const COMPLEX_ORDER_FIELD_MAP: Record<string, string> = {
   complexName: 'complex_name',
   timeIni: 'time_ini',
   timeEnd: 'time_end',
-  locLongitude: 'loc_longitude',
   locLatitude: 'loc_latitude',
+  locLongitude: 'loc_longitude',
   createdAt: 'created_at',
   updatedAt: 'updated_at',
 };
@@ -75,36 +75,36 @@ export class GetComplexesDto {
   @Type(() => Number)
   @IsNumber()
   @Coordinates()
-  @Min(-180)
-  @Max(180)
-  @IsOptional()
-  locLongitude?: number;
-
-  @Type(() => Number)
-  @IsNumber()
-  @Coordinates()
   @Min(-90)
   @Max(90)
   @IsOptional()
   locLatitude?: number;
 
+  @Type(() => Number)
+  @IsNumber()
+  @Coordinates()
+  @Min(-180)
+  @Max(180)
+  @IsOptional()
+  locLongitude?: number;
+
   @Transform(({ value }) => {
-    // Si no se ha proporcionado un valor o es indefinido, se devuelve
+    // Si no se ha proporcionado un valor o es indefinido, devolver
     if (!value) return value;
 
     try {
-      // Si ya es un array, se devuelve
+      // Si ya es un array, devolver
       if (Array.isArray(value)) {
         return value;
       }
 
-      // Si es un string, se parsea para obtener el JSON correspondiente
+      // Si es un string, parsear para obtener el JSON correspondiente
       if (typeof value === 'string') {
         const parsed = JSON.parse(value);
 
-        // Se verifica que sea un array
+        // Verificar que sea un array
         if (Array.isArray(parsed)) {
-          // Se crea la instancia de CourtOrderParamsDto para cada elemento
+          // Crear la instancia de ComplexOrderParamsDto para cada elemento
           return parsed.map((item) => {
             const orderParam = new ComplexOrderParamsDto();
             orderParam.field = item.field;

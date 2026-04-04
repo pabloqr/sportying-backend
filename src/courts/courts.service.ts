@@ -1,37 +1,16 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '../../prisma/generated/client';
+import { CourtAvailabilitySlotDto, ResponseCourtAvailabilityDto, ResponseCourtDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
-import {
-  COURT_ORDER_FIELD_MAP,
-  CreateCourtDto,
-  CreateCourtStatusDto,
-  GetCourtDevicesDto,
-  GetCourtsDto,
-  UpdateCourtDto,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import {
-  CourtAvailabilitySlotDto,
-  ResponseCourtAvailabilityDto,
-  ResponseCourtDevicesDto,
-  ResponseCourtDto,
-  ResponseCourtStatusDto,
-} from '../common/dto';
-import { CourtStatus } from './enums';
-import { ReservationsService } from '../reservations/reservations.service';
-import { ReservationOrderField } from '../reservations/dto';
 import { UtilitiesService } from '../common/utilities.service';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-} from '../reservations/enums';
-import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
+import { ReservationOrderField } from '../reservations/dto';
+import { ReservationAvailabilityStatus, ReservationStatus } from '../reservations/enums';
+import { ReservationsService } from '../reservations/reservations.service';
+import { WeatherService } from '../weather/weather.service';
+import { COURT_ORDER_FIELD_MAP, CreateCourtDto, CreateCourtStatusDto, GetCourtsDto, UpdateCourtDto } from './dto';
+import { CourtStatus, INACTIVE_COURT_STATUS } from './enums';
 
 @Injectable()
 export class CourtsService {
@@ -39,39 +18,39 @@ export class CourtsService {
     private prisma: PrismaService,
     private errorsService: ErrorsService,
     private utilitiesService: UtilitiesService,
-    private courtsDevicesService: CourtsDevicesService,
-    @Inject(forwardRef(() => ReservationsService))
+    private weatherService: WeatherService,
+    private courtsStatusService: CourtsStatusService,
     private reservationsService: ReservationsService,
   ) {}
 
-  /**
-   * Validates if the given court ID is valid and currently open in the specified complex.
-   *
-   * @param {number} complexId - The ID of the complex to check.
-   * @param {number} courtId - The ID of the court to validate.
-   * @param dateIni - The initial date of the reservation.
-   * @return {Promise<boolean>} A promise that resolves to `true` if the court ID is valid and open; otherwise, `false`.
-   */
-  public async isValidCourt(
-    complexId: number,
-    courtId: number,
-    dateIni: Date,
-  ): Promise<boolean> {
-    // Se obtienen las pistas del complejo
-    const courts = await this.getCourts(complexId, {});
+  private async calculateCourtNumber(complexId: number, sportKey: string): Promise<number> {
+    // Obtener el máximo para el complejo y deporte dados
+    const aggregate = await this.prisma.courts.aggregate({
+      _max: { number: true },
+      where: { complex_id: complexId, sport_key: sportKey, is_delete: false },
+    });
 
-    // Se obtienen los índices y los estatus de las pistas por separado
-    const courtIds = courts.map((court) => court.id);
-    const courtStatuses = courts.map((court) => court.status);
+    // Calcular el número de pista a asignar
+    return (aggregate._max.number || 0) + 1;
+  }
 
-    // Se obtiene la posición del 'id' de la pista en el array (si no se encuentra devuelve -1)
-    const index = courtIds.indexOf(courtId);
-    return (
-      index !== -1 &&
-      (courtStatuses[index] === CourtStatus.OPEN ||
-        (courtStatuses[index] === CourtStatus.WEATHER &&
-          this.utilitiesService.dateIsEqualOrGreater(120, dateIni, new Date())))
-    );
+  private async checkExistingCourtNumber(complexId: number, number: number, sportKey: string) {
+    // Obtener una pista existente para el número dado y la combinación complejo-deporte
+    const exists = await this.prisma.courts.findFirst({
+      where: {
+        complex_id: complexId,
+        number,
+        sport_key: sportKey,
+        is_delete: false,
+      },
+    });
+
+    // Si existe, lanzar un error de conflicto
+    if (exists) {
+      throw new ConflictException(
+        `Court number ${number} alerady exists in complex with ID ${complexId} and SportKey ${sportKey}`,
+      );
+    }
   }
 
   private insertBlock(
@@ -80,34 +59,36 @@ export class CourtsService {
   ): CourtAvailabilitySlotDto[] {
     let { dateIni, dateEnd } = candidate;
 
+    if (dateIni >= dateEnd) return availability;
+
     for (const slot of availability) {
       // Caso 1: candidate completamente dentro de un bloque
       if (dateIni >= slot.dateIni && dateEnd <= slot.dateEnd) {
         return availability;
       }
 
-      // Caso 2: solapamiento por la izquierda
+      // Caso 2: solapamiento por ambos lados
+      if (dateIni < slot.dateIni && dateEnd > slot.dateEnd) {
+        const updatedAvailability = this.insertBlock(availability, { dateIni, dateEnd: slot.dateIni });
+        return this.insertBlock(updatedAvailability, { dateIni: slot.dateEnd, dateEnd });
+      }
+
+      // Caso 3a: solapamiento por la izquierda
       if (dateIni < slot.dateEnd && dateEnd > slot.dateEnd) {
         dateIni = new Date(slot.dateEnd);
       }
 
-      // Caso 3: solapamiento por la derecha
+      // Caso 3b: solapamiento por la derecha
       if (dateEnd > slot.dateIni && dateIni < slot.dateIni) {
         dateEnd = new Date(slot.dateIni);
       }
     }
 
-    if (dateIni >= dateEnd) {
-      return availability;
-    }
-
-    const newSlot = { dateIni, dateEnd };
-
     return [
       ...availability,
       new CourtAvailabilitySlotDto({
-        dateIni: newSlot.dateIni,
-        dateEnd: newSlot.dateEnd,
+        dateIni,
+        dateEnd,
         available: false,
       }),
     ].sort((a, b) => a.dateIni.getTime() - b.dateIni.getTime());
@@ -129,30 +110,26 @@ export class CourtsService {
     dto: GetCourtsDto,
     checkDeleted: boolean = false,
   ): Promise<Array<ResponseCourtDto>> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.courtsWhereInput = {
-      // Se evita obtener las pistas eliminados
+      // Evitar obtener las pistas eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      // Se obtienen solo las pistas del complejo actual
+      // Obtener solo las pistas del complejo actual
       ...{ complex_id: complexId },
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
-      // Se establecen las condiciones para los campos de tipo 'string'
-      ...(dto.sport !== undefined && {
-        sport: { contains: dto.sport, mode: 'insensitive' },
-      }),
-      ...(dto.name !== undefined && {
-        name: { contains: dto.name, mode: 'insensitive' },
-      }),
+      // Establecer las condiciones para los campos de tipo 'string'
+      ...(dto.sportKey && { sport_key: { contains: dto.sportKey, mode: 'insensitive' } }),
 
-      ...(dto.maxPeople !== undefined && { max_people: dto.maxPeople }),
+      ...(dto.number && { name: dto.number }),
+      ...(dto.maxPeople && { max_people: dto.maxPeople }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.courtsOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    // Obtener el modo de ordenación de los elementos
+    const orderBy: Prisma.courtsOrderByWithRelationInput[] = [];
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COURT_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -161,14 +138,14 @@ export class CourtsService {
       });
     }
 
-    // Se realiza la consulta seleccionando las columnas que se quieren devolver
+    // Realizar la consulta seleccionando las columnas que se quieren devolver
     const courts = await this.prisma.courts.findMany({
       where,
       select: {
         id: true,
         complex_id: true,
-        sport: true,
-        name: true,
+        sport_key: true,
+        number: true,
         description: true,
         max_people: true,
         created_at: true,
@@ -177,27 +154,38 @@ export class CourtsService {
       orderBy,
     });
 
-    // Se obtienen los estados de todas las pistas encontradas
+    // Obtener los estados de todas las pistas encontradas
     const courtsWithStatusAsync = courts.map(async (court) => {
-      const status = await this.getCourtStatus(complexId, court.id);
+      const courtStatus = await this.courtsStatusService.getCourtStatus(complexId, court.id);
       return {
         ...court,
-        status: status.status,
+        status_data: courtStatus.statusData,
       };
     });
 
-    // Se resuelve la operación asíncrona
+    // Resolver la operación asíncrona
     const courtsWithStatus = await Promise.all(courtsWithStatusAsync);
 
-    // Se filtran las entradas del array si está definido el estatus
+    // Filtrar las entradas del array si está definido el estatus
     let courtsWithStatusFiltered = courtsWithStatus;
-    if (dto.status !== undefined) {
-      courtsWithStatusFiltered = courtsWithStatus.filter(
-        (court) => court.status === dto.status,
-      );
+    if (dto.statusData) {
+      courtsWithStatusFiltered = courtsWithStatus.filter((court) => {
+        // Obtener los datos sobre el estatus del DTO y del objeto
+        const dtoStatusData = dto.statusData;
+        const courtStatusData = court.status_data;
+
+        // Verificar los datos para el estatus, el nivel de alerta y el tiempo de secado
+        const status = !dto.statusData.status || dtoStatusData.status === courtStatusData.status;
+        const alertLevel = !dto.statusData.alertLevel || dtoStatusData.alertLevel == courtStatusData.alertLevel;
+        const estimatedDryingTime =
+          !dto.statusData.estimatedDryingTime ||
+          dtoStatusData.estimatedDryingTime == courtStatusData.estimatedDryingTime;
+
+        return status && alertLevel && estimatedDryingTime;
+      });
     }
 
-    // Se devuelve la lista modificando los elementos obtenidos
+    // Devolver la lista modificando los elementos obtenidos
     return courtsWithStatusFiltered.map((court) => new ResponseCourtDto(court));
   }
 
@@ -210,20 +198,15 @@ export class CourtsService {
    * @throws {NotFoundException} If no court with the specified ID is found.
    * @throws {InternalServerErrorException} If multiple courts with the specified ID are found.
    */
-  async getCourt(
-    complexId: number,
-    courtId: number,
-  ): Promise<ResponseCourtDto> {
-    // Se trata de obtener la pista con el 'id' dado
-    const result = await this.getCourts(complexId, { id: courtId });
+  async getCourt(complexId: number, courtId: number, checkDeleted: boolean = false): Promise<ResponseCourtDto> {
+    // Tratar de obtener la pista con el 'id' dado
+    const result = await this.getCourts(complexId, { id: courtId }, checkDeleted);
 
-    // Se verifican los elementos obtenidos
+    // Verificar los elementos obtenidos
     if (result.length === 0) {
       throw new NotFoundException(`Court with ID ${courtId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple courts found with ID ${courtId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple courts found with ID ${courtId}.`);
     }
 
     return result[0];
@@ -233,30 +216,33 @@ export class CourtsService {
    * Creates a new court associated with the given complex ID and details provided in the data transfer object (DTO).
    *
    * @param {number} complexId - The ID of the complex to which the court belongs.
-   * @param {CreateCourtDto} dto - The data transfer object containing court details such as sport, name, description,
-   * maximum capacity, and status.
+   * @param {CreateCourtDto} dto - The data transfer object containing court details such as sport key, name,
+   * description, maximum capacity, and status.
    * @return {Promise<ResponseCourtDto>} A promise that resolves to a ResponseCourtDto containing the details of the
    * created court, including its status.
    */
-  async createCourt(
-    complexId: number,
-    dto: CreateCourtDto,
-  ): Promise<ResponseCourtDto> {
+  async createCourt(complexId: number, dto: CreateCourtDto): Promise<ResponseCourtDto> {
     try {
-      // Se crea la entrada para la pista en la BD
+      // Obtener de la petición o calcular el número de pista para la combinación complejo-deporte
+      const number = dto.number ?? (await this.calculateCourtNumber(complexId, dto.sportKey));
+
+      // Verificar si hay una pista existente para el número dado y la combinación complejo-deporte
+      await this.checkExistingCourtNumber(complexId, number, dto.sportKey);
+
+      // Crear la entrada para la pista en la BD
       const court = await this.prisma.courts.create({
         data: {
           complex_id: complexId,
-          sport: dto.sport,
-          name: dto.name,
+          sport_key: dto.sportKey,
+          number,
           description: dto.description,
           max_people: dto.maxPeople,
         },
         select: {
           id: true,
           complex_id: true,
-          sport: true,
-          name: true,
+          sport_key: true,
+          number: true,
           description: true,
           max_people: true,
           created_at: true,
@@ -264,14 +250,32 @@ export class CourtsService {
         },
       });
 
-      // Se establece el estatus de la pista con el dado o uno por defecto
-      const status = await this.setCourtStatus(complexId, court.id, {
-        status: dto.status ?? CourtStatus.OPEN,
-      });
+      let statusData: CreateCourtStatusDto;
+      if (dto.statusData?.status && !INACTIVE_COURT_STATUS.has(dto.statusData.status)) {
+        const weather = await this.weatherService.getWeatherFromId(complexId);
 
-      return new ResponseCourtDto({ ...court, status: status.status });
+        // Obtener los datos del estatus de la pista en función de la información meteorológica
+        statusData = {
+          status: weather.alert_level >= 2 ? CourtStatus.WEATHER : CourtStatus.OPEN,
+          alertLevel: weather.alert_level,
+          estimatedDryingTime: weather.estimated_drying_time,
+        };
+      } else {
+        // Establecer los datos del estatus de la pista con los dado o unos por defecto
+        statusData = {
+          status: dto.statusData.status ?? CourtStatus.OPEN,
+          alertLevel: 0,
+          estimatedDryingTime: 0,
+        };
+      }
+
+      // Establecer el estatus de la pista
+      const courtStatus = await this.courtsStatusService.setCourtStatus(complexId, court.id, statusData);
+
+      return new ResponseCourtDto({ ...court, statusData: courtStatus.statusData });
     } catch (error) {
       this.errorsService.dbError(error, {
+        p2003: `Cannot assign court to complex with ID ${complexId}. Complex not found.`,
         p2025: 'Court already exists.',
       });
 
@@ -288,46 +292,41 @@ export class CourtsService {
    * @return {Promise<ResponseCourtDto>} Returns a promise that resolves to a ResponseCourtDto object containing the
    * updated court information, including its current status.
    */
-  async updateCourt(
-    complexId: number,
-    courtId: number,
-    dto: UpdateCourtDto,
-  ): Promise<ResponseCourtDto> {
-    // Se verifica que el cuerpo contiene elementos
+  async updateCourt(complexId: number, courtId: number, dto: UpdateCourtDto): Promise<ResponseCourtDto> {
+    // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
-    // Se establecen las propiedades a actualizar
+    // Establecer las propiedades a actualizar
     const data: Prisma.courtsUpdateInput = {
-      ...(dto.sport !== undefined && { sport: dto.sport }),
-      ...(dto.name !== undefined && { name: dto.name }),
-      ...(dto.description !== undefined && { description: dto.description }),
-      ...(dto.maxPeople !== undefined && { max_people: dto.maxPeople }),
+      ...(dto.number && { number: dto.number }),
+      ...(dto.description && { description: dto.description }),
+      ...(dto.maxPeople && { max_people: dto.maxPeople }),
+      ...(dto.isDelete && { is_delete: dto.isDelete }),
     };
 
     try {
-      // Se actualiza la entrada de la pista
+      // Obtener el deporte asignado a la pista
+      const storedCourt = await this.getCourt(complexId, courtId, true);
+
+      // Verificar si hay una pista existente para el número dado y la combinación complejo-deporte
+      await this.checkExistingCourtNumber(complexId, dto.number ?? storedCourt.number, storedCourt.sportKey);
+
+      // Actualizar la entrada de la pista
       const court = await this.prisma.courts.update({
-        where: {
-          id: courtId,
-          is_delete: false,
-        },
-        data,
+        where: { id: courtId },
+        data: { ...data, updated_at: new Date() },
       });
 
-      // Se obtiene el estatus actual de la pista
-      const currentStatus = await this.getCourtStatus(complexId, courtId);
-
-      // Si está definido, se actualiza el estatus
-      let status;
-      if (dto.status !== undefined && dto.status !== currentStatus.status) {
-        status = await this.setCourtStatus(complexId, court.id, {
-          status: dto.status,
-        });
-      }
+      // Actualizar el estatus de la pista
+      const courtStatus = await this.courtsStatusService.setCourtStatus(complexId, courtId, {
+        status: dto.statusData.status,
+        alertLevel: dto.statusData.alertLevel,
+        estimatedDryingTime: dto.statusData.estimatedDryingTime,
+      });
 
       return new ResponseCourtDto({
         ...court,
-        status: status?.status ?? currentStatus.status,
+        statusData: courtStatus.statusData,
       });
     } catch (error) {
       this.errorsService.dbError(error, {
@@ -349,77 +348,13 @@ export class CourtsService {
    */
   async deleteCourt(_complexId: number, courtId: number): Promise<null> {
     try {
-      // Se marca la pista como eliminada
+      // Marcar la pista como eliminada
       await this.prisma.courts.update({
         where: { id: courtId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;
-    } catch (error) {
-      this.errorsService.dbError(error, {
-        p2025: `Court with ID ${courtId} not found.`,
-      });
-
-      throw error;
-    }
-  }
-
-  /**
-   * Retrieves the most recent status of a specific court.
-   *
-   * @param {number} complexId - The identifier for the sports complex to which the court belongs.
-   * @param {number} courtId - The identifier for the court whose status is to be retrieved.
-   * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the most updated status of the court, or a
-   * default status if no recent status is found.
-   */
-  async getCourtStatus(
-    complexId: number,
-    courtId: number,
-  ): Promise<ResponseCourtStatusDto> {
-    // Se trata de obtener el estatus más actualizado de la pista dada
-    const status = await this.prisma.courts_status.findFirst({
-      where: {
-        court_id: courtId,
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
-
-    // Se devuelve el objeto obtenido o se construye uno con el estatus por defecto 'OPEN'
-    return new ResponseCourtStatusDto({
-      ...(status ?? {
-        court_id: courtId,
-        status: CourtStatus.OPEN,
-      }),
-      complex_id: complexId,
-    });
-  }
-
-  /**
-   * Updates the status of a court by creating a new entry in the court status table.
-   *
-   * @param {number} complexId - The ID of the complex to which the court belongs.
-   * @param {number} courtId - The ID of the court whose status is being updated.
-   * @param {CreateCourtStatusDto} dto - The data transfer object containing the new status information for the court.
-   * @return {Promise<ResponseCourtStatusDto>} A promise that resolves to the updated court status object.
-   */
-  async setCourtStatus(
-    complexId: number,
-    courtId: number,
-    dto: CreateCourtStatusDto,
-  ): Promise<ResponseCourtStatusDto> {
-    try {
-      // Se añade una nueva entrada con el estatus de la pista
-      const status = await this.prisma.courts_status.create({
-        data: {
-          court_id: courtId,
-          status: dto.status,
-        },
-      });
-
-      return new ResponseCourtStatusDto({ ...status, complex_id: complexId });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Court with ID ${courtId} not found.`,
@@ -443,16 +378,13 @@ export class CourtsService {
     complexId: number,
     groupAvailability: boolean = true,
   ): Promise<Array<ResponseCourtAvailabilityDto>> {
-    // Se obtienen las reservas para el complejo actual, ordenadas por su 'id' y la fecha de inicio
+    // Obtener las reservas para el complejo actual, ordenadas por su 'id' y la fecha de inicio
     const reservations = await this.reservationsService.getReservations({
       complexId,
-      orderParams: [
-        { field: ReservationOrderField.ID },
-        { field: ReservationOrderField.DATE_INI },
-      ],
+      orderParams: [{ field: ReservationOrderField.ID }, { field: ReservationOrderField.DATE_INI }],
     });
 
-    // Se filtran las reservas para no procesar las canceladas
+    // Filtrar las reservas para no procesar las canceladas
     const filteredReservations = reservations.filter(
       (reservation) =>
         reservation.status !== ReservationAvailabilityStatus.CANCELLED &&
@@ -461,13 +393,10 @@ export class CourtsService {
         reservation.dateIni > new Date(),
     );
 
-    // Se agrupan las reservas en función del 'id' de la pista
-    const groupedReservations = this.utilitiesService.groupArrayByField(
-      filteredReservations,
-      'courtId',
-    );
+    // Agrupar las reservas en función del 'id' de la pista
+    const groupedReservations = this.utilitiesService.groupArrayByField(filteredReservations, 'courtId');
 
-    // Se formatean las reservas para que tengan la estructura correcta
+    // Formatear las reservas para que tengan la estructura correcta
     const formattedReservations = new Map<number, CourtAvailabilitySlotDto[]>();
     for (const [courtId, reservations] of groupedReservations.entries()) {
       const slots = reservations.map(
@@ -482,9 +411,9 @@ export class CourtsService {
 
     const courts = await this.getCourts(complexId, {});
     for (const court of courts) {
-      const courtStatus = (await this.getCourt(complexId, court.id)).status;
-      if (courtStatus === CourtStatus.WEATHER) {
-        const timeBlock = this.utilitiesService.getTimeBlock();
+      const statusData = (await this.courtsStatusService.getCourtStatus(complexId, court.id)).statusData;
+      if (statusData.status === CourtStatus.WEATHER) {
+        const timeBlock = this.utilitiesService.getTimeBlock(statusData.estimatedDryingTime);
 
         // Obtener los slots existentes para esta pista
         const existingSlots = formattedReservations.get(court.id) ?? [];
@@ -497,12 +426,12 @@ export class CourtsService {
       }
     }
 
-    // Se crea el array de disponibilidad con los datos de las reservas
+    // Crear el array de disponibilidad con los datos de las reservas
     return Promise.all(
       Array.from(formattedReservations.entries()).map(async ([key, value]) => {
         const reservations = value;
 
-        // Si no se quiere agrupar la disponibilidad, se devuelve
+        // Si no se quiere agrupar la disponibilidad, devolver
         if (!groupAvailability) {
           return new ResponseCourtAvailabilityDto({
             court_id: key,
@@ -515,35 +444,31 @@ export class CourtsService {
         const groupedAvailability: CourtAvailabilitySlotDto[] = [];
         if (reservations.length > 0) {
           // Intervalo actual
-          let currentAvailability: CourtAvailabilitySlotDto | undefined =
-            undefined;
+          let currentAvailability: CourtAvailabilitySlotDto = undefined;
 
           reservations.forEach((reservation) => {
-            // Si el intervalo actual es indefinido, se actualiza y se devuelve
-            if (currentAvailability === undefined) {
+            // Si el intervalo actual es indefinido, actualizarlo y devolverlo
+            if (!currentAvailability) {
               currentAvailability = new CourtAvailabilitySlotDto(reservation);
               return;
             }
 
-            // Se establecen las condiciones para verificar si los intervalos son contiguos
-            const equalEdgeDates =
-              currentAvailability.dateEnd.getTime() ===
-              reservation.dateIni.getTime();
-            const equalAvailability =
-              currentAvailability.available === reservation.available;
+            // Establecer las condiciones para verificar si los intervalos son contiguos
+            const equalEdgeDates = currentAvailability.dateEnd.getTime() === reservation.dateIni.getTime();
+            const equalAvailability = currentAvailability.available === reservation.available;
 
             if (equalEdgeDates && equalAvailability) {
-              // Si son contiguos, se extiende el intervalo
+              // Si son contiguos, extender el intervalo
               currentAvailability.dateEnd = reservation.dateEnd;
             } else {
-              // Si no son contiguos, se añade el intervalo actual al array y se actualiza
+              // Si no son contiguos, añadir el intervalo actual al array y actualizarlo
               groupedAvailability.push(currentAvailability);
               currentAvailability = new CourtAvailabilitySlotDto(reservation);
             }
           });
 
-          // Se añade el intervalo final al array
-          if (currentAvailability !== undefined) {
+          // Añadir el intervalo final al array
+          if (currentAvailability) {
             groupedAvailability.push(currentAvailability);
           }
         }
@@ -571,42 +496,10 @@ export class CourtsService {
     courtId: number,
     groupAvailability: boolean = true,
   ): Promise<ResponseCourtAvailabilityDto> {
-    const availability = await this.getCourtsAvailability(
-      complexId,
-      groupAvailability,
-    );
+    const availability = await this.getCourtsAvailability(complexId, groupAvailability);
     return (
-      availability.find(
-        (courtAvailability) => courtAvailability.id === courtId,
-      ) ?? new ResponseCourtAvailabilityDto({ courtId, complexId })
-    );
-  }
-
-  /**
-   * Fetches court devices based on the provided parameters and conditions.
-   * This method delegates to the CourtsDevicesService to handle the relationship logic.
-   *
-   * @param {number} complexId - The ID of the sports complex where the court resides.
-   * @param {number} courtId - The ID of the court whose devices are being retrieved.
-   * @param {GetCourtDevicesDto} dto - Data transfer object containing filtering and ordering parameters.
-   * @param {Function} getDevice - Function to get device details by complexId and deviceId.
-   * @param {boolean} [checkDeleted=false] - If true, includes devices marked as deleted; otherwise, excludes them.
-   * @return {Promise<ResponseCourtDevicesDto>} A promise that resolves to a ResponseCourtDevicesDto containing the
-   * court devices data.
-   */
-  async getCourtDevices(
-    complexId: number,
-    courtId: number,
-    dto: GetCourtDevicesDto,
-    getDevice: (complexId: number, deviceId: number) => Promise<any>,
-    checkDeleted: boolean = false,
-  ): Promise<ResponseCourtDevicesDto> {
-    return this.courtsDevicesService.getCourtDevices(
-      complexId,
-      courtId,
-      dto,
-      getDevice,
-      checkDeleted,
+      availability.find((courtAvailability) => courtAvailability.id === courtId) ??
+      new ResponseCourtAvailabilityDto({ courtId, complexId })
     );
   }
 }

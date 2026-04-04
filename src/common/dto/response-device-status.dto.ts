@@ -22,7 +22,7 @@ export class ResponseDeviceStatusDto {
   createdAt: Date;
 
   constructor(courtStatus: any) {
-    this.id = courtStatus.device_id ?? courtStatus.deviceId;
+    this.id = courtStatus.id ?? courtStatus.device_id ?? courtStatus.deviceId;
     this.complexId = courtStatus.complex_id ?? courtStatus.complexId;
     this.status = courtStatus.status;
     this.createdAt = new Date(courtStatus.created_at ?? courtStatus.createdAt);

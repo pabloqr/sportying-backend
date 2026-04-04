@@ -1,44 +1,46 @@
 import { Type } from 'class-transformer';
-import {
-  IsDate,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-} from 'class-validator';
-import { Sport, CourtStatus } from '../../courts/enums';
+import { IsDate, IsInt, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { CourtStatusData } from 'src/courts/dto';
+import { ResponseWeatherDataDto } from './response-weater-data.dto';
 
 export class ResponseCourtDto {
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   id: number;
 
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   complexId: number;
 
-  @IsEnum(Sport)
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
-  sport: Sport;
+  number: number;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  sportKey: string;
 
   @IsString()
   @IsNotEmpty()
   description: string;
 
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   maxPeople: number;
 
-  @IsEnum(CourtStatus)
+  @Type(() => CourtStatusData)
+  @ValidateNested()
   @IsNotEmpty()
-  status: CourtStatus;
+  statusData: CourtStatusData;
+
+  @Type(() => ResponseWeatherDataDto)
+  @ValidateNested()
+  @IsNotEmpty()
+  weather: ResponseWeatherDataDto;
 
   @IsDate()
   @IsNotEmpty()
@@ -51,11 +53,12 @@ export class ResponseCourtDto {
   constructor(court: any) {
     this.id = court.id;
     this.complexId = court.complex_id ?? court.complexId;
-    this.sport = court.sport;
-    this.name = court.name;
+    this.number = court.number;
+    this.sportKey = court.sport_key ?? court.sportKey;
     this.description = court.description;
     this.maxPeople = court.max_people ?? court.maxPeople;
-    this.status = court.status;
+    this.statusData = new CourtStatusData(court.status_data ?? court.statusData);
+    this.weather = court.weather;
     this.createdAt = new Date(court.created_at ?? court.createdAt);
     this.updatedAt = new Date(court.updated_at ?? court.updatedAt);
   }

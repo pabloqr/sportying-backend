@@ -1,16 +1,12 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { CourtsStatusModule } from 'src/courts-status/courts-status.module';
+import { WeatherModule } from 'src/weather/weather.module';
+import { ReservationsModule } from '../reservations/reservations.module';
 import { CourtsController } from './courts.controller';
 import { CourtsService } from './courts.service';
-import { ReservationsModule } from '../reservations/reservations.module';
-import { CourtsDevicesModule } from '../courts-devices/court-devices.module';
-import { DevicesModule } from '../devices/devices.module';
 
 @Module({
-  imports: [
-    CourtsDevicesModule,
-    forwardRef(() => ReservationsModule),
-    forwardRef(() => DevicesModule),
-  ],
+  imports: [WeatherModule, CourtsStatusModule, ReservationsModule],
   controllers: [CourtsController],
   providers: [CourtsService],
   exports: [CourtsService],

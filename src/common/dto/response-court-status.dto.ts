@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { CourtStatus } from '../../courts/enums';
+import { IsDate, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
+import { CourtStatusData } from 'src/courts/dto';
 
 export class ResponseCourtStatusDto {
   @Type(() => Number)
@@ -13,18 +13,19 @@ export class ResponseCourtStatusDto {
   @IsNotEmpty()
   complexId: number;
 
-  @IsEnum(CourtStatus)
+  @Type(() => CourtStatusData)
+  @ValidateNested()
   @IsNotEmpty()
-  status: CourtStatus;
+  statusData: CourtStatusData;
 
   @IsDate()
   @IsNotEmpty()
   createdAt: Date;
 
   constructor(courtStatus: any) {
-    this.id = courtStatus.court_id ?? courtStatus.courtId;
+    this.id = courtStatus.id ?? courtStatus.court_id ?? courtStatus.courtId;
     this.complexId = courtStatus.complex_id ?? courtStatus.complexId;
-    this.status = courtStatus.status;
+    this.statusData = new CourtStatusData(courtStatus.status_data ?? courtStatus.statusData);
     this.createdAt = new Date(courtStatus.created_at ?? courtStatus.createdAt);
   }
 }

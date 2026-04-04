@@ -1,18 +1,14 @@
-import {
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import * as argon from 'argon2';
-import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto';
-import { JwtService, TokenExpiredError } from '@nestjs/jwt';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Role } from './enums/role.enum';
-import { UsersService } from '../users/users.service';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
+import * as argon from 'argon2';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuidV4 } from 'uuid';
 import { ResponseDeviceDto, ResponseUserDto } from '../common/dto';
+import { UsersService } from '../users/users.service';
+import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { Role } from './enums';
 
 @Injectable()
 export class AuthService {
@@ -58,16 +54,6 @@ export class AuthService {
   }
 
   /**
-   * Decodes a given JWT token and retrieves its payload.
-   *
-   * @param token - The JWT token to be decoded.
-   * @return The decoded payload containing the subject (sub) and email (mail).
-   */
-  private decodeToken(token: string) {
-    return this.jwt.decode<{ sub: number; mail: string; role: string }>(token);
-  }
-
-  /**
    * Validates the provided payload to ensure it contains the required properties.
    *
    * @param {Object} payload - The payload to validate.
@@ -75,11 +61,7 @@ export class AuthService {
    * @param {string} payload.mail - An email string within the payload.
    * @return {boolean} Returns true if the payload is valid and contains the required properties; otherwise, false.
    */
-  validatePayload(payload: {
-    sub: number;
-    mail: string;
-    role: string;
-  }): boolean {
+  validatePayload(payload: { sub: number; mail: string; role: string }): boolean {
     return !(!payload || !payload.sub || !payload.mail || !payload.role);
   }
 
@@ -133,11 +115,7 @@ export class AuthService {
    * @param {Role} role - The role assigned to the user.
    * @return {Promise<TokensDto>} A promise that resolves to an object containing the signed access and refresh tokens.
    */
-  async getSignedTokens(
-    userId: number,
-    mail: string,
-    role: Role,
-  ): Promise<TokensDto> {
+  async getSignedTokens(userId: number, mail: string, role: Role): Promise<TokensDto> {
     const payload = {
       sub: userId,
       mail,
@@ -171,10 +149,7 @@ export class AuthService {
    * @param {string} refreshToken - The new refresh token to be stored, which will be hashed before saving.
    * @return {Promise<void>} A promise that resolves when the operation is complete.
    */
-  async updateDBRefreshToken(
-    userId: number,
-    refreshToken: string,
-  ): Promise<void> {
+  async updateDBRefreshToken(userId: number, refreshToken: string): Promise<void> {
     const hash = await argon.hash(refreshToken);
     await this.prisma.users.update({
       where: {
@@ -182,6 +157,7 @@ export class AuthService {
       },
       data: {
         refresh_token: hash,
+        updated_at: new Date(),
       },
     });
   }
@@ -284,6 +260,7 @@ export class AuthService {
       },
       data: {
         refresh_token: null,
+        updated_at: new Date(),
       },
     });
   }
@@ -296,18 +273,7 @@ export class AuthService {
    */
   async refreshToken(dto: RefreshTokenDto): Promise<TokensDto> {
     // Se obtienen los datos del token de refresco
-    const refreshTokenPayload = await this.verifyToken(
-      dto.refreshToken,
-      false,
-    ).catch((error: Error) => {
-      if (error instanceof TokenExpiredError) {
-        throw error;
-      }
-
-      throw new UnauthorizedException(
-        'Invalid refresh token. Please try again.',
-      );
-    });
+    const refreshTokenPayload = await this.verifyToken(dto.refreshToken, false);
 
     // Se trata de obtener el usuario con los datos del token de refresco
     const user = await this.prisma.users.findUnique({
@@ -322,22 +288,15 @@ export class AuthService {
     }
 
     // Se compara el token de refresco dado con el almacenado
-    const refreshTokenMatch = await argon.verify(
-      user.refresh_token,
-      dto.refreshToken,
-    );
+    const refreshTokenMatch = await argon.verify(user.refresh_token, dto.refreshToken);
     if (!refreshTokenMatch) {
-      throw new UnauthorizedException(
-        'Invalid refresh token. Please try again.',
-      );
+      throw new UnauthorizedException('Invalid refresh token. Please try again.');
     }
 
     // Se validan los datos del token de refresco
     const validRefreshToken = this.validatePayload(refreshTokenPayload);
     if (!validRefreshToken) {
-      throw new UnauthorizedException(
-        'Invalid refresh token. Please try again.',
-      );
+      throw new UnauthorizedException('Invalid refresh token. Please try again.');
     }
 
     // Se obtiene el rol y los tokens

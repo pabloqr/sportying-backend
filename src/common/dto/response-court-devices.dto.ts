@@ -18,7 +18,7 @@ export class ResponseCourtDevicesDto {
   devices: ResponseDeviceDto[];
 
   constructor(courtDevices: any) {
-    this.id = courtDevices.device_id ?? courtDevices.deviceId;
+    this.id = courtDevices.court_id ?? courtDevices.courtId;
     this.complexId = courtDevices.complex_id ?? courtDevices.complexId;
     this.devices = courtDevices.devices;
   }

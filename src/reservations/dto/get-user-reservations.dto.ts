@@ -1,19 +1,7 @@
 import { Transform, Type } from 'class-transformer';
-import {
-  IsArray,
-  IsDate,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-  ReservationTimeFilter,
-} from '../enums';
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { OrderBy } from '../../common/enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../enums';
 
 export enum ReservationOrderField {
   ID = 'id',
@@ -89,22 +77,22 @@ export class GetUserReservationsDto {
   @IsOptional()
   timeFilter?: ReservationTimeFilter;
   @Transform(({ value }) => {
-    // Si no se ha proporcionado un valor o es indefinido, se devuelve
+    // Si no se ha proporcionado un valor o es indefinido, devolver
     if (!value) return value;
 
     try {
-      // Si ya es un array, se devuelve
+      // Si ya es un array, devolver
       if (Array.isArray(value)) {
         return value;
       }
 
-      // Si es un string, se parsea para obtener el JSON correspondiente
+      // Si es un string, parsear para obtener el JSON correspondiente
       if (typeof value === 'string') {
         const parsed = JSON.parse(value);
 
-        // Se verifica que sea un array
+        // Verificar que sea un array
         if (Array.isArray(parsed)) {
-          // Se crea la instancia de CourtOrderParamsDto para cada elemento
+          // Crear la instancia de CourtOrderParamsDto para cada elemento
           return parsed.map((item) => {
             const orderParam = new ReservationOrderParamsDto();
             orderParam.field = item.field;

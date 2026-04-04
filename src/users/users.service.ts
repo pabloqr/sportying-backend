@@ -1,32 +1,18 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { Prisma, user_role } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
-import {
-  CreateUserDto,
-  GetUsersDto,
-  UpdateUserDto,
-  USER_ORDER_FIELD_MAP,
-} from './dto';
-import { Role } from '../auth/enums/role.enum';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma, user_role } from '../../prisma/generated/client';
+import { Role } from '../auth/enums';
 import { ResponseUserDto } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
-import { ComplexesService } from 'src/complexes/complexes.service';
+import { CreateUserDto, GetUsersDto, UpdateUserDto, USER_ORDER_FIELD_MAP } from './dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-    private complexesService: ComplexesService,
-  ) { }
+  ) {}
 
   /**
    * Retrieves a list of users based on the provided filters and ordering specifications.
@@ -37,45 +23,36 @@ export class UsersService {
    * @return {Promise<Array<ResponseUserDto>>} - A promise that resolves to an array of user data formatted as
    * `ResponseUserDto`.
    */
-  async getUsers(
-    dto: GetUsersDto,
-    checkDeleted: boolean = false,
-  ): Promise<Array<ResponseUserDto>> {
+  async getUsers(dto: GetUsersDto, checkDeleted: boolean = false): Promise<Array<ResponseUserDto>> {
     // Se construye el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.usersWhereInput = {
       // Se evita obtener los usuarios eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
       // Se establece la condición para obtener el rol
-      ...(dto.role !== undefined && {
+      ...(dto.role && {
         AND: [
           { role: dto.role as user_role },
           {
-            admins: (dto.role as Role) === Role.ADMIN
-              ? { some: { is_delete: false } }
-              : { none: { is_delete: false } },
-          }
-        ]
+            admins: (dto.role as Role) === Role.ADMIN ? { some: { is_delete: false } } : { none: { is_delete: false } },
+          },
+        ],
       }),
 
       // Se establecen las condiciones para los campos de tipo 'string'
-      ...(dto.name !== undefined && {
-        name: { contains: dto.name, mode: 'insensitive' },
-      }),
-      ...(dto.surname !== undefined && {
-        surname: { contains: dto.surname, mode: 'insensitive' },
-      }),
+      ...(dto.name && { name: { contains: dto.name, mode: 'insensitive' } }),
+      ...(dto.surname && { surname: { contains: dto.surname, mode: 'insensitive' } }),
 
-      ...(dto.mail !== undefined && { mail: dto.mail }),
-      ...(dto.phonePrefix !== undefined && { phone_prefix: dto.phonePrefix }),
-      ...(dto.phoneNumber !== undefined && { phone_number: dto.phoneNumber }),
+      ...(dto.mail && { mail: dto.mail }),
+      ...(dto.phonePrefix && { phone_prefix: dto.phonePrefix }),
+      ...(dto.phoneNumber && { phone_number: dto.phoneNumber }),
     };
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.usersOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    const orderBy: Prisma.usersOrderByWithRelationInput[] = [];
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = USER_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -125,9 +102,7 @@ export class UsersService {
     if (result.length === 0) {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple users found with ID ${userId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple users found with ID ${userId}.`);
     }
 
     return result[0];
@@ -149,9 +124,7 @@ export class UsersService {
     if (result.length === 0) {
       throw new NotFoundException(`User with mail ${userMail} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple users found with mail ${userMail}.`,
-      );
+      throw new InternalServerErrorException(`Multiple users found with mail ${userMail}.`);
     }
 
     return result[0];
@@ -169,35 +142,33 @@ export class UsersService {
    * @throws {Error} Rethrows a generic error or a specific Prisma client error if the database operation fails.
    */
   async createUser(dto: CreateUserDto): Promise<ResponseUserDto> {
-    // En caso de no proporcionar una contraseña, se establece una por defecto
+    // En caso de no proporcionar una contraseña, establecer una por defecto
     if (!dto.password) {
       dto.password = '1234';
     }
 
-    // Se verifica si es administrador para realizar algunas comprobaciones previas
-    const isAdmin = dto.role === Role.ADMIN;
-    if (isAdmin) {
+    // Verificar si es administrador para realizar algunas comprobaciones previas
+    if (dto.role === Role.ADMIN) {
       if (!dto.complexId) {
         throw new BadRequestException('Complex ID not included in request.');
       }
 
       try {
-        await this.complexesService.getComplex(dto.complexId);
+        await this.prisma.complexes.findUniqueOrThrow({ where: { id: dto.complexId } });
       } catch (error) {
         this.errorsService.dbError(error, {
-          p2025:
-            `Complex with ID ${dto.complexId} not found.`,
+          p2025: `Complex with ID ${dto.complexId} not found.`,
         });
 
         throw error;
       }
     }
 
-    // Se verifica si hay un usuario con los datos proporcionados almacenado en la BD
+    // Verificar si hay un usuario con los datos proporcionados almacenado en la BD
     const existingUser = await this.getUsers({ mail: dto.mail }, true);
 
     if (existingUser.length > 0) {
-      // Si el usuario se encuentra en la BD, se actualiza su estado para habilitarlo
+      // Si el usuario se encuentra en la BD, actualizar su estado para habilitarlo
       try {
         const user = await this.prisma.users.update({
           where: {
@@ -210,6 +181,7 @@ export class UsersService {
             surname: dto.surname,
             phone_prefix: dto.phonePrefix,
             phone_number: dto.phoneNumber,
+            updated_at: new Date(),
           },
           select: {
             id: true,
@@ -235,16 +207,15 @@ export class UsersService {
         };
       } catch (error) {
         this.errorsService.dbError(error, {
-          p2002:
-            'Credentials already exist. Please try again with different credentials.',
+          p2002: 'Credentials already exist. Please try again with different credentials.',
         });
 
         throw error;
       }
     } else {
-      // Si no se encuentra en la BD, se trata de almacenarlo
+      // Si no se encuentra en la BD, tratar de almacenarlo
       try {
-        // Se crea la entrada para el usuario en la BD
+        // Crear la entrada para el usuario en la BD
         const user = await this.prisma.users.create({
           data: {
             role: dto.role as user_role,
@@ -268,29 +239,28 @@ export class UsersService {
           },
         });
 
-        // Se obtiene el rol del usuario
+        // Obtener el rol del usuario
         const role = user.role as Role;
 
-        // Se verifica si el usuario que se crea es un administrador
+        // Verificar si el usuario que se crea es un administrador
         if (role === Role.ADMIN) {
           // Se crea la entrada para el administrador en la BD
           await this.prisma.admins.create({
             data: {
               id: user.id,
-              complex_id: 1,
+              complex_id: dto.complexId!,
             },
           });
         }
 
-        // Se devuelve el objeto creado formateando el campo para el rol de usuario
+        // Devolver el objeto creado formateando el campo para el rol de usuario
         return {
           ...user,
           role,
         };
       } catch (error) {
         this.errorsService.dbError(error, {
-          p2002:
-            'Credentials already exist. Please try again with different credentials.',
+          p2002: 'Credentials already exist. Please try again with different credentials.',
         });
 
         throw error;
@@ -307,23 +277,20 @@ export class UsersService {
    * @param {UpdateUserDto} dto - An object containing the updated information for the user.
    * @return {Promise<ResponseUserDto>} A promise resolving to the updated user's information.
    */
-  async updateUser(
-    userId: number,
-    dto: UpdateUserDto,
-  ): Promise<ResponseUserDto> {
+  async updateUser(userId: number, dto: UpdateUserDto): Promise<ResponseUserDto> {
     this.errorsService.noBodyError(dto);
 
     // Se establecen las propiedades a actualizar
     const data = {
-      ...(dto.role !== undefined && { role: dto.role as user_role }),
-      ...(dto.password !== undefined && {
+      ...(dto.role && { role: dto.role as user_role }),
+      ...(dto.password && {
         password: await argon.hash(dto.password),
       }),
-      ...(dto.name !== undefined && { name: dto.name }),
-      ...(dto.surname !== undefined && { surname: dto.surname }),
-      ...(dto.mail !== undefined && { mail: dto.mail }),
-      ...(dto.phonePrefix !== undefined && { phone_prefix: dto.phonePrefix }),
-      ...(dto.phoneNumber !== undefined && { phone_number: dto.phoneNumber }),
+      ...(dto.name && { name: dto.name }),
+      ...(dto.surname && { surname: dto.surname }),
+      ...(dto.mail && { mail: dto.mail }),
+      ...(dto.phonePrefix && { phone_prefix: dto.phonePrefix }),
+      ...(dto.phoneNumber && { phone_number: dto.phoneNumber }),
     };
 
     try {
@@ -333,11 +300,11 @@ export class UsersService {
           id: userId,
           is_delete: false,
         },
-        data,
+        data: { ...data, updated_at: new Date() },
       });
 
       // Se verifica el rol del usuario
-      if (dto.role !== undefined) {
+      if (dto.role) {
         // Se trata de obtener la entrada en la tabla de administradores para el usuario actual
         const isAdmin = await this.prisma.admins.findUnique({
           where: {
@@ -367,6 +334,7 @@ export class UsersService {
               },
               data: {
                 is_delete: false,
+                updated_at: new Date(),
               },
             });
           }
@@ -381,6 +349,7 @@ export class UsersService {
             },
             data: {
               is_delete: true,
+              updated_at: new Date(),
             },
           });
         }
@@ -392,8 +361,7 @@ export class UsersService {
       };
     } catch (error) {
       this.errorsService.dbError(error, {
-        p2002:
-          'Credentials already exist. Please try again with different credentials.',
+        p2002: 'Credentials already exist. Please try again with different credentials.',
         p2025: `User with ID ${userId} not found.`,
       });
 
@@ -411,12 +379,12 @@ export class UsersService {
     try {
       await this.prisma.users.update({
         where: { id: userId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       await this.prisma.admins.updateMany({
         where: { id: userId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;

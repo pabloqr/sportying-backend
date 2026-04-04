@@ -1,45 +1,31 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import {
-  CreateDeviceCourtsDto,
-  CreateDeviceDto,
-  CreateDeviceStatusDto,
-  CreateDeviceTelemetryDto,
-  DEVICE_ORDER_FIELD_MAP,
-  DEVICE_TELEMETRY_ORDER_FIELD_MAP,
-  DeviceTelemetryOrderField,
-  GetDeviceCourtsDto,
-  GetDevicesDto,
-  GetDeviceTelemetryDto,
-  UpdateDeviceDto,
-} from './dto';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '../../prisma/generated/client';
+import { AuthService } from '../auth/auth.service';
 import {
   DeviceTelemetrySlotDto,
-  ResponseDeviceCourtsDto,
   ResponseDeviceDto,
   ResponseDeviceStatusDto,
   ResponseDeviceTelemetryDto,
 } from '../common/dto';
 import { ErrorsService } from '../common/errors.service';
-import { Prisma } from '@prisma/client';
-import { AuthService } from '../auth/auth.service';
-import { AnalysisService } from '../common/analysis.service';
-import { DeviceType } from './enum';
-import { OrderBy } from '../common/enums';
-import { CourtsDevicesService } from '../courts-devices/courts-devices.service';
+import {
+  CreateDeviceDto,
+  CreateDeviceStatusDto,
+  CreateDeviceTelemetryDto,
+  DEVICE_ORDER_FIELD_MAP,
+  DEVICE_TELEMETRY_ORDER_FIELD_MAP,
+  GetDevicesDto,
+  GetDeviceTelemetryDto,
+  UpdateDeviceDto,
+} from './dto';
 
 @Injectable({})
 export class DevicesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
-    private analysisService: AnalysisService,
     private authService: AuthService,
-    private courtsDevicesService: CourtsDevicesService,
   ) {}
 
   /**
@@ -52,65 +38,46 @@ export class DevicesService {
    * @param {Function} getCourt - Function to get court details by complexId and courtId.
    * @return {Promise<void>} A promise that resolves once the telemetry data is processed.
    */
-  private async processDeviceTelemetry(
-    complexId: number,
-    deviceId: number,
-    value: number,
-    timestamp: Date,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
-  ): Promise<void> {
-    // Se obtiene la información sobre el dispositivo actual
-    const device = await this.getDevice(complexId, deviceId);
-    // Se obtienen las pistas que tiene asignadas en dispositivo
-    const courtIds = (
-      await this.courtsDevicesService.getDeviceCourts(
-        complexId,
-        deviceId,
-        {},
-        getCourt,
-      )
-    ).courts;
+  // private async processDeviceTelemetry(
+  //   complexId: number,
+  //   deviceId: number,
+  //   value: number,
+  //   timestamp: Date,
+  // ): Promise<void> {
+  //   // Se obtiene la información sobre el dispositivo actual
+  //   const device = await this.getDevice(complexId, deviceId);
+  //   // Se obtienen las pistas que tiene asignadas en dispositivo
+  //   const courtIds = (await this.courtsDevicesService.getDeviceCourts(complexId, deviceId, {})).courts;
 
-    // Se procesa la telemetría para actualizar el estado del sistema
-    if (!courtIds.length) return;
-    switch (device.type) {
-      case DeviceType.PRESENCE:
-        // Se procesan los datos
-        return await this.analysisService.processAvailabilityTelemetry(
-          !value,
-          timestamp,
-          courtIds[0].id,
-        );
-      case DeviceType.RAIN:
-        // Se obtiene la telemetría anterior del dispositivo
-        const deviceTelemetry = await this.getDeviceTelemetry(
-          complexId,
-          deviceId,
-          {
-            orderParams: [
-              {
-                field: DeviceTelemetryOrderField.CREATED_AT,
-                order: OrderBy.ASC,
-              },
-            ],
-          },
-        );
+  //   // Se procesa la telemetría para actualizar el estado del sistema
+  //   if (!courtIds.length) return;
+  //   switch (device.type) {
+  //     case DeviceType.PRESENCE:
+  //       // Se procesan los datos
+  //       return await this.analysisService.processAvailabilityTelemetry(!value, timestamp, courtIds[0].id);
+  //     case DeviceType.RAIN:
+  //       // Se obtiene la telemetría anterior del dispositivo
+  //       const deviceTelemetry = await this.getDeviceTelemetry(complexId, deviceId, {
+  //         orderParams: [
+  //           {
+  //             field: DeviceTelemetryOrderField.CREATED_AT,
+  //             order: OrderBy.ASC,
+  //           },
+  //         ],
+  //       });
 
-        // Se trata de obtener la telemetría previa, o se establece una por defecto
-        const previousTelemetry =
-          deviceTelemetry.telemetry.length >= 2
-            ? deviceTelemetry.telemetry[1]
-            : null;
+  //       // Se trata de obtener la telemetría previa, o se establece una por defecto
+  //       const previousTelemetry = deviceTelemetry.telemetry.length >= 2 ? deviceTelemetry.telemetry[1] : null;
 
-        // Se procesan los datos
-        return await this.analysisService.processRainTelemetry(
-          complexId,
-          previousTelemetry,
-          value,
-          courtIds.map((court) => court.id),
-        );
-    }
-  }
+  //       // Se procesan los datos
+  //       return await this.analysisService.processRainTelemetry(
+  //         complexId,
+  //         previousTelemetry,
+  //         value,
+  //         courtIds.map((court) => court.id),
+  //       );
+  //   }
+  // }
 
   /**
    * Retrieves a list of devices based on the provided parameters.
@@ -134,14 +101,14 @@ export class DevicesService {
       // Se obtienen solo los dispositivos del complejo actual
       ...{ complex_id: complexId },
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
-      ...(dto.type !== undefined && { type: dto.type }),
+      ...(dto.type && { type: dto.type }),
     };
 
     // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.devicesOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    const orderBy: Prisma.devicesOrderByWithRelationInput[] = [];
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -177,10 +144,7 @@ export class DevicesService {
    * @throws {NotFoundException} If no device with the specified ID is found.
    * @throws {InternalServerErrorException} If multiple devices are found with the same ID.
    */
-  async getDevice(
-    complexId: number,
-    deviceId: number,
-  ): Promise<ResponseDeviceDto> {
+  async getDevice(complexId: number, deviceId: number): Promise<ResponseDeviceDto> {
     // Se trata de obtener el dispositivo con el 'id' dado
     const result = await this.getDevices(complexId, { id: deviceId });
 
@@ -188,9 +152,7 @@ export class DevicesService {
     if (result.length === 0) {
       throw new NotFoundException(`Device with ID ${deviceId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple devices found with ID ${deviceId}.`,
-      );
+      throw new InternalServerErrorException(`Multiple devices found with ID ${deviceId}.`);
     }
 
     return result[0];
@@ -205,10 +167,7 @@ export class DevicesService {
    *
    * @return {Promise<ResponseDeviceDto>} A promise that resolves to the newly created device details.
    */
-  async createDevice(
-    complexId: number,
-    dto: CreateDeviceDto,
-  ): Promise<ResponseDeviceDto> {
+  async createDevice(complexId: number, dto: CreateDeviceDto): Promise<ResponseDeviceDto> {
     // Se crea la API Key para el dispositivo
     const apiKey = await this.authService.generateApiKey();
 
@@ -251,18 +210,14 @@ export class DevicesService {
    * @return {Promise<ResponseDeviceDto>} A promise that resolves with the updated device information encapsulated in a
    * ResponseDeviceDto object.
    */
-  async updateDevice(
-    complexId: number,
-    deviceId: number,
-    dto: UpdateDeviceDto,
-  ): Promise<ResponseDeviceDto> {
+  async updateDevice(complexId: number, deviceId: number, dto: UpdateDeviceDto): Promise<ResponseDeviceDto> {
     // Se verifica que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
     // Se establecen las propiedades a actualizar
     const data: Prisma.devicesUpdateInput = {
-      ...(dto.type !== undefined && { type: dto.type }),
-      ...(dto.status !== undefined && { status: dto.status }),
+      ...(dto.type && { type: dto.type }),
+      ...(dto.status && { status: dto.status }),
     };
 
     try {
@@ -273,7 +228,7 @@ export class DevicesService {
           complex_id: complexId,
           is_delete: false,
         },
-        data,
+        data: { ...data, updated_at: new Date() },
         select: {
           id: true,
           complex_id: true,
@@ -306,7 +261,7 @@ export class DevicesService {
     try {
       await this.prisma.devices.update({
         where: { id: deviceId, complex_id: complexId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;
@@ -340,12 +295,12 @@ export class DevicesService {
       ...{ device_id: deviceId },
 
       // Se establecen condiciones para los límites de los valores
-      ...(dto.minValue !== undefined && {
+      ...(dto.minValue && {
         value: {
           gt: dto.minValue,
         },
       }),
-      ...(dto.maxValue !== undefined && {
+      ...(dto.maxValue && {
         value: {
           lt: dto.maxValue,
         },
@@ -354,8 +309,8 @@ export class DevicesService {
 
     // Se obtiene el modo de ordenación de los elementos
     // En caso de no estar incluido, se ordena descendentemente por la fecha de creación
-    let orderBy: Prisma.devices_telemetryOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    const orderBy: Prisma.devices_telemetryOrderByWithRelationInput[] = [];
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = DEVICE_TELEMETRY_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -374,16 +329,14 @@ export class DevicesService {
     const telemetry = await this.prisma.devices_telemetry.findMany({
       where,
       orderBy,
-      ...(dto.last !== undefined && dto.last && { take: 1 }),
+      ...(dto.last && dto.last && { take: 1 }),
     });
 
     // Se devuelve el objeto obtenido
     return new ResponseDeviceTelemetryDto({
       deviceId,
       complexId,
-      telemetry: telemetry.map(
-        (t) => new DeviceTelemetrySlotDto({ ...t, type: device.type }),
-      ),
+      telemetry: telemetry.map((t) => new DeviceTelemetrySlotDto({ ...t, type: device.type })),
     });
   }
 
@@ -393,7 +346,6 @@ export class DevicesService {
    * @param {number} complexId - The unique identifier of the complex the device belongs to.
    * @param {number} deviceId - The unique identifier of the device.
    * @param {CreateDeviceTelemetryDto} dto - The data transfer object containing telemetry values.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
    * @return {Promise<ResponseDeviceTelemetryDto>} A promise that resolves to an object containing the updated device
    * telemetry information.
    */
@@ -401,7 +353,6 @@ export class DevicesService {
     complexId: number,
     deviceId: number,
     dto: CreateDeviceTelemetryDto,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
   ): Promise<ResponseDeviceTelemetryDto> {
     try {
       // Se añade una nueva entrada con la telemetría del dispositivo
@@ -412,15 +363,9 @@ export class DevicesService {
         },
       });
 
-      this.processDeviceTelemetry(
-        complexId,
-        deviceId,
-        dto.value,
-        telemetry.created_at,
-        getCourt,
-      ).catch((error) =>
-        console.error('Error processing device telemetry:', error),
-      );
+      // this.processDeviceTelemetry(complexId, deviceId, dto.value, telemetry.created_at).catch((error) =>
+      //   console.error('Error processing device telemetry:', error),
+      // );
 
       return new ResponseDeviceTelemetryDto({
         deviceId,
@@ -443,10 +388,7 @@ export class DevicesService {
    * @param {number} deviceId - The unique identifier of the device whose status is being requested.
    * @return {Promise<ResponseDeviceStatusDto>} A promise that resolves with the complete status of the device.
    */
-  async getDeviceStatus(
-    complexId: number,
-    deviceId: number,
-  ): Promise<ResponseDeviceStatusDto> {
+  async getDeviceStatus(complexId: number, deviceId: number): Promise<ResponseDeviceStatusDto> {
     // Se obtienen todos los datos del dispositivo
     const device = await this.getDevice(complexId, deviceId);
     // Se devuelven los datos apropiados
@@ -478,6 +420,7 @@ export class DevicesService {
         },
         data: {
           status: dto.status,
+          updated_at: new Date(),
         },
         select: {
           status: true,
@@ -498,60 +441,5 @@ export class DevicesService {
 
       throw error;
     }
-  }
-
-  /**
-   * Retrieves a list of courts associated with a specific device in a complex.
-   * This method delegates to the CourtsDevicesService to handle the relationship logic.
-   *
-   * @param {number} complexId - The unique identifier of the complex.
-   * @param {number} deviceId - The unique identifier of the device.
-   * @param {GetDeviceCourtsDto} dto - The data transfer object containing filters and order parameters for the courts.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
-   * @param {boolean} [checkDeleted=false] - A flag to include deleted courts in the result. If false, deleted courts
-   * are excluded.
-   * @return {Promise<ResponseDeviceCourtsDto>} A promise that resolves with a response object containing the device ID,
-   * complex ID, and associated courts.
-   */
-  async getDeviceCourts(
-    complexId: number,
-    deviceId: number,
-    dto: GetDeviceCourtsDto,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
-    checkDeleted: boolean = false,
-  ): Promise<ResponseDeviceCourtsDto> {
-    return this.courtsDevicesService.getDeviceCourts(
-      complexId,
-      deviceId,
-      dto,
-      getCourt,
-      checkDeleted,
-    );
-  }
-
-  /**
-   * Associates a list of courts with a specific device.
-   * This method delegates to the CourtsDevicesService to handle the relationship logic.
-   *
-   * @param {number} complexId - The identifier for the sports or device complex.
-   * @param {number} deviceId - The identifier for the specific device to associate with the courts.
-   * @param {CreateDeviceCourtsDto} dto - An object containing the list of court IDs to be associated with the specified
-   * device.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
-   * @return {Promise<ResponseDeviceCourtsDto>} A promise that resolves to an object containing the updated device-court
-   * associations.
-   */
-  async setDeviceCourts(
-    complexId: number,
-    deviceId: number,
-    dto: CreateDeviceCourtsDto,
-    getCourt: (complexId: number, courtId: number) => Promise<any>,
-  ): Promise<ResponseDeviceCourtsDto> {
-    return this.courtsDevicesService.setDeviceCourts(
-      complexId,
-      deviceId,
-      dto,
-      getCourt,
-    );
   }
 }

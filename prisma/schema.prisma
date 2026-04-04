@@ -1,74 +1,91 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+model sports {
+  key        String   @id @db.VarChar()
+  min_people Int      @default(1)
+  max_people Int
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean  @default(false)
+
+  courts courts[]
 }
 
 model admins {
   id         Int
   complex_id Int
-  created_at DateTime  @default(now()) @db.Timestamp(6)
-  updated_at DateTime  @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?  @default(false)
-  complex    complexes @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       users     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  is_delete  Boolean  @default(false)
+
+  complex complexes @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user    users     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id, complex_id])
 }
 
 model courts {
-  id           Int              @id @default(autoincrement())
-  complex_id   Int
-  sport        String           @db.VarChar
-  name         String           @db.VarChar
-  description  String?          @db.VarChar
-  max_people   Int
-  created_at   DateTime         @default(now()) @db.Timestamp(6)
-  updated_at   DateTime         @default(now()) @db.Timestamp(6)
-  is_delete    Boolean?         @default(false)
+  id          Int      @id @default(autoincrement())
+  complex_id  Int
+  number      Int
+  sport_key   String   @db.VarChar
+  description String?  @db.VarChar
+  max_people  Int
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+  is_delete   Boolean  @default(false)
+
   complex      complexes        @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sport        sports           @relation(fields: [sport_key], references: [key], onDelete: NoAction, onUpdate: NoAction)
   devices      courts_devices[]
   status       courts_status[]
   reservations reservations[]
-
-  @@unique([complex_id, sport, name])
 }
 
 model courts_devices {
   court_id  Int
   device_id Int
-  is_delete Boolean? @default(false)
-  court     courts   @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  device    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  is_delete Boolean @default(false)
+
+  court  courts  @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  device devices @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, device_id])
 }
 
 model courts_status {
-  court_id   Int
-  status     court_status @default(OPEN)
-  created_at DateTime     @default(now()) @db.Timestamp(6)
-  court      courts       @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  court_id              Int
+  status                court_status @default(OPEN)
+  alert_level           Int          @default(0)
+  estimated_drying_time Int          @default(0)
+  created_at            DateTime     @default(now()) @db.Timestamp(6)
+
+  court courts @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([court_id, created_at])
 }
 
 model devices {
-  id         Int                 @id @default(autoincrement())
-  id_key     String?             @unique @db.Uuid
-  api_key    String?             @db.VarChar
+  id         Int           @id @default(autoincrement())
+  id_key     String?       @unique @db.Uuid
+  api_key    String?       @db.VarChar
   complex_id Int
   type       device_type
-  status     device_status       @default(NORMAL)
-  created_at DateTime            @default(now()) @db.Timestamp(6)
-  updated_at DateTime            @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?            @default(false)
-  courts     courts_devices[]
-  complex    complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  telemetry  devices_telemetry[]
+  status     device_status @default(NORMAL)
+  created_at DateTime      @default(now()) @db.Timestamp(6)
+  updated_at DateTime      @default(now()) @db.Timestamp(6)
+  is_delete  Boolean       @default(false)
+
+  courts    courts_devices[]
+  complex   complexes           @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  telemetry devices_telemetry[]
 }
 
 model notifications {
@@ -81,44 +98,46 @@ model notifications {
   related_id Int?
   created_at DateTime              @default(now()) @db.Timestamp(6)
   updated_at DateTime              @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?              @default(false)
-  user       users                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  is_delete  Boolean               @default(false)
+
+  user users @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id, user_id, created_at])
 }
 
 model reservations {
-  id         Int                     @id @default(autoincrement())
+  id         Int                @id @default(autoincrement())
   user_id    Int
   complex_id Int
   court_id   Int
-  date_ini   DateTime                @db.Timestamp(6)
-  date_end   DateTime                @db.Timestamp(6)
-  date_range Unsupported("tsrange")? @default(dbgenerated("tsrange(date_ini, date_end, '[)'::text)"))
-  status     reservation_status      @default(EMPTY)
-  created_at DateTime                @default(now()) @db.Timestamp(6)
-  updated_at DateTime                @default(now()) @db.Timestamp(6)
-  is_delete  Boolean?                @default(false)
-  complexes  complexes               @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  court      courts                  @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       users                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  date_ini   DateTime           @db.Timestamp(6)
+  date_end   DateTime           @db.Timestamp(6)
+  status     reservation_status @default(EMPTY)
+  created_at DateTime           @default(now()) @db.Timestamp(6)
+  updated_at DateTime           @default(now()) @db.Timestamp(6)
+  is_delete  Boolean            @default(false)
+
+  complexes complexes @relation(fields: [complex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  court     courts    @relation(fields: [court_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([complex_id, court_id, date_ini])
 }
 
 model users {
-  id            Int             @id @default(autoincrement())
-  password      String          @db.VarChar
-  refresh_token String?         @db.VarChar
-  role          user_role       @default(CLIENT)
-  name          String          @db.VarChar
-  surname       String?         @db.VarChar
-  mail          String          @unique @db.VarChar
+  id            Int       @id @default(autoincrement())
+  password      String    @db.VarChar
+  refresh_token String?   @db.VarChar
+  role          user_role @default(CLIENT)
+  name          String    @db.VarChar
+  surname       String?   @db.VarChar
+  mail          String    @unique @db.VarChar
   phone_prefix  Int
   phone_number  Int
-  created_at    DateTime        @default(now()) @db.Timestamp(6)
-  updated_at    DateTime        @default(now()) @db.Timestamp(6)
-  is_delete     Boolean?        @default(false)
+  created_at    DateTime  @default(now()) @db.Timestamp(6)
+  updated_at    DateTime  @default(now()) @db.Timestamp(6)
+  is_delete     Boolean   @default(false)
+
   admins        admins[]
   notifications notifications[]
   reservations  reservations[]
@@ -127,28 +146,53 @@ model users {
 }
 
 model complexes {
-  id            Int            @id @default(autoincrement())
-  complex_name  String         @db.VarChar
-  time_ini      String         @db.VarChar(5)
-  time_end      String         @db.VarChar(5)
-  loc_longitude Float?
-  loc_latitude  Float?
-  created_at    DateTime       @default(now()) @db.Timestamp(6)
-  updated_at    DateTime       @default(now()) @db.Timestamp(6)
-  is_delete     Boolean?       @default(false)
-  admins        admins[]
-  courts        courts[]
-  devices       devices[]
-  reservations  reservations[]
+  id            Int      @id @default(autoincrement())
+  complex_name  String   @db.VarChar
+  time_ini      DateTime @db.Time(6)
+  time_end      DateTime @db.Time(6)
+  loc_latitude  Float
+  loc_longitude Float
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+  updated_at    DateTime @default(now()) @db.Timestamp(6)
+  is_delete     Boolean  @default(false)
+
+  admins       admins[]
+  courts       courts[]
+  devices      devices[]
+  reservations reservations[]
+
+  @@unique([loc_latitude, loc_longitude])
+  @@index([is_delete])
 }
 
 model devices_telemetry {
   device_id  Int
   value      Float
   created_at DateTime @default(now()) @db.Timestamp(6)
-  devices    devices  @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  devices devices @relation(fields: [device_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([device_id, created_at])
+}
+
+model weather {
+  geohash                 String   @db.VarChar(5)
+  temperature_curr        Float
+  relative_humidity_curr  Float
+  cloud_cover_curr        Float
+  wind_speed_curr         Float
+  wind_direction_curr     Float
+  precip_intensity_curr   Float
+  precip_probability_curr Float
+  precip_probability_next Float
+  surface_water_prev      Float    @default(0)
+  estimated_drying_time   Int      @default(0)
+  alert_level             Int      @default(0)
+  alert_level_ticks       Int      @default(0)
+  created_at              DateTime @default(now()) @db.Timestamp(6)
+
+  @@id([geohash, created_at])
+  @@index([geohash, created_at(sort: Desc)], map: "index_weather_geohash_created_at_desc")
 }
 
 enum user_role {

@@ -1,30 +1,31 @@
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { Sport, CourtStatus } from '../enums';
+import { PartialType } from '@nestjs/mapped-types';
+import { Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { CourtStatusData } from './court-status-data.dto';
+
+class CreateCourtStatusDataDto extends PartialType(CourtStatusData) {}
 
 export class CreateCourtDto {
-  @IsEnum(Sport)
-  @IsNotEmpty()
-  sport: Sport;
+  @Type(() => Number)
+  @IsInt()
+  @IsOptional()
+  number?: number;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  sportKey: string;
 
   @IsString()
   @IsOptional()
   description?: string;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
   maxPeople: number;
 
-  @IsEnum(CourtStatus)
+  @Type(() => CreateCourtStatusDataDto)
+  @ValidateNested()
   @IsOptional()
-  status?: CourtStatus;
+  statusData?: CreateCourtStatusDataDto;
 }

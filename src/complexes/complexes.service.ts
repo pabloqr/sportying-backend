@@ -1,8 +1,18 @@
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import * as ngeohash from 'ngeohash';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { SportsService } from 'src/sports/sports.service';
+import { WeatherService } from 'src/weather/weather.service';
+import { Prisma } from '../../prisma/generated/client';
 import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+  ResponseComplexDto,
+  ResponseComplexTimeDto,
+  ResponseCourtAvailabilityDto,
+  ResponseWeatherDataDto,
+} from '../common/dto';
+import { ErrorsService } from '../common/errors.service';
+import { CourtsService } from '../courts/courts.service';
 import {
   COMPLEX_ORDER_FIELD_MAP,
   CreateComplexDto,
@@ -10,21 +20,15 @@ import {
   UpdateComplexDto,
   UpdateComplexTimeDto,
 } from './dto';
-import {
-  ResponseComplexDto,
-  ResponseComplexTimeDto,
-  ResponseCourtAvailabilityDto,
-} from '../common/dto';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { ErrorsService } from '../common/errors.service';
-import { CourtsService } from '../courts/courts.service';
 
 @Injectable()
 export class ComplexesService {
   constructor(
     private prisma: PrismaService,
     private errorsService: ErrorsService,
+    private utilitiesService: UtilitiesService,
+    private weatherService: WeatherService,
+    private sportsService: SportsService,
     private courtsService: CourtsService,
   ) {}
 
@@ -40,35 +44,28 @@ export class ComplexesService {
    * @return {Promise<Array<ResponseComplexDto>>} - A promise that resolves to an array of ResponseComplexDto instances
    * representing the matching complexes.
    */
-  async getComplexes(
-    dto: GetComplexesDto,
-    checkDeleted: boolean = false,
-  ): Promise<Array<ResponseComplexDto>> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+  async getComplexes(dto: GetComplexesDto, checkDeleted: boolean = false): Promise<Array<ResponseComplexDto>> {
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.complexesWhereInput = {
-      // Se evita obtener los complejos eliminados
+      // Evitar obtener los complejos eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      ...(dto.id !== undefined && { id: dto.id }),
+      ...(dto.id && { id: dto.id }),
 
-      // Se establecen las condiciones para los campos de tipo 'string'
-      ...(dto.complexName !== undefined && {
-        complex_name: { contains: dto.complexName, mode: 'insensitive' },
-      }),
+      // Establecer las condiciones para los campos de tipo 'string'
+      ...(dto.complexName && { complex_name: { contains: dto.complexName, mode: 'insensitive' } }),
 
-      // Se establecen las condiciones para los campos de tipo 'Date'
-      ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
-      ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
+      // Establecer las condiciones para los campos de tipo 'Date'
+      ...(dto.timeIni && { time_ini: dto.timeIni }),
+      ...(dto.timeEnd && { time_end: dto.timeEnd }),
 
-      ...(dto.locLongitude !== undefined && {
-        loc_longitude: dto.locLongitude,
-      }),
-      ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
+      ...(dto.locLatitude && { loc_latitude: dto.locLatitude }),
+      ...(dto.locLongitude && { loc_longitude: dto.locLongitude }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
-    let orderBy: Prisma.complexesOrderByWithRelationInput[] = [];
-    if (dto.orderParams !== undefined) {
+    // Obtener el modo de ordenación de los elementos
+    const orderBy: Prisma.complexesOrderByWithRelationInput[] = [];
+    if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = COMPLEX_ORDER_FIELD_MAP[orderParam.field];
         orderBy.push({
@@ -77,7 +74,7 @@ export class ComplexesService {
       });
     }
 
-    // Se realiza la consulta seleccionando las columnas que se quieren devolver
+    // Realizar la consulta seleccionando las columnas que se quieren devolver
     const complexes = await this.prisma.complexes.findMany({
       where,
       select: {
@@ -85,37 +82,57 @@ export class ComplexesService {
         complex_name: true,
         time_ini: true,
         time_end: true,
-        loc_longitude: true,
         loc_latitude: true,
+        loc_longitude: true,
         created_at: true,
         updated_at: true,
       },
       orderBy,
     });
 
-    // Se devuelve la lista modificando los elementos obtenidos
-    return complexes.map((complex) => new ResponseComplexDto(complex));
+    const weatherData: Map<string, Promise<ResponseWeatherDataDto>> = new Map<
+      string,
+      Promise<ResponseWeatherDataDto>
+    >();
+
+    // Devolver la lista modificando los elementos obtenidos
+    return Promise.all(
+      complexes.map(async (complex) => {
+        // Obtener el listado de los deportes que se pueden practicar en el complejo
+        const sportDatas = await this.sportsService.getComplexSports(complex.id, {});
+        // Mapear a un listado de string
+        const sports = sportDatas.map((sport) => sport.key);
+
+        // Obtener el geohash de las coordenadas dadas
+        const geohash = ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5);
+        // Obtener la meteorología si no existe previamente
+        if (!weatherData.has(geohash)) {
+          weatherData.set(geohash, this.weatherService.getWeatherFromGeohash(geohash));
+        }
+        const weather = await weatherData.get(geohash);
+
+        return new ResponseComplexDto({ ...complex, sports, weather });
+      }),
+    );
   }
 
   /**
    * Retrieves a complex entity by its unique identifier.
    *
-   * @param {number} id - The unique identifier of the complex to retrieve.
+   * @param {number} complexId - The unique identifier of the complex to retrieve.
    * @return {Promise<ResponseComplexDto>} A promise that resolves to the retrieved complex entity.
    * @throws {NotFoundException} If no complex is found with the specified ID.
    * @throws {InternalServerErrorException} If multiple complexes are found with the specified ID.
    */
-  async getComplex(id: number): Promise<ResponseComplexDto> {
-    // Se trata de obtener el complejo con el 'id' dado
-    const result = await this.getComplexes({ id });
+  async getComplex(complexId: number): Promise<ResponseComplexDto> {
+    // Tratar de obtener el complejo con el 'id' dado
+    const result = await this.getComplexes({ id: complexId });
 
-    // Se verifican los elementos obtenidos
+    // Verificar los elementos obtenidos
     if (result.length === 0) {
-      throw new NotFoundException(`Complex with ID ${id} not found.`);
+      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
     } else if (result.length > 1) {
-      throw new InternalServerErrorException(
-        `Multiple complexes found with ID ${id}.`,
-      );
+      throw new InternalServerErrorException(`Multiple complexes found with ID ${complexId}.`);
     }
 
     return result[0];
@@ -131,28 +148,44 @@ export class ComplexesService {
    */
   async createComplex(dto: CreateComplexDto): Promise<ResponseComplexDto> {
     try {
-      // Se crea la entrada para el complejo en la BD
-      const complex = await this.prisma.complexes.create({
-        data: {
+      // Crear la entrada para el complejo en la BD, o se actualiza una existente, obteniendo los datos de este
+      const complex = await this.prisma.complexes.upsert({
+        where: {
+          loc_latitude_loc_longitude: {
+            loc_latitude: dto.locLatitude,
+            loc_longitude: dto.locLongitude,
+          },
+        },
+        create: {
           complex_name: dto.complexName,
-          time_ini: dto.timeIni,
-          time_end: dto.timeEnd,
-          loc_longitude: dto.locLongitude,
+          time_ini: this.utilitiesService.stringToDate(dto.timeIni),
+          time_end: this.utilitiesService.stringToDate(dto.timeEnd),
           loc_latitude: dto.locLatitude,
+          loc_longitude: dto.locLongitude,
+        },
+        update: {
+          complex_name: dto.complexName,
+          time_ini: this.utilitiesService.stringToDate(dto.timeIni),
+          time_end: this.utilitiesService.stringToDate(dto.timeEnd),
+          is_delete: false,
+          updated_at: new Date(),
         },
         select: {
           id: true,
           complex_name: true,
           time_ini: true,
           time_end: true,
-          loc_longitude: true,
           loc_latitude: true,
+          loc_longitude: true,
           created_at: true,
           updated_at: true,
         },
       });
 
-      return new ResponseComplexDto(complex);
+      // Obtener los datos meteorológicos del complejo
+      const weather = await this.weatherService.getWeatherFromCoordinates(complex.loc_latitude, complex.loc_longitude);
+
+      return new ResponseComplexDto({ ...complex, weather });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: 'Complex already exists.',
@@ -170,35 +203,33 @@ export class ComplexesService {
    * @return {Promise<ResponseComplexDto>} A promise that resolves to a ResponseComplexDto containing the updated
    * complex details.
    */
-  async updateComplex(
-    complexId: number,
-    dto: UpdateComplexDto,
-  ): Promise<ResponseComplexDto> {
-    // Se verifica que el cuerpo contiene elementos
+  async updateComplex(complexId: number, dto: UpdateComplexDto): Promise<ResponseComplexDto> {
+    // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
-    // Se establecen las propiedades a actualizar
+    // Establecer las propiedades a actualizar
     const data = {
-      ...(dto.complexName !== undefined && { complex_name: dto.complexName }),
-      ...(dto.timeIni !== undefined && { time_ini: dto.timeIni }),
-      ...(dto.timeEnd !== undefined && { time_end: dto.timeEnd }),
-      ...(dto.locLongitude !== undefined && {
-        loc_longitude: dto.locLongitude,
-      }),
-      ...(dto.locLatitude !== undefined && { loc_latitude: dto.locLatitude }),
+      ...(dto.complexName && { complex_name: dto.complexName }),
+      ...(dto.timeIni && { time_ini: this.utilitiesService.stringToDate(dto.timeIni) }),
+      ...(dto.timeEnd && { time_end: this.utilitiesService.stringToDate(dto.timeEnd) }),
+      ...(dto.locLatitude && { loc_latitude: dto.locLatitude }),
+      ...(dto.locLongitude && { loc_longitude: dto.locLongitude }),
     };
 
     try {
-      // Se actualiza la entrada del complejo
+      // Actualizar la entrada del complejo
       const complex = await this.prisma.complexes.update({
         where: {
           id: complexId,
           is_delete: false,
         },
-        data,
+        data: { ...data, updated_at: new Date() },
       });
 
-      return new ResponseComplexDto(complex);
+      // Obtener los datos meteorológicos del complejo
+      const weather = await this.weatherService.getWeatherFromCoordinates(complex.loc_latitude, complex.loc_longitude);
+
+      return new ResponseComplexDto({ ...complex, weather });
     } catch (error) {
       this.errorsService.dbError(error, {
         p2025: `Complex with ID ${complexId} not found.`,
@@ -219,7 +250,7 @@ export class ComplexesService {
     try {
       await this.prisma.complexes.update({
         where: { id: complexId },
-        data: { is_delete: true },
+        data: { is_delete: true, updated_at: new Date() },
       });
 
       return null;
@@ -240,7 +271,7 @@ export class ComplexesService {
    * times of the complex.
    */
   async getComplexTime(complexId: number): Promise<ResponseComplexTimeDto> {
-    // Se obtiene la información del complejo y se devuelven los campos con el horario
+    // Obtener la información del complejo y devolver los campos con el horario
     const complex = await this.getComplex(complexId);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
@@ -252,11 +283,8 @@ export class ComplexesService {
    * @param {UpdateComplexTimeDto} dto - The data transfer object containing the updated time information.
    * @return {Promise<ResponseComplexTimeDto>} A promise that resolves to an object containing the updated time fields.
    */
-  async setComplexTime(
-    complexId: number,
-    dto: UpdateComplexTimeDto,
-  ): Promise<ResponseComplexTimeDto> {
-    // Se actualiza la información del complejo y se devuelven los campos con el horario
+  async setComplexTime(complexId: number, dto: UpdateComplexTimeDto): Promise<ResponseComplexTimeDto> {
+    // Actualizar la información del complejo y devolver los campos con el horario
     const complex = await this.updateComplex(complexId, dto);
     return { timeIni: complex.timeIni, timeEnd: complex.timeEnd };
   }
@@ -272,9 +300,6 @@ export class ComplexesService {
     complexId: number,
     groupAvailability: boolean = true,
   ): Promise<Array<ResponseCourtAvailabilityDto>> {
-    return this.courtsService.getCourtsAvailability(
-      complexId,
-      groupAvailability,
-    );
+    return this.courtsService.getCourtsAvailability(complexId, groupAvailability);
   }
 }

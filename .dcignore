@@ -1,0 +1,49 @@
+# Write glob rules for ignored files.
+# Check syntax on https://deepcode.freshdesk.com/support/solutions/articles/60000531055-how-can-i-ignore-files-or-directories-
+# Check examples on https://github.com/github/gitignore
+
+# Hidden directories
+.*/
+
+# ArchLinuxPackages
+pkg/
+
+# SublimeText
+Package Control.cache/
+Package Control.ca-certs/
+
+# NetBeans
+**/nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+
+# Windows
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# macOS
+Icon
+
+Network Trash Folder
+Temporary Items
+
+# JetBrains
+cmake-build-*/
+out/
+
+# Node
+logs
+pids
+lib-cov
+coverage
+bower_components
+build/Release
+node_modules/
+jspm_packages/
+web_modules/
+out
+dist
