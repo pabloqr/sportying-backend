@@ -252,7 +252,7 @@ jobs:
       - self-hosted
       - sportying-dev
     needs: [snyk, codeql, quality, integration, e2e]
-    if: success()
+    if: github.event_name != 'pull_request'
 
     steps:
       - name: Checkout repository
@@ -274,3 +274,47 @@ jobs:
 
       - name: Deploy production stack
         run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d --build
+        
+  #---------------------------------------------------------------------------------------------------------------------
+  # SMOKE TESTS - Ejecutar solo si se realiza el despliegue
+  #---------------------------------------------------------------------------------------------------------------------
+  smoke-tests:
+    name: Smoke tests
+    runs-on:
+      - self-hosted
+      - sportying-prod
+    needs: deploy
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Wait for API to be ready
+        run: |
+          MAX_ATTEMPTS=15
+          ATTEMPT=0
+          until curl -sf -o /dev/null http://localhost:3000; do
+            ATTEMPT=$((ATTEMPT+1))
+            if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+              echo "API did not become ready after $MAX_ATTEMPTS attempts"
+              exit 1
+            fi
+            echo "Waiting for API... ($ATTEMPT/$MAX_ATTEMPTS)"
+            sleep 2
+          done
+          echo "API is ready"
+
+      - name: Smoke test on auth endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST http://localhost:3000/auth/signin \
+            -H "Content-Type: application/json" \
+            -d '{"mail":"smoke@test.com","password":"invalid"}')
+
+          echo "Response status: $STATUS"
+
+          if [ "$STATUS" -eq 400 ] || [ "$STATUS" -eq 401 ] || [ "$STATUS" -eq 404 ]; then
+            echo "Smoke test passed - API is alive and responding"
+            exit 0
+          else
+            echo "Smoke test failed - unexpected status $STATUS"
+            exit 1
+          fi
