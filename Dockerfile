@@ -19,7 +19,7 @@ ENV NODE_ENV=production
 # Copiar las dependencias
 COPY package*.json ./
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/prisma/generated ./prisma/generated
 COPY --from=build /app/dist ./dist
 COPY prisma ./prisma
 
