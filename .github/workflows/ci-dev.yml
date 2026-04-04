@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - dev
+  pull_request:
+    branches:
+      - dev
 
 env:
   NODE_VERSION: 24.13.1
