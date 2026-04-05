@@ -282,7 +282,7 @@ jobs:
     name: Smoke tests
     runs-on:
       - self-hosted
-      - sportying-prod
+      - sportying-dev
     needs: deploy
     if: github.event_name != 'pull_request'
 
