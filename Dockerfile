@@ -15,6 +15,8 @@ FROM node:24.13-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 RUN npx prisma generate && npm run build
 
 # ---- runtime ----
