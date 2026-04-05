@@ -41,12 +41,15 @@ jobs:
 
       - name: Run Snyk test
         uses: snyk/actions/node@master
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: --sarif-file-output=snyk-oss.sarif --all-projects
+          args: >-
+            --sarif-file-output=snyk-oss.sarif
+            --all-projects
+            --severity-threshold=high
+            --fail-on=upgradable
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
@@ -149,7 +152,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
@@ -199,7 +202,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
@@ -247,7 +250,7 @@ jobs:
   # DEPLOY - Ejecutar solo si todos los tests pasan
   #---------------------------------------------------------------------------------------------------------------------
   deploy:
-    name: Deploy to development
+    name: Deploy to production
     runs-on:
       - self-hosted
       - sportying-dev
@@ -255,9 +258,6 @@ jobs:
     if: github.event_name != 'pull_request'
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Show Docker version
         run: docker --version
 
@@ -274,7 +274,7 @@ jobs:
 
       - name: Deploy production stack
         run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d --build
-        
+
   #---------------------------------------------------------------------------------------------------------------------
   # SMOKE TESTS - Ejecutar solo si se realiza el despliegue
   #---------------------------------------------------------------------------------------------------------------------
@@ -291,7 +291,11 @@ jobs:
         run: |
           MAX_ATTEMPTS=15
           ATTEMPT=0
-          until curl -sf -o /dev/null http://localhost:3000; do
+          until curl -s -o /dev/null -w "%{http_code}" \
+            -X POST http://localhost:3000/auth/signin \
+            -H "Content-Type: application/json" \
+            -d '{"mail":"smoke@test.com","password":"invalid"}' \
+            | grep -qE "^(400|401|404)"; do
             ATTEMPT=$((ATTEMPT+1))
             if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
               echo "API did not become ready after $MAX_ATTEMPTS attempts"
@@ -301,20 +305,3 @@ jobs:
             sleep 2
           done
           echo "API is ready"
-
-      - name: Smoke test on auth endpoint
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST http://localhost:3000/auth/signin \
-            -H "Content-Type: application/json" \
-            -d '{"mail":"smoke@test.com","password":"invalid"}')
-
-          echo "Response status: $STATUS"
-
-          if [ "$STATUS" -eq 400 ] || [ "$STATUS" -eq 401 ] || [ "$STATUS" -eq 404 ]; then
-            echo "Smoke test passed - API is alive and responding"
-            exit 0
-          else
-            echo "Smoke test failed - unexpected status $STATUS"
-            exit 1
-          fi

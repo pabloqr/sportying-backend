@@ -4,6 +4,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+# ---- deps-prod ----
+FROM node:24.13-alpine AS deps-prod
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+
 # ---- build ----
 FROM node:24.13-alpine AS build
 WORKDIR /app
@@ -27,4 +33,4 @@ COPY prisma ./prisma
 RUN npm prune --omit=dev
 
 EXPOSE 3000
-CMD ["node", "dist/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
