@@ -144,7 +144,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
@@ -194,7 +194,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
@@ -247,12 +247,8 @@ jobs:
       - self-hosted
       - sportying-dev
     needs: [snyk, codeql, quality, integration, e2e]
-    if: success()
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Show Docker version
         run: docker --version
 
