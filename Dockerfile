@@ -25,14 +25,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copiar las dependencias
-COPY package*.json ./
-COPY --from=deps /app/node_modules ./node_modules
+COPY prisma.config.ts ./
+COPY --from=deps-prod /app/node_modules ./node_modules
 COPY --from=build /app/prisma/generated ./prisma/generated
 COPY --from=build /app/dist ./dist
 COPY prisma ./prisma
-
-# Eliminar las dependencias del entorno de desarrollo
-RUN npm prune --omit=dev
 
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
