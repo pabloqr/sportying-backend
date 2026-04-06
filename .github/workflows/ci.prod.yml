@@ -272,10 +272,14 @@ jobs:
           git checkout main
           git pull origin main
 
+      - name: Run database migrations
+        run: |
+          docker compose -f /srv/docker/compose/sportying/docker-compose.yml \
+            --profile prod run --rm api \
+            npx prisma migrate deploy
+
       - name: Deploy production stack
         run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d --build
-        env:
-          DATABASE_URL: ${{ secrets.CI_PROD_DATABASE_URL }}
 
   #---------------------------------------------------------------------------------------------------------------------
   # SMOKE TESTS - Ejecutar solo si se realiza el despliegue
