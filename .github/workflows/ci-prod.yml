@@ -1,12 +1,9 @@
-name: Build and Deploy Production
+name: CI Production
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-    tags:
-      - 'v*.*.*'
   pull_request:
     branches:
       - main
@@ -27,7 +24,6 @@ jobs:
   snyk:
     name: Snyk Security Scanning
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || startsWith(github.ref, 'refs/heads/')
 
     steps:
       - name: Checkout repository
@@ -81,7 +77,6 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || startsWith(github.ref, 'refs/heads/')
 
     steps:
       - name: Checkout repository
@@ -106,7 +101,6 @@ jobs:
   quality:
     name: Typecheck and unit tests
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || startsWith(github.ref, 'refs/heads/')
 
     steps:
       - name: Checkout repository
@@ -154,7 +148,6 @@ jobs:
   integration:
     name: Integration tests
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || startsWith(github.ref, 'refs/heads/')
 
     services:
       postgres:
@@ -205,7 +198,6 @@ jobs:
   e2e:
     name: End-to-end tests
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || startsWith(github.ref, 'refs/heads/')
 
     services:
       postgres:
@@ -252,72 +244,3 @@ jobs:
 
       - name: Run end-to-end tests
         run: npm run test:e2e
-
-  #---------------------------------------------------------------------------------------------------------------------
-  # DEPLOY - Ejecutar solo si todos los tests pasan
-  #---------------------------------------------------------------------------------------------------------------------
-  deploy:
-    name: Deploy to production
-    runs-on:
-      - self-hosted
-      - sportying-dev
-    needs: [snyk, codeql, quality, integration, e2e]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Show Docker version
-        run: docker --version
-
-      - name: Show Docker Compose version
-        run: docker compose version
-
-      - name: Update repository on server
-        run: |
-          cd /srv/apps/sportying_backend
-          export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_github -o StrictHostKeyChecking=no"
-          git fetch origin
-          git checkout main
-          git pull origin main
-
-      - name: Build image
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod build
-
-      - name: Run database migrations
-        run: |
-          docker compose -f /srv/docker/compose/sportying/docker-compose.yml \
-            --profile prod run --rm api \
-            npx prisma migrate deploy
-
-      - name: Deploy production stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d
-
-  #---------------------------------------------------------------------------------------------------------------------
-  # SMOKE TESTS - Ejecutar solo si se realiza el despliegue
-  #---------------------------------------------------------------------------------------------------------------------
-  smoke-tests:
-    name: Smoke tests
-    runs-on:
-      - self-hosted
-      - sportying-dev
-    needs: deploy
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Wait for API to be ready
-        run: |
-          MAX_ATTEMPTS=15
-          ATTEMPT=0
-          until curl -s -o /dev/null -w "%{http_code}" \
-            -X POST http://localhost:3000/auth/signin \
-            -H "Content-Type: application/json" \
-            -d '{"mail":"smoke@test.com","password":"invalid"}' \
-            | grep -qE "^(400|401|404)"; do
-            ATTEMPT=$((ATTEMPT+1))
-            if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
-              echo "API did not become ready after $MAX_ATTEMPTS attempts"
-              exit 1
-            fi
-            echo "Waiting for API... ($ATTEMPT/$MAX_ATTEMPTS)"
-            sleep 2
-          done
-          echo "API is ready"
