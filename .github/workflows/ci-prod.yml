@@ -16,6 +16,8 @@ env:
   CI_POSTGRES_USER: postgres
   CI_POSTGRES_PASSWORD: postgres
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tests?schema=public
+  CI_JWT_SECRET: ci-access-token-secret
+  CI_JWT_REFRESH_SECRET: ci-refresh-token-secret
 
 jobs:
   #---------------------------------------------------------------------------------------------------------------------
@@ -120,8 +122,8 @@ jobs:
         run: |
           cat <<EOF > .env.test.local
           DATABASE_URL=${{ env.DATABASE_URL }}
-          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
-          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
           EOF
 
       - name: Generate Prisma client
@@ -182,8 +184,8 @@ jobs:
         run: |
           cat <<EOF > .env.test.local
           DATABASE_URL=${{ env.DATABASE_URL }}
-          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
-          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
           EOF
 
       - name: Generate Prisma client
@@ -232,8 +234,8 @@ jobs:
         run: |
           cat <<EOF > .env.test.local
           DATABASE_URL=${{ env.DATABASE_URL }}
-          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
-          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
           EOF
 
       - name: Generate Prisma client
