@@ -272,6 +272,9 @@ jobs:
           git checkout main
           git pull origin main
 
+      - name: Build image
+        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod build
+
       - name: Run database migrations
         run: |
           docker compose -f /srv/docker/compose/sportying/docker-compose.yml \
@@ -279,7 +282,7 @@ jobs:
             npx prisma migrate deploy
 
       - name: Deploy production stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d --build
+        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d
 
   #---------------------------------------------------------------------------------------------------------------------
   # SMOKE TESTS - Ejecutar solo si se realiza el despliegue
