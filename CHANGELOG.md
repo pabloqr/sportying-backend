@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.3](https://github.com/pabloqr/sportying-backend/compare/v0.2.2...v0.2.3) (2026-04-12)
+
+
+### CI/CD
+
+* split production CI and CD into separate workflows ([4471ca6](https://github.com/pabloqr/sportying-backend/commit/4471ca67bc32dbbf1edf0e648bd87aa0bd8ac1f3))
+* split production CI and CD into separate workflows ([1dc5d24](https://github.com/pabloqr/sportying-backend/commit/1dc5d24d0e0c0858f3885b9d9987bb389b306ef3))
+
 ## [0.2.2](https://github.com/pabloqr/sportying-backend/compare/v0.2.1...v0.2.2) (2026-04-12)
 
 
