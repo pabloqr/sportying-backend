@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as argon from 'argon2';
@@ -222,7 +222,7 @@ export class AuthService {
 
     // Si no se encuentra, se lanza una excepción
     if (!user) {
-      throw new ForbiddenException('Credentials invalid. Please try again.');
+      throw new UnauthorizedException('Credentials invalid. Please try again.');
     }
 
     // Se compara la contraseña
@@ -230,7 +230,7 @@ export class AuthService {
 
     // Si la contraseña es incorrecta, se lanza una excepción
     if (!passwordVerified) {
-      throw new ForbiddenException('Credentials invalid. Please try again.');
+      throw new UnauthorizedException('Credentials invalid. Please try again.');
     }
 
     // Se obtiene el rol del usuario y se generan los tokens

@@ -1,4 +1,4 @@
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -235,7 +235,7 @@ describe('AuthService', () => {
     it('throws when signin user does not exist', async () => {
       mockPrisma.users.findUnique.mockResolvedValue(null);
 
-      await expect(service.signin({ mail: 'a@a.com', password: 'pw' } as any)).rejects.toThrow(ForbiddenException);
+      await expect(service.signin({ mail: 'a@a.com', password: 'pw' } as any)).rejects.toThrow(UnauthorizedException);
     });
 
     it('throws when password does not match', async () => {
@@ -253,7 +253,7 @@ describe('AuthService', () => {
       });
       (argon.verify as jest.Mock).mockResolvedValue(false);
 
-      await expect(service.signin({ mail: 'a@a.com', password: 'pw' } as any)).rejects.toThrow(ForbiddenException);
+      await expect(service.signin({ mail: 'a@a.com', password: 'pw' } as any)).rejects.toThrow(UnauthorizedException);
     });
 
     it('returns tokens and the mapped user when signin succeeds', async () => {

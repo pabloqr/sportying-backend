@@ -1,7 +1,6 @@
-name: Build and Deploy Production
+name: CI Production
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -17,6 +16,8 @@ env:
   CI_POSTGRES_USER: postgres
   CI_POSTGRES_PASSWORD: postgres
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tests?schema=public
+  CI_JWT_SECRET: ci-access-token-secret
+  CI_JWT_REFRESH_SECRET: ci-refresh-token-secret
 
 jobs:
   #---------------------------------------------------------------------------------------------------------------------
@@ -41,12 +42,15 @@ jobs:
 
       - name: Run Snyk test
         uses: snyk/actions/node@master
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: --sarif-file-output=snyk-oss.sarif --all-projects
+          args: >-
+            --sarif-file-output=snyk-oss.sarif
+            --all-projects
+            --severity-threshold=high
+            --fail-on=upgradable
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
@@ -118,8 +122,8 @@ jobs:
         run: |
           cat <<EOF > .env.test.local
           DATABASE_URL=${{ env.DATABASE_URL }}
-          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
-          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
           EOF
 
       - name: Generate Prisma client
@@ -149,7 +153,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
@@ -180,8 +184,8 @@ jobs:
         run: |
           cat <<EOF > .env.test.local
           DATABASE_URL=${{ env.DATABASE_URL }}
-          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
-          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
           EOF
 
       - name: Generate Prisma client
@@ -199,7 +203,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
@@ -230,8 +234,8 @@ jobs:
         run: |
           cat <<EOF > .env.test.local
           DATABASE_URL=${{ env.DATABASE_URL }}
-          JWT_SECRET=${{ secrets.CI_JWT_SECRET }}
-          JWT_REFRESH_SECRET=${{ secrets.CI_JWT_REFRESH_SECRET }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
           EOF
 
       - name: Generate Prisma client
@@ -242,79 +246,3 @@ jobs:
 
       - name: Run end-to-end tests
         run: npm run test:e2e
-
-  #---------------------------------------------------------------------------------------------------------------------
-  # DEPLOY - Ejecutar solo si todos los tests pasan
-  #---------------------------------------------------------------------------------------------------------------------
-  deploy:
-    name: Deploy to development
-    runs-on:
-      - self-hosted
-      - sportying-dev
-    needs: [snyk, codeql, quality, integration, e2e]
-    if: github.event_name != 'pull_request'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Show Docker version
-        run: docker --version
-
-      - name: Show Docker Compose version
-        run: docker compose version
-
-      - name: Update repository on server
-        run: |
-          cd /srv/apps/sportying_backend
-          export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_github -o StrictHostKeyChecking=no"
-          git fetch origin
-          git checkout main
-          git pull origin main
-
-      - name: Deploy production stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile prod up -d --build
-        
-  #---------------------------------------------------------------------------------------------------------------------
-  # SMOKE TESTS - Ejecutar solo si se realiza el despliegue
-  #---------------------------------------------------------------------------------------------------------------------
-  smoke-tests:
-    name: Smoke tests
-    runs-on:
-      - self-hosted
-      - sportying-prod
-    needs: deploy
-    if: github.event_name != 'pull_request'
-
-    steps:
-      - name: Wait for API to be ready
-        run: |
-          MAX_ATTEMPTS=15
-          ATTEMPT=0
-          until curl -sf -o /dev/null http://localhost:3000; do
-            ATTEMPT=$((ATTEMPT+1))
-            if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
-              echo "API did not become ready after $MAX_ATTEMPTS attempts"
-              exit 1
-            fi
-            echo "Waiting for API... ($ATTEMPT/$MAX_ATTEMPTS)"
-            sleep 2
-          done
-          echo "API is ready"
-
-      - name: Smoke test on auth endpoint
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST http://localhost:3000/auth/signin \
-            -H "Content-Type: application/json" \
-            -d '{"mail":"smoke@test.com","password":"invalid"}')
-
-          echo "Response status: $STATUS"
-
-          if [ "$STATUS" -eq 400 ] || [ "$STATUS" -eq 401 ] || [ "$STATUS" -eq 404 ]; then
-            echo "Smoke test passed - API is alive and responding"
-            exit 0
-          else
-            echo "Smoke test failed - unexpected status $STATUS"
-            exit 1
-          fi

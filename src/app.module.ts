@@ -12,11 +12,11 @@ import { CourtsModule } from './courts/courts.module';
 import { DevicesModule } from './devices/devices.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ReservationsStatusModule } from './reservations-status/reservations-status.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { SportsModule } from './sports/sports.module';
 import { UsersModule } from './users/users.module';
 import { WeatherModule } from './weather/weather.module';
-import { ReservationsStatusModule } from './reservations-status/reservations-status.module';
 
 @Module({
   imports: [

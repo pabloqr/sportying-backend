@@ -4,6 +4,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+# ---- deps-prod ----
+FROM node:24.13-alpine AS deps-prod
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+
 # ---- build ----
 FROM node:24.13-alpine AS build
 WORKDIR /app
@@ -17,14 +23,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copiar las dependencias
-COPY package*.json ./
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=deps-prod /app/node_modules ./node_modules
+COPY --from=build /app/prisma/ ./prisma/
+COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 COPY --from=build /app/dist ./dist
-COPY prisma ./prisma
-
-# Eliminar las dependencias del entorno de desarrollo
-RUN npm prune --omit=dev
 
 EXPOSE 3000
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
