@@ -1,4 +1,4 @@
-name: Build and Deploy Development
+name: CI Development
 
 on:
   workflow_dispatch:
@@ -55,7 +55,6 @@ jobs:
         with:
           sarif_file: snyk-oss.sarif
           category: snyk-oss
-
       # - name: Build Docker image for scanning
       #   run: docker build -t sportying-backend:ci .
 
@@ -154,9 +153,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s
           --health-retries 5
 
     steps:
@@ -204,10 +201,8 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d tests"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd "pg_isready -U postgres -d tests" --health-interval 10s
+          --health-timeout 5s --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -239,31 +234,3 @@ jobs:
 
       - name: Run end-to-end tests
         run: npm run test:e2e
-
-  #---------------------------------------------------------------------------------------------------------------------
-  # DEPLOY - Ejecutar solo si todos los tests pasan
-  #---------------------------------------------------------------------------------------------------------------------
-  deploy:
-    name: Deploy to development
-    runs-on:
-      - self-hosted
-      - sportying-dev
-    needs: [snyk, codeql, quality, integration, e2e]
-
-    steps:
-      - name: Show Docker version
-        run: docker --version
-
-      - name: Show Docker Compose version
-        run: docker compose version
-
-      - name: Update repository on server
-        run: |
-          cd /srv/apps/sportying_backend
-          export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_github -o StrictHostKeyChecking=no"
-          git fetch origin
-          git checkout dev
-          git pull origin dev
-
-      - name: Deploy development stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev up -d --build
