@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.5](https://github.com/pabloqr/sportying-backend/compare/v0.2.4...v0.2.5) (2026-04-19)
+
+
+### CI/CD
+
+* add back-merge workflow to automate merging main into dev after releases ([0654861](https://github.com/pabloqr/sportying-backend/commit/065486133152efd6566e8659a02113d8512067e8))
+* add back-merge workflow to automate merging main into dev after releases ([e31b7f9](https://github.com/pabloqr/sportying-backend/commit/e31b7f903ca7d7ea723b769fe809eb929199947d))
+
+## [0.2.4](https://github.com/pabloqr/sportying-backend/compare/v0.2.3...v0.2.4) (2026-04-12)
+
+
+### CI/CD
+
+* refactor JWT secret handling to use dummy environment variables i… ([038d088](https://github.com/pabloqr/sportying-backend/commit/038d08815aea78f58e84a303349877b098eb36d8))
+* refactor JWT secret handling to use dummy environment variables in workflows ([898fca9](https://github.com/pabloqr/sportying-backend/commit/898fca91dd452fd79f583744801eb321af77c2b1))
+
 ## [0.2.3](https://github.com/pabloqr/sportying-backend/compare/v0.2.2...v0.2.3) (2026-04-12)
 
 

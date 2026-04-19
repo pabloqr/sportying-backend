@@ -1,0 +1,100 @@
+name: Back-merge main -> dev
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag de release a referenciar en el PR (ej: v1.2.3)"
+        required: false
+        default: "manual"
+
+# Permisos mínimos necesarios:
+# - contents: read        --> checkout y operaciones de lectura sobre el repositorio
+# - pull-requests: write  --> creación del PR de back-merge
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  back-merge:
+    name: Create back-merge PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve release reference
+        id: release_ref
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ref=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for existing back-merge PR
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING_PR=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --head "main" \
+            --base "dev" \
+            --state open \
+            --json number \
+            --jq '.[0].number')
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "PR already exists: #$EXISTING_PR. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create back-merge PR
+        if: steps.check_pr.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REVIEWER_OPT=""
+          if [ -n "${{ vars.BACK_MERGE_REVIEWER }}" ]; then
+            REVIEWER_OPT="--reviewer ${{ vars.BACK_MERGE_REVIEWER }}"
+          fi
+
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --head "main" \
+            --base "dev" \
+            --title "chore: sync main -> dev post-release ${{ steps.release_ref.outputs.ref }}" \
+            --body "## Back-merge automático post-release
+
+          Este PR ha sido creado automáticamente tras publicarse la release \`${{ steps.release_ref.outputs.ref }}\` en \`main\`.
+
+          **Su fusión es parte del _definition of done_ del release.**
+          No se considera cerrado un release hasta que este PR esté mergeado.
+
+          ---
+
+          | Campo | Valor |
+          |---|---|
+          | Release | \`${{ steps.release_ref.outputs.ref }}\` |
+          | Tag commit | \`${{ github.sha }}\` |
+          | Publicado por | @${{ github.actor }} |
+
+          > El campo _Tag commit_ referencia el commit al que apunta el tag de release,
+          > que corresponde al merge commit del PR de release generado por Release Please.
+
+          ---
+
+          ### Si hay conflictos
+
+          Los archivos más habituales son:
+          - \`CHANGELOG.md\`: preservar la entrada publicada de \`main\` y mantener el orden esperado por Release Please.
+          - Archivos de versión (\`package.json\`, etc.): la versión publicada de \`main\` debe llegar a \`dev\`.
+          - Lockfiles: regenerar sobre la base reconciliada si el conflicto es complejo.
+          - Manifests de despliegue: distinguir si representan estado de producción o configuración futura.
+
+          En caso de duda, \`main\` es la fuente de verdad para todo lo ya publicado." \
+            $REVIEWER_OPT
