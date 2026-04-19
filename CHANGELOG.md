@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/pabloqr/sportying-backend/compare/v0.2.5...v0.2.6) (2026-04-19)
+
+
+### CI/CD
+
+* update GitHub Actions to use latest versions of actions ([2f63788](https://github.com/pabloqr/sportying-backend/commit/2f637882f6304b7a3a6d78b9fde66137081a3a24))
+
 ## [0.2.5](https://github.com/pabloqr/sportying-backend/compare/v0.2.4...v0.2.5) (2026-04-19)
 
 
