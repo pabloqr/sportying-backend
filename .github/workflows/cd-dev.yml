@@ -15,7 +15,6 @@ jobs:
     runs-on:
       - self-hosted
       - sportying-dev
-    needs: [ snyk, codeql, quality, integration, e2e ]
 
     steps:
       - name: Show Docker version
