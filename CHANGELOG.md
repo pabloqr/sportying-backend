@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.4](https://github.com/pabloqr/sportying-backend/compare/v0.2.3...v0.2.4) (2026-04-12)
+
+
+### CI/CD
+
+* refactor JWT secret handling to use dummy environment variables i… ([038d088](https://github.com/pabloqr/sportying-backend/commit/038d08815aea78f58e84a303349877b098eb36d8))
+* refactor JWT secret handling to use dummy environment variables in workflows ([898fca9](https://github.com/pabloqr/sportying-backend/commit/898fca91dd452fd79f583744801eb321af77c2b1))
+
 ## [0.2.3](https://github.com/pabloqr/sportying-backend/compare/v0.2.2...v0.2.3) (2026-04-12)
 
 
