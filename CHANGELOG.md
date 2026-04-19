@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.7](https://github.com/pabloqr/sportying-backend/compare/v0.2.6...v0.2.7) (2026-04-19)
+
+
+### CI/CD
+
+* remove unnecessary job dependencies from CD Development workflow ([8f5ecd5](https://github.com/pabloqr/sportying-backend/commit/8f5ecd5c3338095b41128135d669cb9498c34e0d))
+* update CI and CD workflows for improved deployment and consolidation of Dependabot updates ([6f8b9e2](https://github.com/pabloqr/sportying-backend/commit/6f8b9e259591d2cfd3e633838126dc61c337e45a))
+* update CI and CD workflows for improved deployment and consolidation of Dependabot updates ([291f91f](https://github.com/pabloqr/sportying-backend/commit/291f91f7c4c16a7706c84f463703427774d0a030))
+
 ## [0.2.6](https://github.com/pabloqr/sportying-backend/compare/v0.2.5...v0.2.6) (2026-04-19)
 
 
