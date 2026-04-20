@@ -68,13 +68,17 @@ jobs:
             NUMBER=$(_jq '.number')
             TITLE=$(_jq '.title')
             HEAD=$(_jq '.headRefName')
-            CHECKS=$(_jq '.statusCheckRollup')
+            CHECKS=$(echo "$row" | base64 --decode | jq '.statusCheckRollup')
 
-            # Comprobar que todos los checks han concluido con éxito
             TOTAL_CHECKS=$(echo "$CHECKS" | jq 'length')
-            PASSING_CHECKS=$(echo "$CHECKS" | jq '[.[] | select(.conclusion == "SUCCESS" or .conclusion == "success")] | length')
 
-            if [ "$TOTAL_CHECKS" -eq 0 ] || [ "$TOTAL_CHECKS" -ne "$PASSING_CHECKS" ]; then
+            # Contar checks con resultado negativo distinguiendo CheckRun y StatusContext
+            FAILED_CHECKS=$(echo "$CHECKS" | jq '[.[] | select(
+              (.__typename == "CheckRun" and .conclusion != null and .conclusion != "SUCCESS") or
+              (.__typename == "StatusContext" and .state != null and .state != "SUCCESS")
+            )] | length')
+
+            if [ "$TOTAL_CHECKS" -eq 0 ] || [ "$FAILED_CHECKS" -gt 0 ]; then
               echo "PR #$NUMBER ($TITLE) - omitida (checks no superados o pendientes)"
               SKIPPED_PRS="$SKIPPED_PRS\n- #$NUMBER: $TITLE"
               continue
