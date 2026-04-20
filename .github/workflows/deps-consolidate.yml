@@ -52,7 +52,7 @@ jobs:
 
           if [ "$TOTAL" -eq 0 ]; then
             echo "no_prs=true" >> "$GITHUB_OUTPUT"
-            echo "No hay PRs de Dependabot abiertas contra dev. Nada que consolidar."
+            echo "There are no open Dependabot PRs against dev. Nothing to consolidate."
             exit 0
           fi
 
@@ -79,7 +79,7 @@ jobs:
             )] | length')
 
             if [ "$TOTAL_CHECKS" -eq 0 ] || [ "$FAILED_CHECKS" -gt 0 ]; then
-              echo "PR #$NUMBER ($TITLE) - omitida (checks no superados o pendientes)"
+              echo "PR #$NUMBER ($TITLE) - skipped (checks failed or pending)"
               SKIPPED_PRS="$SKIPPED_PRS\n- #$NUMBER: $TITLE"
               continue
             fi
@@ -88,19 +88,19 @@ jobs:
             git fetch origin "$HEAD"
 
             if git merge --no-ff "origin/$HEAD" --no-edit -m "chore(deps): merge dependabot PR #$NUMBER - $TITLE"; then
-              echo "PR #$NUMBER ($TITLE) - mergeada correctamente"
+              echo "PR #$NUMBER ($TITLE) - merged successfully"
               MERGED_PRS="$MERGED_PRS\n- #$NUMBER: $TITLE"
             else
-              echo "PR #$NUMBER ($TITLE) - conflicto al mergear, omitida"
+              echo "PR #$NUMBER ($TITLE) - merge conflict, skipped"
               git merge --abort
-              SKIPPED_PRS="$SKIPPED_PRS\n- #$NUMBER: $TITLE (conflicto)"
+              SKIPPED_PRS="$SKIPPED_PRS\n- #$NUMBER: $TITLE (conflict)"
             fi
           done
 
           # Comprobar si se ha mergeado algo
           if [ -z "$MERGED_PRS" ]; then
             echo "merged_something=false" >> "$GITHUB_OUTPUT"
-            echo "Ninguna PR ha podido consolidarse."
+            echo "No PR could be consolidated."
             exit 0
           fi
 
@@ -110,12 +110,12 @@ jobs:
           git push origin "$BRANCH"
 
           # Construir el cuerpo de la PR
-          BODY="## Actualizaciones de dependencias consolidadas\n\n"
-          BODY="${BODY}Este PR agrupa las actualizaciones de Dependabot que han superado todos los checks de CI.\n\n"
-          BODY="${BODY}### Incluidas\n${MERGED_PRS}\n\n"
+          BODY="## Consolidated dependency updates\n\n"
+          BODY="${BODY}This PR groups the Dependabot updates that passed all CI checks.\n\n"
+          BODY="${BODY}### Included\n${MERGED_PRS}\n\n"
 
           if [ -n "$SKIPPED_PRS" ]; then
-            BODY="${BODY}### Omitidas (requieren revisión manual)\n${SKIPPED_PRS}\n"
+            BODY="${BODY}### Skipped (manual review required)\n${SKIPPED_PRS}\n"
           fi
 
           # Abrir PR de consolidación contra dev
@@ -128,5 +128,5 @@ jobs:
 
       - name: Summary
         if: steps.consolidate.outputs.no_prs == 'true'
-        run: echo "### No había PRs de Dependabot abiertas esta semana." >>
+        run: echo "### There were no open Dependabot PRs this week." >>
           "$GITHUB_STEP_SUMMARY"
