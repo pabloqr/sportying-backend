@@ -36,7 +36,7 @@ export class ReservationsService {
     // Obtener las pistas del complejo
     const courts = await this.prisma.courts.findMany({ where: { complex_id: complexId } });
 
-    // Obtener los índices y los estatus de las pistas por separado
+    // Obtener los índices y los estado de las pistas por separado
     const courtIds = courts.map((court) => court.id);
     const courtStatuses = await Promise.all(
       courts.map(async (court) => {
