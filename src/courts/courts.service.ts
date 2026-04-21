@@ -166,19 +166,21 @@ export class CourtsService {
     // Resolver la operación asíncrona
     const courtsWithStatus = await Promise.all(courtsWithStatusAsync);
 
-    // Filtrar las entradas del array si está definido el estatus
+    // Filtrar las entradas del array si está definido el estado
     let courtsWithStatusFiltered = courtsWithStatus;
     if (dto.statusData) {
       courtsWithStatusFiltered = courtsWithStatus.filter((court) => {
-        // Obtener los datos sobre el estatus del DTO y del objeto
+        // Obtener los datos sobre el estado del DTO y del objeto
         const dtoStatusData = dto.statusData;
         const courtStatusData = court.status_data;
 
-        // Verificar los datos para el estatus, el nivel de alerta y el tiempo de secado
-        const status = !dto.statusData.status || dtoStatusData.status === courtStatusData.status;
-        const alertLevel = !dto.statusData.alertLevel || dtoStatusData.alertLevel == courtStatusData.alertLevel;
+        // Verificar los datos para el estado, el nivel de alerta y el tiempo de secado
+        const status = !dtoStatusData || !dtoStatusData.status || dtoStatusData.status === courtStatusData.status;
+        const alertLevel =
+          !dtoStatusData || !dtoStatusData.alertLevel || dtoStatusData.alertLevel == courtStatusData.alertLevel;
         const estimatedDryingTime =
-          !dto.statusData.estimatedDryingTime ||
+          !dtoStatusData ||
+          !dtoStatusData.estimatedDryingTime ||
           dtoStatusData.estimatedDryingTime == courtStatusData.estimatedDryingTime;
 
         return status && alertLevel && estimatedDryingTime;
@@ -254,22 +256,22 @@ export class CourtsService {
       if (dto.statusData?.status && !INACTIVE_COURT_STATUS.has(dto.statusData.status)) {
         const weather = await this.weatherService.getWeatherFromId(complexId);
 
-        // Obtener los datos del estatus de la pista en función de la información meteorológica
+        // Obtener los datos del estado de la pista en función de la información meteorológica
         statusData = {
           status: weather.alert_level >= 2 ? CourtStatus.WEATHER : CourtStatus.OPEN,
           alertLevel: weather.alert_level,
           estimatedDryingTime: weather.estimated_drying_time,
         };
       } else {
-        // Establecer los datos del estatus de la pista con los dado o unos por defecto
+        // Establecer los datos del estado de la pista con los dado o unos por defecto
         statusData = {
-          status: dto.statusData.status ?? CourtStatus.OPEN,
+          status: dto.statusData?.status ?? CourtStatus.OPEN,
           alertLevel: 0,
           estimatedDryingTime: 0,
         };
       }
 
-      // Establecer el estatus de la pista
+      // Establecer el estado de la pista
       const courtStatus = await this.courtsStatusService.setCourtStatus(complexId, court.id, statusData);
 
       return new ResponseCourtDto({ ...court, statusData: courtStatus.statusData });
@@ -317,11 +319,11 @@ export class CourtsService {
         data: { ...data, updated_at: new Date() },
       });
 
-      // Actualizar el estatus de la pista
+      // Actualizar el estado de la pista
       const courtStatus = await this.courtsStatusService.setCourtStatus(complexId, courtId, {
-        status: dto.statusData.status,
-        alertLevel: dto.statusData.alertLevel,
-        estimatedDryingTime: dto.statusData.estimatedDryingTime,
+        status: dto.statusData?.status,
+        alertLevel: dto.statusData?.alertLevel,
+        estimatedDryingTime: dto.statusData?.estimatedDryingTime,
       });
 
       return new ResponseCourtDto({
@@ -444,7 +446,7 @@ export class CourtsService {
         const groupedAvailability: CourtAvailabilitySlotDto[] = [];
         if (reservations.length > 0) {
           // Intervalo actual
-          let currentAvailability: CourtAvailabilitySlotDto = undefined;
+          let currentAvailability: CourtAvailabilitySlotDto | undefined = undefined;
 
           reservations.forEach((reservation) => {
             // Si el intervalo actual es indefinido, actualizarlo y devolverlo

@@ -1,4 +1,10 @@
-import { Injectable, InternalServerErrorException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  OnModuleInit,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from 'openmeteo';
@@ -34,6 +40,34 @@ export class WeatherService implements OnModuleInit {
     private prisma: PrismaService,
     private analysisService: AnalysisService,
   ) {}
+
+  private getRequiredVariable<T>(source: { variables(index: number): T | null }, index: number, message: string): T {
+    const variable = source.variables(index);
+    if (!variable) {
+      throw new UnprocessableEntityException(message);
+    }
+    return variable;
+  }
+
+  private getRequiredValue(
+    source: { variables(index: number): { value(): number } | null },
+    index: number,
+    message: string,
+  ): number {
+    return this.getRequiredVariable(source, index, message).value();
+  }
+
+  private getRequiredValuesArray(
+    source: { variables(index: number): { valuesArray(): Float32Array<ArrayBufferLike> | null } | null },
+    index: number,
+    message: string,
+  ): number[] {
+    const values = this.getRequiredVariable(source, index, message).valuesArray();
+    if (!values) {
+      throw new UnprocessableEntityException(message);
+    }
+    return Array.from(values);
+  }
 
   /**
    * Transforms raw weather API data into a WeatherDataDto for database persistence.
@@ -142,9 +176,16 @@ export class WeatherService implements OnModuleInit {
     const response = responses[0];
 
     // Obtener los datos meteorológicos actuales, por horas y cada 15 minutos
-    const current = response.current()!;
-    const hourly = response.hourly()!;
-    const minutely15 = response.minutely15()!;
+    const current = response.current();
+    const hourly = response.hourly();
+    const minutely15 = response.minutely15();
+
+    // Verificar que los datos obtenidos de la API son correctos
+    if (!current || !hourly || !minutely15) {
+      throw new UnprocessableEntityException(
+        'Obtained invalid data (current/hourly/minutely) from external weather API.',
+      );
+    }
 
     // Calcular el array de horas proporcionado en la respuesta
     const hours = Array.from(
@@ -164,24 +205,62 @@ export class WeatherService implements OnModuleInit {
     const prevValidIndex = currValidIndex && currIndex - 1 >= 0;
     const nextValidIndex = currValidIndex && currIndex + 1 < hours.length;
 
-    // Extraer datos de 15 minutos (últimos 4 slots = 1 hora)
-    const rain15minArray = Array.from(minutely15.variables(1)!.valuesArray());
-    const precipitation15minArray = Array.from(minutely15.variables(3)!.valuesArray());
+    // Extraer datos actuales
+    const temperature = this.getRequiredValue(current, 0, 'Obtained invalid current temperature data from external weather API.');
+    const cloudCover = this.getRequiredValue(current, 2, 'Obtained invalid current cloud cover data from external weather API.');
+    const relativeHumidity = this.getRequiredValue(
+      current,
+      3,
+      'Obtained invalid current relative humidity data from external weather API.',
+    );
+    const windSpeed = this.getRequiredValue(current, 4, 'Obtained invalid current wind speed data from external weather API.');
+    const windDirection = this.getRequiredValue(
+      current,
+      5,
+      'Obtained invalid current wind direction data from external weather API.',
+    );
+    const windGusts = this.getRequiredValue(current, 6, 'Obtained invalid current wind gusts data from external weather API.');
+    const rain = this.getRequiredValue(current, 7, 'Obtained invalid current rain data from external weather API.');
+    const showers = this.getRequiredValue(current, 8, 'Obtained invalid current showers data from external weather API.');
+
+    // Extraer datos (raw) por horas
+    const precipProbabilityRaw = this.getRequiredValuesArray(
+      hourly,
+      0,
+      'Obtained invalid hourly precipitation probability data from external weather API.',
+    );
+    const precipIntensityRaw = this.getRequiredValuesArray(
+      hourly,
+      1,
+      'Obtained invalid hourly precipitation intensity data from external weather API.',
+    );
+
+    // Extraer datos (raw) de 15 minutos (últimos 4 slots = 1 hora)
+    const rain15minArray = this.getRequiredValuesArray(
+      minutely15,
+      1,
+      'Obtained invalid minutely rain data from external weather API.',
+    );
+    const precipitation15minArray = this.getRequiredValuesArray(
+      minutely15,
+      3,
+      'Obtained invalid minutely precipitation data from external weather API.',
+    );
 
     // Devolver los datos extraídos de la API
     return {
-      temperature_2m: current.variables(0)!.value(),
-      relative_humidity_2m: current.variables(3)!.value(),
-      cloud_cover: current.variables(2)!.value(),
-      wind_speed_10m: current.variables(4)!.value(),
-      wind_direction_10m: current.variables(5)!.value(),
-      wind_gusts_10m: current.variables(6)!.value(),
-      rain: current.variables(7)!.value(),
-      showers: current.variables(8)!.value(),
-      precip_probability_prev: prevValidIndex ? hourly.variables(0)!.valuesArray()[currIndex - 1] : -1,
-      precip_probability_curr: currValidIndex ? hourly.variables(0)!.valuesArray()[currIndex] : -1,
-      precip_probability_next: nextValidIndex ? hourly.variables(0)!.valuesArray()[currIndex + 1] : -1,
-      precip_intensity_prev: prevValidIndex ? hourly.variables(1)!.valuesArray()[currIndex - 1] : -1.0,
+      temperature_2m: temperature,
+      relative_humidity_2m: relativeHumidity,
+      cloud_cover: cloudCover,
+      wind_speed_10m: windSpeed,
+      wind_direction_10m: windDirection,
+      wind_gusts_10m: windGusts,
+      rain,
+      showers,
+      precip_probability_prev: prevValidIndex ? (precipProbabilityRaw.at(currIndex - 1) ?? -1) : -1,
+      precip_probability_curr: currValidIndex ? (precipProbabilityRaw.at(currIndex) ?? -1) : -1,
+      precip_probability_next: nextValidIndex ? (precipProbabilityRaw.at(currIndex + 1) ?? -1) : -1,
+      precip_intensity_prev: prevValidIndex ? (precipIntensityRaw.at(currIndex - 1) ?? -1.0) : -1.0,
       rain_15min: rain15minArray,
       precipitation_15min: precipitation15minArray,
     };
@@ -417,6 +496,11 @@ export class WeatherService implements OnModuleInit {
   async getWeatherFromId(complexId: number): Promise<ResponseWeatherDataDto> {
     // Obtener los datos del complejo pedido
     const complex = await this.prisma.complexes.findUnique({ where: { id: complexId } });
+
+    // Verificar que se ha obtenido un complejo válido
+    if (!complex) {
+      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
+    }
 
     // Obtener los datos meteorológicos del complejo
     const weather = await this.getWeatherFromCoordinates(complex.loc_latitude, complex.loc_longitude);
