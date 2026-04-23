@@ -331,7 +331,7 @@ export class AnalysisService {
       // PASO 2.2: Calcular la suma total de la intensidad efectiva del agua durante última hora
       const intensitySum = intensityArray.reduce((sum, intensity) => sum + intensity, 0);
 
-      // PASO 3: Si no se supera el límite para establecer un bloqueo inicial (no está lloviendo), se verifica si la
+      // PASO 3: Si no se supera el límite para establecer un bloqueo inicial (no está lloviendo), verificar si la
       // suma total de la última hora supera el límite para establecer un bloqueo
       if (intensitySum < intensitySumThreshold) {
         const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(

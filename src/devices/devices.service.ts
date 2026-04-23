@@ -44,19 +44,19 @@ export class DevicesService {
   //   value: number,
   //   timestamp: Date,
   // ): Promise<void> {
-  //   // Se obtiene la información sobre el dispositivo actual
+  //   // Obtener la información sobre el dispositivo actual
   //   const device = await this.getDevice(complexId, deviceId);
-  //   // Se obtienen las pistas que tiene asignadas en dispositivo
+  //   // Obtener las pistas que tiene asignadas en dispositivo
   //   const courtIds = (await this.courtsDevicesService.getDeviceCourts(complexId, deviceId, {})).courts;
 
-  //   // Se procesa la telemetría para actualizar el estado del sistema
+  //   // Procesar la telemetría para actualizar el estado del sistema
   //   if (!courtIds.length) return;
   //   switch (device.type) {
   //     case DeviceType.PRESENCE:
-  //       // Se procesan los datos
+  //       // Procesar los datos
   //       return await this.analysisService.processAvailabilityTelemetry(!value, timestamp, courtIds[0].id);
   //     case DeviceType.RAIN:
-  //       // Se obtiene la telemetría anterior del dispositivo
+  //       // Obtener la telemetría anterior del dispositivo
   //       const deviceTelemetry = await this.getDeviceTelemetry(complexId, deviceId, {
   //         orderParams: [
   //           {
@@ -66,10 +66,10 @@ export class DevicesService {
   //         ],
   //       });
 
-  //       // Se trata de obtener la telemetría previa, o se establece una por defecto
+  //       // Tratar de obtener la telemetría previa, o establecer una por defecto
   //       const previousTelemetry = deviceTelemetry.telemetry.length >= 2 ? deviceTelemetry.telemetry[1] : null;
 
-  //       // Se procesan los datos
+  //       // Procesar los datos
   //       return await this.analysisService.processRainTelemetry(
   //         complexId,
   //         previousTelemetry,
@@ -93,12 +93,12 @@ export class DevicesService {
     dto: GetDevicesDto,
     checkDeleted: boolean = false,
   ): Promise<Array<ResponseDeviceDto>> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.devicesWhereInput = {
-      // Se evita obtener las pistas eliminados
+      // Evitar obtener las pistas eliminados
       ...(!checkDeleted && { is_delete: false }),
 
-      // Se obtienen solo los dispositivos del complejo actual
+      // Obtener solo los dispositivos del complejo actual
       ...{ complex_id: complexId },
 
       ...(dto.id && { id: dto.id }),
@@ -106,7 +106,7 @@ export class DevicesService {
       ...(dto.type && { type: dto.type }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
+    // Obtener el modo de ordenación de los elementos
     const orderBy: Prisma.devicesOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
@@ -117,7 +117,7 @@ export class DevicesService {
       });
     }
 
-    // Se realiza la consulta seleccionando las columnas que se quieren devolver
+    // Realizar la consulta seleccionando las columnas que se quieren devolver
     const devices = await this.prisma.devices.findMany({
       where,
       select: {
@@ -131,7 +131,7 @@ export class DevicesService {
       orderBy,
     });
 
-    // Se devuelve la lista modificando los elementos obtenidos
+    // Devolver la lista modificando los elementos obtenidos
     return devices.map((device) => new ResponseDeviceDto(device));
   }
 
@@ -145,7 +145,7 @@ export class DevicesService {
    * @throws {InternalServerErrorException} If multiple devices are found with the same ID.
    */
   async getDevice(complexId: number, deviceId: number): Promise<ResponseDeviceDto> {
-    // Se trata de obtener el dispositivo con el 'id' dado
+    // Tratar de obtener el dispositivo con el 'id' dado
     const result = await this.getDevices(complexId, { id: deviceId });
 
     // Se verifican los elementos obtenidos
@@ -168,11 +168,11 @@ export class DevicesService {
    * @return {Promise<ResponseDeviceDto>} A promise that resolves to the newly created device details.
    */
   async createDevice(complexId: number, dto: CreateDeviceDto): Promise<ResponseDeviceDto> {
-    // Se crea la API Key para el dispositivo
+    // Crear la API Key para el dispositivo
     const apiKey = await this.authService.generateApiKey();
 
     try {
-      // Se crea la entrada para el dispositivo en la BD
+      // Crear la entrada para el dispositivo en la BD
       const device = await this.prisma.devices.create({
         data: {
           id_key: apiKey.idKey,
@@ -211,17 +211,17 @@ export class DevicesService {
    * ResponseDeviceDto object.
    */
   async updateDevice(complexId: number, deviceId: number, dto: UpdateDeviceDto): Promise<ResponseDeviceDto> {
-    // Se verifica que el cuerpo contiene elementos
+    // Verificar que el cuerpo contiene elementos
     this.errorsService.noBodyError(dto);
 
-    // Se establecen las propiedades a actualizar
+    // Establecer las propiedades a actualizar
     const data: Prisma.devicesUpdateInput = {
       ...(dto.type && { type: dto.type }),
       ...(dto.status && { status: dto.status }),
     };
 
     try {
-      // Se actualiza la entrada del dispositivo
+      // Actualizar la entrada del dispositivo
       const device = await this.prisma.devices.update({
         where: {
           id: deviceId,
@@ -289,12 +289,12 @@ export class DevicesService {
     deviceId: number,
     dto: GetDeviceTelemetryDto,
   ): Promise<ResponseDeviceTelemetryDto> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.devices_telemetryWhereInput = {
-      // Se obtienen solo las entradas del dispositivo dado
+      // Obtener solo las entradas del dispositivo dado
       ...{ device_id: deviceId },
 
-      // Se establecen condiciones para los límites de los valores
+      // Establecer condiciones para los límites de los valores
       ...(dto.minValue && {
         value: {
           gt: dto.minValue,
@@ -307,8 +307,8 @@ export class DevicesService {
       }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
-    // En caso de no estar incluido, se ordena descendentemente por la fecha de creación
+    // Obtener el modo de ordenación de los elementos
+    // En caso de no estar incluido, ordenar descendentemente por la fecha de creación
     const orderBy: Prisma.devices_telemetryOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
@@ -325,14 +325,14 @@ export class DevicesService {
 
     const device = await this.getDevice(complexId, deviceId);
 
-    // Se obtiene la telemetría del dispositivo dado con las condiciones especificadas
+    // Obtener la telemetría del dispositivo dado con las condiciones especificadas
     const telemetry = await this.prisma.devices_telemetry.findMany({
       where,
       orderBy,
       ...(dto.last && dto.last && { take: 1 }),
     });
 
-    // Se devuelve el objeto obtenido
+    // Devolver el objeto obtenido
     return new ResponseDeviceTelemetryDto({
       deviceId,
       complexId,
@@ -355,7 +355,7 @@ export class DevicesService {
     dto: CreateDeviceTelemetryDto,
   ): Promise<ResponseDeviceTelemetryDto> {
     try {
-      // Se añade una nueva entrada con la telemetría del dispositivo
+      // Añadir una nueva entrada con la telemetría del dispositivo
       const telemetry = await this.prisma.devices_telemetry.create({
         data: {
           device_id: deviceId,
@@ -389,9 +389,9 @@ export class DevicesService {
    * @return {Promise<ResponseDeviceStatusDto>} A promise that resolves with the complete status of the device.
    */
   async getDeviceStatus(complexId: number, deviceId: number): Promise<ResponseDeviceStatusDto> {
-    // Se obtienen todos los datos del dispositivo
+    // Obtener todos los datos del dispositivo
     const device = await this.getDevice(complexId, deviceId);
-    // Se devuelven los datos apropiados
+    // Devolver los datos apropiados
     return new ResponseDeviceStatusDto({
       ...device,
       created_at: device.updatedAt,
@@ -413,7 +413,7 @@ export class DevicesService {
     dto: CreateDeviceStatusDto,
   ): Promise<ResponseDeviceStatusDto> {
     try {
-      // Se añade una nueva entrada con la telemetría del dispositivo
+      // Añadir una nueva entrada con la telemetría del dispositivo
       const device = await this.prisma.devices.update({
         where: {
           id: deviceId,

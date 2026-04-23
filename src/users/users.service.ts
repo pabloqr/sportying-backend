@@ -24,14 +24,14 @@ export class UsersService {
    * `ResponseUserDto`.
    */
   async getUsers(dto: GetUsersDto, checkDeleted: boolean = false): Promise<Array<ResponseUserDto>> {
-    // Se construye el objeto 'where' para establecer las condiciones de la consulta
+    // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.usersWhereInput = {
-      // Se evita obtener los usuarios eliminados
+      // Evitar obtener los usuarios eliminados
       ...(!checkDeleted && { is_delete: false }),
 
       ...(dto.id && { id: dto.id }),
 
-      // Se establece la condición para obtener el rol
+      // Establecer la condición para obtener el rol
       ...(dto.role && {
         AND: [
           { role: dto.role as user_role },
@@ -41,7 +41,7 @@ export class UsersService {
         ],
       }),
 
-      // Se establecen las condiciones para los campos de tipo 'string'
+      // Establecer las condiciones para los campos de tipo 'string'
       ...(dto.name && { name: { contains: dto.name, mode: 'insensitive' } }),
       ...(dto.surname && { surname: { contains: dto.surname, mode: 'insensitive' } }),
 
@@ -50,7 +50,7 @@ export class UsersService {
       ...(dto.phoneNumber && { phone_number: dto.phoneNumber }),
     };
 
-    // Se obtiene el modo de ordenación de los elementos
+    // Obtener el modo de ordenación de los elementos
     const orderBy: Prisma.usersOrderByWithRelationInput[] = [];
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
@@ -61,7 +61,7 @@ export class UsersService {
       });
     }
 
-    // Se realiza la consulta especificando las columnas para evitar devolver las credenciales privadas
+    // Realizar la consulta especificando las columnas para evitar devolver las credenciales privadas
     const users = await this.prisma.users.findMany({
       where,
       select: {
@@ -79,7 +79,7 @@ export class UsersService {
       orderBy,
     });
 
-    // Se formatea el campo para el rol de usuario
+    // Formatear el campo para el rol de usuario
     return users.map((user) => ({
       ...user,
       role: user.role as Role,
@@ -95,7 +95,7 @@ export class UsersService {
    * @throws {InternalServerErrorException} If multiple users are found with the specified ID.
    */
   async getUserById(userId: number): Promise<ResponseUserDto> {
-    // Se trata de obtener el usuario con el 'id' dado
+    // Tratar de obtener el usuario con el 'id' dado
     const result = await this.getUsers({ id: userId });
 
     // Se verifican los elementos obtenidos
@@ -117,7 +117,7 @@ export class UsersService {
    * @throws {InternalServerErrorException} If multiple users are found with the provided email.
    */
   async getUserByMail(userMail: string): Promise<ResponseUserDto> {
-    // Se trata de obtener el usuario con el 'mail' dado
+    // Tratar de obtener el usuario con el 'mail' dado
     const result = await this.getUsers({ mail: userMail });
 
     // Se verifican los elementos obtenidos
@@ -242,9 +242,9 @@ export class UsersService {
         // Obtener el rol del usuario
         const role = user.role as Role;
 
-        // Verificar si el usuario que se crea es un administrador
+        // Verificar si el usuario que crear es un administrador
         if (role === Role.ADMIN) {
-          // Se crea la entrada para el administrador en la BD
+          // Crear la entrada para el administrador en la BD
           await this.prisma.admins.create({
             data: {
               id: user.id,
@@ -294,7 +294,7 @@ export class UsersService {
     };
 
     try {
-      // Se actualiza la entrada del usuario
+      // Actualizar la entrada del usuario
       const user = await this.prisma.users.update({
         where: {
           id: userId,
@@ -303,9 +303,9 @@ export class UsersService {
         data: { ...data, updated_at: new Date() },
       });
 
-      // Se verifica el rol del usuario
+      // Verificar el rol del usuario
       if (dto.role) {
-        // Se trata de obtener la entrada en la tabla de administradores para el usuario actual
+        // Tratar de obtener la entrada en la tabla de administradores para el usuario actual
         const isAdmin = await this.prisma.admins.findUnique({
           where: {
             id_complex_id: {
@@ -316,7 +316,7 @@ export class UsersService {
         });
 
         if (dto.role === Role.ADMIN) {
-          // Si el rol nuevo es de administrador y no está almacenado, se crea la entrada en la tabla de administradores
+          // Si el rol nuevo es de administrador y no está almacenado, crear la entrada en la tabla de administradores
           if (isAdmin === null) {
             await this.prisma.admins.create({
               data: {
@@ -339,7 +339,7 @@ export class UsersService {
             });
           }
         } else if (isAdmin !== null) {
-          // Si el rol nuevo es de usuario y está almacenado, se elimina la entrada de la tabla de administradores
+          // Si el rol nuevo es de usuario y está almacenado, eliminar la entrada de la tabla de administradores
           await this.prisma.admins.update({
             where: {
               id_complex_id: {

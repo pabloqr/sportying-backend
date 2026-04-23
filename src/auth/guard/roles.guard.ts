@@ -13,19 +13,19 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    // Se trata de obtener los roles especificados en la cabecera de los métodos de las peticiones
+    // Tratar de obtener los roles especificados en la cabecera de los métodos de las peticiones
     const roles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [context.getHandler(), context.getClass()]);
 
-    // Se comprueba si se requiere algún rol
+    // Comprobar si se requiere algún rol
     if (!roles?.length) {
       return true;
     }
 
-    // Se obtiene el usuario y su rol
+    // Obtener el usuario y su rol
     const { user } = context.switchToHttp().getRequest();
     const currentRole = user?.role ? Role[user.role as keyof typeof Role] : Role.NONE;
 
-    // Se verifica si el usuario está autorizado (tiene el rol necesario)
+    // Verificar si el usuario está autorizado (tiene el rol necesario)
     return roles.some((role) =>
       this.accessControl.isAuthorized({
         currentRole,

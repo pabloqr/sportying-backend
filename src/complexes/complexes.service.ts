@@ -148,7 +148,7 @@ export class ComplexesService {
    */
   async createComplex(dto: CreateComplexDto): Promise<ResponseComplexDto> {
     try {
-      // Crear la entrada para el complejo en la BD, o se actualiza una existente, obteniendo los datos de este
+      // Crear la entrada para el complejo en la BD, o actualizar una existente, obteniendo los datos de este
       const complex = await this.prisma.complexes.upsert({
         where: {
           loc_latitude_loc_longitude: {
