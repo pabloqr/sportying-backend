@@ -147,6 +147,10 @@ describe('UtilitiesService', () => {
       expect(result.getSeconds()).toBe(0);
       expect(result.getMilliseconds()).toBe(0);
     });
+
+    it('throws BadRequestException when the time format is invalid', () => {
+      expect(() => service.stringToDate('25:99')).toThrow(BadRequestException);
+    });
   });
 
   describe('getTimeBlock', () => {

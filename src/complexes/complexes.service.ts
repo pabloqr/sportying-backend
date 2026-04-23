@@ -129,13 +129,19 @@ export class ComplexesService {
     const result = await this.getComplexes({ id: complexId });
 
     // Verificar los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
-    } else if (result.length > 1) {
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple complexes found with ID ${complexId}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const complex = result[0];
+
+    // Verificar que es un objeto válido
+    if (!complex) {
+      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
+    }
+
+    return complex;
   }
 
   /**

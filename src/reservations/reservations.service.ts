@@ -28,6 +28,55 @@ export class ReservationsService {
     private courtsStatusService: CourtsStatusService,
   ) {}
 
+  private getReservationOrderValue(
+    reservation: ResponseReservationDto,
+    field: ReservationOrderField,
+  ): Date | number | undefined {
+    switch (field) {
+      case ReservationOrderField.STATUS:
+        return RESERVATION_AVAILABILITY_STATUS_ORDER[reservation.status];
+      case ReservationOrderField.RESERVATION_STATUS:
+        return RESERVATION_STATUS_ORDER[reservation.reservationStatus];
+      case ReservationOrderField.TIME_FILTER:
+        return RESERVATION_TIME_FILTER_ORDER[reservation.timeFilter];
+      default:
+        return reservation[field];
+    }
+  }
+
+  private compareReservations(
+    reservationA: ResponseReservationDto,
+    reservationB: ResponseReservationDto,
+    orderParams: NonNullable<GetReservationsDto['orderParams']>,
+  ): number {
+    // Procesar todos los parámetros de ordenación
+    for (const orderParam of orderParams) {
+      // Obtener los valores comparables
+      const valueA = this.getReservationOrderValue(reservationA, orderParam.field);
+      const valueB = this.getReservationOrderValue(reservationB, orderParam.field);
+
+      // Si son iguales, continuar
+      if (valueA === valueB) continue;
+      // Si alguno de los dos nos es válido, devolver el valor de la comparación
+      if (!valueA) return orderParam.order === 'desc' ? 1 : -1;
+      if (!valueB) return orderParam.order === 'desc' ? -1 : 1;
+
+      // Realizar la comparación entre los dos valores para obtener el valor de la comparación
+      const comparison =
+        valueA instanceof Date && valueB instanceof Date
+          ? valueA.getTime() - valueB.getTime()
+          : valueA < valueB
+            ? -1
+            : 1;
+
+      // Si son diferentes, devolver el valor de la comparación
+      if (comparison !== 0) return orderParam.order === 'desc' ? comparison * -1 : comparison;
+    }
+
+    // Devolver el valor que representa la igualdad
+    return 0;
+  }
+
   /**
    * Validates if the given court ID is valid and currently open in the specified complex.
    *
@@ -51,11 +100,17 @@ export class ReservationsService {
 
     // Obtener la posición del 'id' de la pista en el array (si no se encuentra devolver -1)
     const index = courtIds.indexOf(courtId);
+
+    if (index === -1) return false;
+
+    const courtStatus = courtStatuses[index];
+
+    if (!courtStatus) return false;
+
     return (
-      index !== -1 &&
-      (courtStatuses[index].status === CourtStatus.OPEN ||
-        (courtStatuses[index].status === CourtStatus.WEATHER &&
-          this.utilitiesService.dateIsEqualOrGreater(courtStatuses[index].estimatedDryingTime, dateIni, new Date())))
+      courtStatus.status === CourtStatus.OPEN ||
+      (courtStatus.status === CourtStatus.WEATHER &&
+        this.utilitiesService.dateIsEqualOrGreater(courtStatus.estimatedDryingTime, dateIni, new Date()))
     );
   }
 
@@ -162,6 +217,8 @@ export class ReservationsService {
     if (dto.orderParams) {
       dto.orderParams.forEach((orderParam) => {
         const field = RESERVATION_ORDER_FIELD_MAP[orderParam.field];
+        if (!field) return;
+
         orderBy.push({
           [field]: orderParam.order,
         });
@@ -202,7 +259,7 @@ export class ReservationsService {
       }
     }
 
-    return Promise.all(
+    const responseReservations = await Promise.all(
       filteredReservations.map(async (reservation) => {
         const timeFilter = this.utilitiesService.getTimeFilterFromDate(reservation.date_end);
 
@@ -220,6 +277,15 @@ export class ReservationsService {
         });
       }),
     );
+
+    // Obtener los parámetros de ordenamiento
+    const { orderParams } = dto;
+
+    // Si no existen o no se ha proporcionado ninguno, devolver
+    if (!orderParams?.length) return responseReservations;
+
+    // Ordenar las reservas
+    return responseReservations.sort((a, b) => this.compareReservations(a, b, orderParams));
   }
 
   /**
@@ -235,13 +301,19 @@ export class ReservationsService {
     const result = await this.getReservations({ id: reservationId });
 
     // Verificar los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Reservation with ID ${reservationId} not found.`);
-    } else if (result.length > 1) {
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple reservations found with ID ${reservationId}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const reservation = result[0];
+
+    // Verificar que es un objeto válido
+    if (!reservation) {
+      throw new NotFoundException(`Reservation with ID ${reservationId} not found.`);
+    }
+
+    return reservation;
   }
 
   /**

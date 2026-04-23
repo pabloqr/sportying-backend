@@ -17,7 +17,7 @@ import { Coordinates } from 'src/common/validators';
 
 export enum ComplexOrderField {
   ID = 'id',
-  COMPLEX_NAME = 'complexId',
+  COMPLEX_NAME = 'complexName',
   TIME_INI = 'timeIni',
   TIME_END = 'timeEnd',
   LOC_LATITUDE = 'locLatitude',
@@ -26,7 +26,7 @@ export enum ComplexOrderField {
   UPDATED_AT = 'updatedAt',
 }
 
-export const COMPLEX_ORDER_FIELD_MAP: Record<string, string> = {
+export const COMPLEX_ORDER_FIELD_MAP: Record<ComplexOrderField, keyof Prisma.complexesOrderByWithRelationInput> = {
   id: 'id',
   complexName: 'complex_name',
   timeIni: 'time_ini',

@@ -205,13 +205,19 @@ export class CourtsService {
     const result = await this.getCourts(complexId, { id: courtId }, checkDeleted);
 
     // Verificar los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Court with ID ${courtId} not found.`);
-    } else if (result.length > 1) {
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple courts found with ID ${courtId}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const court = result[0];
+
+    // Verificar que es un objeto válido
+    if (!court) {
+      throw new NotFoundException(`Court with ID ${courtId} not found.`);
+    }
+
+    return court;
   }
 
   /**

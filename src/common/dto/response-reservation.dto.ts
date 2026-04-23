@@ -36,7 +36,7 @@ export class ResponseReservationDto {
 
   @IsEnum(ReservationTimeFilter)
   @IsOptional()
-  timeFilter?: ReservationTimeFilter;
+  timeFilter: ReservationTimeFilter;
 
   @IsDate()
   @IsNotEmpty()

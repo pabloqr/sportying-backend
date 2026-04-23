@@ -13,7 +13,7 @@ export enum DeviceOrderField {
   UPDATED_AT = 'updatedAt',
 }
 
-export const DEVICE_ORDER_FIELD_MAP: Record<string, string> = {
+export const DEVICE_ORDER_FIELD_MAP: Record<DeviceOrderField, keyof Prisma.devicesOrderByWithRelationInput> = {
   id: 'id',
   complexId: 'complex_id',
   type: 'type',
@@ -58,16 +58,16 @@ export class GetDevicesDto {
     if (!value) return value;
 
     try {
-      // Si ya es un array, se convierte a valores numéricos y se devuelve
+      // Si ya es un array, convertir a valores numéricos y devolver
       if (Array.isArray(value)) {
         return value.map(Number);
       }
 
-      // Si es un string, se procesa para limpiarlo, formatearlo y devolverlo
+      // Si es un string, procesar para limpiarlo, formatearlo y devolverlo
       if (typeof value === 'string') {
-        // Si se han incluido corchetes, se eliminan
+        // Si se han incluido corchetes, eliminar
         const cleanValue = value.replace(/[\[\]]/g, '');
-        // Se separan los elementos por comas y se convierte a números, filtrando valores vacíos
+        // Separar los elementos por comas y convertir a números, filtrando valores vacíos
         return cleanValue
           .split(',')
           .filter((item) => item.trim() !== '')

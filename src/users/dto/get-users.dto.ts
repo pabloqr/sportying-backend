@@ -27,7 +27,7 @@ export enum UserOrderField {
   UPDATED_AT = 'updatedAt',
 }
 
-export const USER_ORDER_FIELD_MAP: Record<string, string> = {
+export const USER_ORDER_FIELD_MAP: Record<UserOrderField, keyof Prisma.usersOrderByWithRelationInput> = {
   id: 'id',
   role: 'role',
   name: 'name',

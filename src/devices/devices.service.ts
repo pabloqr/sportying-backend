@@ -148,14 +148,20 @@ export class DevicesService {
     // Tratar de obtener el dispositivo con el 'id' dado
     const result = await this.getDevices(complexId, { id: deviceId });
 
-    // Se verifican los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Device with ID ${deviceId} not found.`);
-    } else if (result.length > 1) {
+    // Verificar los elementos obtenidos
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple devices found with ID ${deviceId}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const device = result[0];
+
+    // Verificar que es un objeto válido
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${deviceId} not found.`);
+    }
+
+    return device;
   }
 
   /**

@@ -85,12 +85,18 @@ export class SportsService {
     const result = await this.getSports({ keys: [sportKey] });
 
     // Verificar los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Sport with Key ${sportKey} not found.`);
-    } else if (result.length > 1) {
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple sports found with Key ${sportKey}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const sport = result[0];
+
+    // Verificar que es un objeto válido
+    if (!sport) {
+      throw new NotFoundException(`Sport with Key ${sportKey} not found.`);
+    }
+
+    return sport;
   }
 }

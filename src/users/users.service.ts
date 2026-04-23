@@ -98,14 +98,20 @@ export class UsersService {
     // Tratar de obtener el usuario con el 'id' dado
     const result = await this.getUsers({ id: userId });
 
-    // Se verifican los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`User with ID ${userId} not found.`);
-    } else if (result.length > 1) {
+    // Verificar los elementos obtenidos
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple users found with ID ${userId}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const user = result[0];
+
+    // Verificar que es un objeto válido
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found.`);
+    }
+
+    return user;
   }
 
   /**
@@ -120,14 +126,20 @@ export class UsersService {
     // Tratar de obtener el usuario con el 'mail' dado
     const result = await this.getUsers({ mail: userMail });
 
-    // Se verifican los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`User with mail ${userMail} not found.`);
-    } else if (result.length > 1) {
+    // Verificar los elementos obtenidos
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple users found with mail ${userMail}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const user = result[0];
+
+    // Verificar que es un objeto válido
+    if (!user) {
+      throw new NotFoundException(`User with mail ${userMail} not found.`);
+    }
+
+    return user;
   }
 
   /**
@@ -165,14 +177,15 @@ export class UsersService {
     }
 
     // Verificar si hay un usuario con los datos proporcionados almacenado en la BD
-    const existingUser = await this.getUsers({ mail: dto.mail }, true);
+    const users = await this.getUsers({ mail: dto.mail }, true);
+    const existingUser = users[0];
 
-    if (existingUser.length > 0) {
+    if (existingUser) {
       // Si el usuario se encuentra en la BD, actualizar su estado para habilitarlo
       try {
         const user = await this.prisma.users.update({
           where: {
-            id: existingUser[0].id,
+            id: existingUser.id,
           },
           data: {
             is_delete: false,
@@ -280,7 +293,7 @@ export class UsersService {
   async updateUser(userId: number, dto: UpdateUserDto): Promise<ResponseUserDto> {
     this.errorsService.noBodyError(dto);
 
-    // Se establecen las propiedades a actualizar
+    // Establecer las propiedades a actualizar
     const data = {
       ...(dto.role && { role: dto.role as user_role }),
       ...(dto.password && {

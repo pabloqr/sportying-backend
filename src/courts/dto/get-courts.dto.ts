@@ -14,7 +14,7 @@ export enum CourtOrderField {
   UPDATED_AT = 'updatedAt',
 }
 
-export const COURT_ORDER_FIELD_MAP: Record<string, string> = {
+export const COURT_ORDER_FIELD_MAP: Record<CourtOrderField, keyof Prisma.courtsOrderByWithRelationInput> = {
   id: 'id',
   sportKey: 'sport_key',
   number: 'number',
