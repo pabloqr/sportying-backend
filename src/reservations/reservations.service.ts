@@ -1,16 +1,20 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Prisma } from 'prisma/generated/client';
+import { ResponseReservationDto } from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
+import { CourtStatus } from 'src/courts/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '../../prisma/generated/client';
-import { ResponseReservationDto } from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
-import { CourtStatus } from '../courts/enums';
 import {
   CreateReservationDto,
   GetReservationsDto,
   GetUserReservationsDto,
+  RESERVATION_AVAILABILITY_STATUS_ORDER,
   RESERVATION_ORDER_FIELD_MAP,
+  RESERVATION_STATUS_ORDER,
+  RESERVATION_TIME_FILTER_ORDER,
+  ReservationOrderField,
   UpdateReservationDto,
 } from './dto';
 import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from './enums';

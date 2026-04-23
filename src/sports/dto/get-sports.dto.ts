@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
-import { OrderBy } from '../../common/enums';
+import { Prisma } from 'prisma/generated/client';
+import { OrderBy } from 'src/common/enums';
 
 export enum SportOrderField {
   KEY = 'key',

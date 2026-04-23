@@ -7,13 +7,13 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderBy } from 'src/common/enums';
 import { ComplexOrderField } from 'src/complexes/dto';
-import { ErrorsService } from '../../../src/common/errors.service';
-import { UtilitiesService } from '../../../src/common/utilities.service';
-import { ComplexesService } from '../../../src/complexes/complexes.service';
-import { CourtsService } from '../../../src/courts/courts.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { SportsService } from '../../../src/sports/sports.service';
-import { WeatherService } from '../../../src/weather/weather.service';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { ComplexesService } from 'src/complexes/complexes.service';
+import { CourtsService } from 'src/courts/courts.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { SportsService } from 'src/sports/sports.service';
+import { WeatherService } from 'src/weather/weather.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

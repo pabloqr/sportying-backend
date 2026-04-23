@@ -1,5 +1,5 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { DeviceType } from '../../devices/enum';
+import { DeviceType } from 'src/devices/enum';
 
 export class DeviceTelemetrySlotDto {
   @IsNumber()

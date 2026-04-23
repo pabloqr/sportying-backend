@@ -1,9 +1,9 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { fetchWeatherApi } from 'openmeteo';
-import { AnalysisService } from '../../../src/common/analysis.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { WeatherService } from '../../../src/weather/weather.service';
+import { AnalysisService } from 'src/common/analysis.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { WeatherService } from 'src/weather/weather.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

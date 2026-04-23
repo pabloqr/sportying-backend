@@ -1,10 +1,10 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '../../../src/auth/auth.service';
-import { ErrorsService } from '../../../src/common/errors.service';
-import { DevicesService } from '../../../src/devices/devices.service';
-import { DeviceStatus, DeviceType } from '../../../src/devices/enum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { AuthService } from 'src/auth/auth.service';
+import { ErrorsService } from 'src/common/errors.service';
+import { DevicesService } from 'src/devices/devices.service';
+import { DeviceStatus, DeviceType } from 'src/devices/enum';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

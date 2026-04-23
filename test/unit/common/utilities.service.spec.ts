@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtStatus } from 'src/courts/enums';

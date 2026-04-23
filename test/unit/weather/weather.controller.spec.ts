@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ResponseComplexWeatherDto } from '../../../src/common/dto';
-import { WeatherController } from '../../../src/weather/weather.controller';
-import { WeatherService } from '../../../src/weather/weather.service';
+import { ResponseComplexWeatherDto } from 'src/common/dto';
+import { WeatherController } from 'src/weather/weather.controller';
+import { WeatherService } from 'src/weather/weather.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

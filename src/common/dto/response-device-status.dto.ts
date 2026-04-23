@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { DeviceStatus } from '../../devices/enum';
+import { DeviceStatus } from 'src/devices/enum';
 
 export class ResponseDeviceStatusDto {
   @Type(() => Number)

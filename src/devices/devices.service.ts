@@ -1,14 +1,14 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '../../prisma/generated/client';
-import { AuthService } from '../auth/auth.service';
+import { Prisma } from 'prisma/generated/client';
+import { AuthService } from 'src/auth/auth.service';
 import {
   DeviceTelemetrySlotDto,
   ResponseDeviceDto,
   ResponseDeviceStatusDto,
   ResponseDeviceTelemetryDto,
-} from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
+} from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
 import {
   CreateDeviceDto,
   CreateDeviceStatusDto,

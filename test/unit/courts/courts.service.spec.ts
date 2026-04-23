@@ -6,15 +6,15 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CourtAvailabilitySlotDto } from 'src/common/dto';
-import { ErrorsService } from '../../../src/common/errors.service';
-import { UtilitiesService } from '../../../src/common/utilities.service';
-import { CourtsStatusService } from '../../../src/courts-status/courts-status.service';
-import { CourtsService } from '../../../src/courts/courts.service';
-import { CourtStatus } from '../../../src/courts/enums';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { ReservationAvailabilityStatus, ReservationStatus } from '../../../src/reservations/enums';
-import { ReservationsService } from '../../../src/reservations/reservations.service';
-import { WeatherService } from '../../../src/weather/weather.service';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
+import { CourtsService } from 'src/courts/courts.service';
+import { CourtStatus } from 'src/courts/enums';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ReservationAvailabilityStatus, ReservationStatus } from 'src/reservations/enums';
+import { ReservationsService } from 'src/reservations/reservations.service';
+import { WeatherService } from 'src/weather/weather.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

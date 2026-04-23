@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
+import { Prisma, user_role } from 'prisma/generated/client';
+import { Role } from 'src/auth/enums';
+import { ResponseUserDto } from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma, user_role } from '../../prisma/generated/client';
-import { Role } from '../auth/enums';
-import { ResponseUserDto } from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
 import { CreateUserDto, GetUsersDto, UpdateUserDto, USER_ORDER_FIELD_MAP } from './dto';
 
 @Injectable()

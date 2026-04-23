@@ -1,7 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { OrderBy } from '../../common/enums';
-import { DeviceStatus, DeviceType } from '../enum';
+import { Prisma } from 'prisma/generated/client';
+import { OrderBy } from 'src/common/enums';
+import { DeviceStatus, DeviceType } from 'src/devices/enum';
 
 export enum DeviceOrderField {
   ID = 'id',

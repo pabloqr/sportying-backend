@@ -1,14 +1,14 @@
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '../../prisma/generated/client';
-import { CourtAvailabilitySlotDto, ResponseCourtAvailabilityDto, ResponseCourtDto } from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
-import { UtilitiesService } from '../common/utilities.service';
-import { ReservationOrderField } from '../reservations/dto';
-import { ReservationAvailabilityStatus, ReservationStatus } from '../reservations/enums';
-import { ReservationsService } from '../reservations/reservations.service';
-import { WeatherService } from '../weather/weather.service';
+import { Prisma } from 'prisma/generated/client';
+import { CourtAvailabilitySlotDto, ResponseCourtAvailabilityDto, ResponseCourtDto } from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { ReservationOrderField } from 'src/reservations/dto';
+import { ReservationAvailabilityStatus, ReservationStatus } from 'src/reservations/enums';
+import { ReservationsService } from 'src/reservations/reservations.service';
+import { WeatherService } from 'src/weather/weather.service';
 import { COURT_ORDER_FIELD_MAP, CreateCourtDto, CreateCourtStatusDto, GetCourtsDto, UpdateCourtDto } from './dto';
 import { CourtStatus, INACTIVE_COURT_STATUS } from './enums';
 

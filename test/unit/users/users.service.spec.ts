@@ -8,10 +8,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as argon from 'argon2';
 import { OrderBy } from 'src/common/enums';
 import { UserOrderField } from 'src/users/dto';
-import { Role } from '../../../src/auth/enums';
-import { ErrorsService } from '../../../src/common/errors.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { UsersService } from '../../../src/users/users.service';
+import { Role } from 'src/auth/enums';
+import { ErrorsService } from 'src/common/errors.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { UsersService } from 'src/users/users.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

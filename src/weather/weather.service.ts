@@ -10,6 +10,7 @@ import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from 'openmeteo';
 import { AnalysisService, WeatherData } from 'src/common/analysis.service';
 import { ResponseWeatherDataDto } from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 interface RawWeatherData {

@@ -1,5 +1,5 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../../reservations/enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
 
 export class ResponseReservationDto {
   @IsNumber()

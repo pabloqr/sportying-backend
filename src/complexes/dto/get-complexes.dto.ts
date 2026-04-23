@@ -11,8 +11,9 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { OrderBy } from '../../common/enums';
-import { Coordinates } from '../../common/validators';
+import { Prisma } from 'prisma/generated/client';
+import { OrderBy } from 'src/common/enums';
+import { Coordinates } from 'src/common/validators';
 
 export enum ComplexOrderField {
   ID = 'id',

@@ -11,8 +11,9 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Role } from '../../auth/enums';
-import { OrderBy } from '../../common/enums';
+import { Prisma } from 'prisma/generated/client';
+import { Role } from 'src/auth/enums';
+import { OrderBy } from 'src/common/enums';
 
 export enum UserOrderField {
   ID = 'id',

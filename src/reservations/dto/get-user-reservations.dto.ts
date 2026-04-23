@@ -1,7 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { OrderBy } from '../../common/enums';
-import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../enums';
+import { Prisma } from 'prisma/generated/client';
+import { OrderBy } from 'src/common/enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
 
 export enum ReservationOrderField {
   ID = 'id',

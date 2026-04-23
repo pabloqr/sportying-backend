@@ -1,18 +1,18 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SportsService } from 'src/sports/sports.service';
-import { WeatherService } from 'src/weather/weather.service';
-import { Prisma } from '../../prisma/generated/client';
+import { Prisma } from 'prisma/generated/client';
 import {
   ResponseComplexDto,
   ResponseComplexTimeDto,
   ResponseCourtAvailabilityDto,
   ResponseWeatherDataDto,
-} from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
-import { CourtsService } from '../courts/courts.service';
+} from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { CourtsService } from 'src/courts/courts.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { SportsService } from 'src/sports/sports.service';
+import { WeatherService } from 'src/weather/weather.service';
 import {
   COMPLEX_ORDER_FIELD_MAP,
   CreateComplexDto,

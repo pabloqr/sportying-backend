@@ -1,8 +1,8 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { ReservationAvailabilityStatus } from '../reservations/enums';
+import { NotificationsService } from 'src/notifications/notifications.service';
+import { ReservationAvailabilityStatus } from 'src/reservations/enums';
 import { UtilitiesService } from './utilities.service';
 
 export interface WeatherData {
