@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as argon from 'argon2';
-import { OrderBy } from 'src/common/enums';
-import { UserOrderField } from 'src/users/dto';
 import { Role } from 'src/auth/enums';
+import { OrderBy } from 'src/common/enums';
 import { ErrorsService } from 'src/common/errors.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserOrderField } from 'src/users/dto';
 import { UsersService } from 'src/users/users.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -105,7 +105,7 @@ describe('UsersService', () => {
         },
         orderBy: [{ id: OrderBy.ASC }],
       });
-      expect(result[0].role).toBe(Role.CLIENT);
+      expect(result).toEqual([expect.objectContaining({ role: Role.CLIENT })]);
     });
 
     it('applies the admin relation filter when role is ADMIN', async () => {

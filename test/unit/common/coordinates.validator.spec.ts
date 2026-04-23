@@ -52,7 +52,7 @@ describe('CoordinatesValidator', () => {
 
     const errors = validateSync(Object.assign(new TestDto(), { locLatitude: 40.4 }));
     expect(errors).toHaveLength(1);
-    expect(errors[0].property).toBe('location');
+    expect(errors).toEqual([expect.objectContaining({ property: 'location' })]);
     expect(getMetadataStorage().getTargetValidationMetadatas(TestDto, '', false, false)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

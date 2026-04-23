@@ -1,7 +1,8 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { fetchWeatherApi } from 'openmeteo';
 import { AnalysisService } from 'src/common/analysis.service';
+import { ErrorsService } from 'src/common/errors.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { WeatherService } from 'src/weather/weather.service';
 
@@ -27,6 +28,10 @@ const mockPrisma = {
 
 const mockAnalysisService = {
   processWeatherData: jest.fn(),
+};
+
+const mockErrorsService = {
+  getErrorMessage: jest.fn((error: unknown) => (error instanceof Error ? error.message : String(error))),
 };
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -84,6 +89,7 @@ describe('WeatherService', () => {
       providers: [
         WeatherService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: ErrorsService, useValue: mockErrorsService },
         { provide: AnalysisService, useValue: mockAnalysisService },
       ],
     }).compile();
@@ -406,9 +412,9 @@ describe('WeatherService', () => {
     expect((service as any).activeRequests.has('ezs42')).toBe(false);
   });
 
-  it('propagates the complex lookup bug when getWeatherFromId receives an unknown id', async () => {
+  it('throws when getWeatherFromId receives an unknown id', async () => {
     mockPrisma.complexes.findUnique.mockResolvedValue(null);
 
-    await expect(service.getWeatherFromId(999)).rejects.toThrow(TypeError);
+    await expect(service.getWeatherFromId(999)).rejects.toThrow(NotFoundException);
   });
 });

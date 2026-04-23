@@ -72,7 +72,7 @@ describe('DevicesService', () => {
       const result = await service.getDevices(2, {});
 
       expect(result).toHaveLength(1);
-      expect(result[0].type).toBe(DeviceType.RAIN);
+      expect(result).toEqual([expect.objectContaining({ type: DeviceType.RAIN })]);
       expect(mockPrisma.devices.findMany).toHaveBeenCalledWith({
         where: {
           is_delete: false,
@@ -351,7 +351,7 @@ describe('DevicesService', () => {
       const result = await service.getDeviceTelemetry(2, 1, {});
 
       expect(result.telemetry).toHaveLength(1);
-      expect(result.telemetry[0].type).toBe(DeviceType.RAIN);
+      expect(result.telemetry).toEqual([expect.objectContaining({ type: DeviceType.RAIN })]);
       expect(mockPrisma.devices_telemetry.findMany).toHaveBeenCalledWith({
         where: { device_id: 1 },
         orderBy: [{ created_at: 'desc' }],

@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { randomUUID } from 'crypto';
 import { user_role } from 'prisma/generated/enums';
 import { AppModule } from 'src/app.module';
 import { Role } from 'src/auth/enums';
@@ -46,13 +46,10 @@ export const createE2EApp = async (
   moduleRef: TestingModule;
 }> => {
   const overrides = [...providerOverrides];
-  const weatherOverrideIndex = overrides.findIndex((override) => override.provide === WeatherService);
+  const weatherOverride = overrides.find((override) => override.provide === WeatherService);
 
-  if (weatherOverrideIndex >= 0) {
-    overrides[weatherOverrideIndex] = {
-      provide: WeatherService,
-      useValue: createWeatherServiceMock(overrides[weatherOverrideIndex].useValue),
-    };
+  if (weatherOverride) {
+    weatherOverride.useValue = createWeatherServiceMock(weatherOverride.useValue);
   } else {
     overrides.push({
       provide: WeatherService,

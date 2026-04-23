@@ -5,6 +5,7 @@
     "target": "es2024",
     "types": ["node", "jest"],
     "paths": {
+      "src/main": ["./src/main.ts"],
       "src/*": ["./src/*"],
       "prisma/*": ["./prisma/*"]
     },

@@ -71,7 +71,11 @@ describe('CourtsDevicesService', () => {
       const result = await service.getCourtDevices(1, 2, {});
 
       expect(result.devices).toHaveLength(1);
-      expect(result.devices[0].id).toBe(3);
+      expect(result).toEqual(
+        expect.objectContaining({
+          devices: [expect.objectContaining({ id: 3 })],
+        }),
+      );
       expect(mockPrisma.courts_devices.findMany).toHaveBeenCalledWith({
         where: {
           is_delete: false,
@@ -129,7 +133,11 @@ describe('CourtsDevicesService', () => {
       const result = await service.getDeviceCourts(1, 2, {});
 
       expect(result.courts).toHaveLength(1);
-      expect(result.courts[0].id).toBe(4);
+      expect(result).toEqual(
+        expect.objectContaining({
+          courts: [expect.objectContaining({ id: 4 })],
+        }),
+      );
       expect(mockPrisma.courts_devices.findMany).toHaveBeenCalledWith({
         where: {
           is_delete: false,
@@ -208,7 +216,11 @@ describe('CourtsDevicesService', () => {
           is_delete: true,
         },
       });
-      expect(result.courts[0].id).toBe(4);
+      expect(result).toEqual(
+        expect.objectContaining({
+          courts: [expect.objectContaining({ id: 4 })],
+        }),
+      );
     });
 
     it('reactivates existing relations that are still present', async () => {

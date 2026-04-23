@@ -59,7 +59,7 @@ describe('SportsService', () => {
         },
       });
       expect(result).toHaveLength(1);
-      expect(result[0].key).toBe('tennis');
+      expect(result).toEqual([expect.objectContaining({ key: 'tennis' })]);
     });
 
     it('returns all unique complex sports when dto.keys is not provided', async () => {
@@ -117,7 +117,7 @@ describe('SportsService', () => {
         },
         orderBy: [],
       });
-      expect(result[0].key).toBe('padel');
+      expect(result).toEqual([expect.objectContaining({ key: 'padel' })]);
     });
 
     it('forwards people filters and ordering to prisma', async () => {
@@ -166,7 +166,7 @@ describe('SportsService', () => {
         orderBy: [],
       });
       expect(result).toHaveLength(1);
-      expect(result[0].key).toBe('tennis');
+      expect(result).toEqual([expect.objectContaining({ key: 'tennis' })]);
     });
   });
 
