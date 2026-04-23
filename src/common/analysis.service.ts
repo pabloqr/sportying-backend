@@ -323,7 +323,7 @@ export class AnalysisService {
 
       const intensityArray = weather.rain15Min.slice(0, 4).map((r, i) => {
         // Obtener la intensidad por 'precipitation'
-        const p = weather.precipitation15Min[i];
+        const p = weather.precipitation15Min[i]!;
         // Calcular la intensidad efectiva para el bloque actual
         return r + wShowers * (p - r);
       });

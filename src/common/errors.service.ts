@@ -16,6 +16,13 @@ interface ErrorContext {
 
 @Injectable()
 export class ErrorsService {
+  public getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+
+    return String(error);
+  }
+
   public noBodyError(dto: any, ctx?: string) {
     if (dto === undefined) {
       throw new BadRequestException(ctx ?? 'No properties to update.');

@@ -33,9 +33,24 @@ export class UtilitiesService {
   }
 
   public stringToDate(dateString: string): Date {
+    // Verificar que la hora tiene una extructura correcta
+    const validTimeFormat = /^\d{2}:\d{2}$/u.test(dateString);
+    if (!validTimeFormat) {
+      throw new BadRequestException(`Invalid time format: ${dateString}`);
+    }
+
+    // Verificar que la separación se aplica de forma correcta
     const [hoursString, minutesString] = dateString.split(':');
+    if (!hoursString || !minutesString) {
+      throw new BadRequestException(`Invalid time format: ${dateString}`);
+    }
+
+    // Parsear y verificar que se obtienen los valores correctos
     const hours = parseInt(hoursString);
     const minutes = parseInt(minutesString);
+    if (Number.isNaN(hours) || Number.isNaN(minutes) || hours > 23 || minutes > 59) {
+      throw new BadRequestException(`Invalid time format: ${dateString}`);
+    }
 
     const date = new Date();
     date.setHours(hours, minutes, 0, 0);

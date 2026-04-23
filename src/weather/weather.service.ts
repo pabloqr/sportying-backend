@@ -39,6 +39,7 @@ export class WeatherService implements OnModuleInit {
 
   constructor(
     private prisma: PrismaService,
+    private errorsService: ErrorsService,
     private analysisService: AnalysisService,
   ) {}
 
@@ -177,9 +178,9 @@ export class WeatherService implements OnModuleInit {
     const response = responses[0];
 
     // Obtener los datos meteorológicos actuales, por horas y cada 15 minutos
-    const current = response.current();
-    const hourly = response.hourly();
-    const minutely15 = response.minutely15();
+    const current = response?.current();
+    const hourly = response?.hourly();
+    const minutely15 = response?.minutely15();
 
     // Verificar que los datos obtenidos de la API son correctos
     if (!current || !hourly || !minutely15) {
@@ -207,22 +208,42 @@ export class WeatherService implements OnModuleInit {
     const nextValidIndex = currValidIndex && currIndex + 1 < hours.length;
 
     // Extraer datos actuales
-    const temperature = this.getRequiredValue(current, 0, 'Obtained invalid current temperature data from external weather API.');
-    const cloudCover = this.getRequiredValue(current, 2, 'Obtained invalid current cloud cover data from external weather API.');
+    const temperature = this.getRequiredValue(
+      current,
+      0,
+      'Obtained invalid current temperature data from external weather API.',
+    );
+    const cloudCover = this.getRequiredValue(
+      current,
+      2,
+      'Obtained invalid current cloud cover data from external weather API.',
+    );
     const relativeHumidity = this.getRequiredValue(
       current,
       3,
       'Obtained invalid current relative humidity data from external weather API.',
     );
-    const windSpeed = this.getRequiredValue(current, 4, 'Obtained invalid current wind speed data from external weather API.');
+    const windSpeed = this.getRequiredValue(
+      current,
+      4,
+      'Obtained invalid current wind speed data from external weather API.',
+    );
     const windDirection = this.getRequiredValue(
       current,
       5,
       'Obtained invalid current wind direction data from external weather API.',
     );
-    const windGusts = this.getRequiredValue(current, 6, 'Obtained invalid current wind gusts data from external weather API.');
+    const windGusts = this.getRequiredValue(
+      current,
+      6,
+      'Obtained invalid current wind gusts data from external weather API.',
+    );
     const rain = this.getRequiredValue(current, 7, 'Obtained invalid current rain data from external weather API.');
-    const showers = this.getRequiredValue(current, 8, 'Obtained invalid current showers data from external weather API.');
+    const showers = this.getRequiredValue(
+      current,
+      8,
+      'Obtained invalid current showers data from external weather API.',
+    );
 
     // Extraer datos (raw) por horas
     const precipProbabilityRaw = this.getRequiredValuesArray(
@@ -258,10 +279,10 @@ export class WeatherService implements OnModuleInit {
       wind_gusts_10m: windGusts,
       rain,
       showers,
-      precip_probability_prev: prevValidIndex ? (precipProbabilityRaw.at(currIndex - 1) ?? -1) : -1,
-      precip_probability_curr: currValidIndex ? (precipProbabilityRaw.at(currIndex) ?? -1) : -1,
-      precip_probability_next: nextValidIndex ? (precipProbabilityRaw.at(currIndex + 1) ?? -1) : -1,
-      precip_intensity_prev: prevValidIndex ? (precipIntensityRaw.at(currIndex - 1) ?? -1.0) : -1.0,
+      precip_probability_prev: prevValidIndex ? (precipProbabilityRaw[currIndex - 1] ?? -1) : -1,
+      precip_probability_curr: currValidIndex ? (precipProbabilityRaw[currIndex] ?? -1) : -1,
+      precip_probability_next: nextValidIndex ? (precipProbabilityRaw[currIndex + 1] ?? -1) : -1,
+      precip_intensity_prev: prevValidIndex ? (precipIntensityRaw[currIndex - 1] ?? -1.0) : -1.0,
       rain_15min: rain15minArray,
       precipitation_15min: precipitation15minArray,
     };
@@ -325,7 +346,10 @@ export class WeatherService implements OnModuleInit {
         alert_level: weatherResult.alertLevel,
       });
     } catch (error) {
-      throw new InternalServerErrorException(`Error updating data for geohash ${geohash}:`, error.message);
+      throw new InternalServerErrorException(
+        `Error updating data for geohash ${geohash}:`,
+        this.errorsService.getErrorMessage(error),
+      );
     }
   }
 
@@ -399,7 +423,10 @@ export class WeatherService implements OnModuleInit {
         where: { created_at: { lt: expirationDate } },
       });
     } catch (error) {
-      throw new InternalServerErrorException(`Error deleting old weather data:`, error.message);
+      throw new InternalServerErrorException(
+        `Error deleting old weather data:`,
+        this.errorsService.getErrorMessage(error),
+      );
     }
   }
 
