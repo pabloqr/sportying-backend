@@ -69,13 +69,13 @@ export class UtilitiesService {
     const map = new Map<T[typeof field], T[]>();
 
     array.forEach((item) => {
-      // Se obtiene el valor del campo por el que se agrupa
+      // Obtener el valor del campo por el que se agrupa
       const key = item[field];
 
-      // Si no existe, se crea la entrada en el diccionario
+      // Si no existe, crear la entrada en el diccionario
       if (!map.has(key)) map.set(key, []);
 
-      // Se añade la entrada al diccionario
+      // Añadir la entrada al diccionario
       map.get(key)!.push(item);
     });
 
