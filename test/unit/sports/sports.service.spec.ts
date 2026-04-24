@@ -1,7 +1,7 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SportsService } from 'src/sports/sports.service';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { SportsService } from '../../../src/sports/sports.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

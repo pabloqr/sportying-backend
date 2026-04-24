@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { GetCourtDevicesDto } from 'src/courts/dto';
-import { CreateDeviceCourtsDto, GetDeviceCourtsDto } from 'src/devices/dto';
-import { CourtsDevicesService } from './courts-devices.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { GetCourtDevicesDto } from '../courts/dto/index.js';
+import { CreateDeviceCourtsDto, GetDeviceCourtsDto } from '../devices/dto/index.js';
+import { CourtsDevicesService } from './courts-devices.service.js';
 
 @Controller('complexes')
 export class CourtsDevicesController {
@@ -39,3 +39,4 @@ export class CourtsDevicesController {
     return this.courtsDevicesService.setDeviceCourts(complexId, deviceId, body);
   }
 }
+

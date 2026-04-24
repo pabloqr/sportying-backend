@@ -1,13 +1,13 @@
-import { Role } from 'src/auth/enums';
-import { ErrorsService } from 'src/common/errors.service';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ComplexReservationsController } from 'src/reservations/complex-reservations.controller';
-import { CreateReservationDto } from 'src/reservations/dto';
-import { ReservationsController } from 'src/reservations/reservations.controller';
-import { ReservationsService } from 'src/reservations/reservations.service';
-import { UserReservationsController } from 'src/reservations/user-reservations.controller';
+import { Role } from '../../src/auth/enums/index.js';
+import { ErrorsService } from '../../src/common/errors.service.js';
+import { UtilitiesService } from '../../src/common/utilities.service.js';
+import { CourtsStatusService } from '../../src/courts-status/courts-status.service.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { ComplexReservationsController } from '../../src/reservations/complex-reservations.controller.js';
+import { CreateReservationDto } from '../../src/reservations/dto/index.js';
+import { ReservationsController } from '../../src/reservations/reservations.controller.js';
+import { ReservationsService } from '../../src/reservations/reservations.service.js';
+import { UserReservationsController } from '../../src/reservations/user-reservations.controller.js';
 import request from 'supertest';
 import {
   cleanupComplexes,
@@ -21,7 +21,7 @@ import {
   createUserRecord,
   mockUser,
   resetMockUser,
-} from './mock/factories';
+} from './mock/factories.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

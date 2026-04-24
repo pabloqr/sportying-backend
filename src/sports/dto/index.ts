@@ -1,1 +1,1 @@
-export * from './get-sports.dto';
+export * from './get-sports.dto.js';

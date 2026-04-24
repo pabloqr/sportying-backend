@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsInt, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { CourtStatusData } from 'src/courts/dto';
-import { ResponseWeatherDataDto } from './response-weater-data.dto';
+import { CourtStatusData } from '../../courts/dto/index.js';
+import { ResponseWeatherDataDto } from './response-weater-data.dto.js';
 
 export class ResponseCourtDto {
   @Type(() => Number)
@@ -63,3 +63,4 @@ export class ResponseCourtDto {
     this.updatedAt = new Date(court.updated_at ?? court.updatedAt);
   }
 }
+

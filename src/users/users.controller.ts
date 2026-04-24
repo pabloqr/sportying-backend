@@ -11,10 +11,10 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common';
-import { GetUser, Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { CreateUserDto, GetUsersDto, UpdateUserDto } from './dto';
-import { UsersService } from './users.service';
+import { GetUser, Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { CreateUserDto, GetUsersDto, UpdateUserDto } from './dto/index.js';
+import { UsersService } from './users.service.js';
 
 @Controller('users')
 export class UsersController {
@@ -79,3 +79,4 @@ export class UsersController {
     return this.usersService.deleteUser(userId);
   }
 }
+

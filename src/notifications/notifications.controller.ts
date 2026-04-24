@@ -1,6 +1,6 @@
 import { Controller, MessageEvent, Param, ParseIntPipe, Sse } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { NotificationsSseService } from './notifications-sse.service';
+import { NotificationsSseService } from './notifications-sse.service.js';
 
 @Controller('notifications')
 export class NotificationsController {

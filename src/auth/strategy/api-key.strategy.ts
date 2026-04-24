@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-custom';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../../auth/auth.service.js';
 
 @Injectable()
 export class ApiKeyStrategy extends PassportStrategy(Strategy, 'api-key') {
@@ -19,3 +19,4 @@ export class ApiKeyStrategy extends PassportStrategy(Strategy, 'api-key') {
     return this.authService.validateApiKey(apiKey);
   }
 }
+

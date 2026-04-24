@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { CreateReservationDto, GetReservationsDto } from './dto';
-import { ReservationsService } from './reservations.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { CreateReservationDto, GetReservationsDto } from './dto/index.js';
+import { ReservationsService } from './reservations.service.js';
 
 @Controller('complexes')
 export class ComplexReservationsController {
@@ -26,3 +26,4 @@ export class ComplexReservationsController {
     return this.reservationsService.createReservation(complexId, dto);
   }
 }
+

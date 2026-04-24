@@ -1,20 +1,20 @@
-import { MODULE_METADATA } from '@nestjs/common/constants';
+import { MODULE_METADATA } from '@nestjs/common/constants.js';
 import 'reflect-metadata';
-import { AppModule } from 'src/app.module';
-import { AuthModule } from 'src/auth/auth.module';
-import { CommonModule } from 'src/common/common.module';
-import { ComplexesModule } from 'src/complexes/complexes.module';
-import { CourtsDevicesModule } from 'src/courts-devices/court-devices.module';
-import { CourtsStatusModule } from 'src/courts-status/courts-status.module';
-import { CourtsModule } from 'src/courts/courts.module';
-import { DevicesModule } from 'src/devices/devices.module';
-import { NotificationsModule } from 'src/notifications/notifications.module';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { ReservationsStatusModule } from 'src/reservations-status/reservations-status.module';
-import { ReservationsModule } from 'src/reservations/reservations.module';
-import { SportsModule } from 'src/sports/sports.module';
-import { UsersModule } from 'src/users/users.module';
-import { WeatherModule } from 'src/weather/weather.module';
+import { AppModule } from '../../../src/app.module.js';
+import { AuthModule } from '../../../src/auth/auth.module.js';
+import { CommonModule } from '../../../src/common/common.module.js';
+import { ComplexesModule } from '../../../src/complexes/complexes.module.js';
+import { CourtsDevicesModule } from '../../../src/courts-devices/court-devices.module.js';
+import { CourtsStatusModule } from '../../../src/courts-status/courts-status.module.js';
+import { CourtsModule } from '../../../src/courts/courts.module.js';
+import { DevicesModule } from '../../../src/devices/devices.module.js';
+import { NotificationsModule } from '../../../src/notifications/notifications.module.js';
+import { PrismaModule } from '../../../src/prisma/prisma.module.js';
+import { ReservationsStatusModule } from '../../../src/reservations-status/reservations-status.module.js';
+import { ReservationsModule } from '../../../src/reservations/reservations.module.js';
+import { SportsModule } from '../../../src/sports/sports.module.js';
+import { UsersModule } from '../../../src/users/users.module.js';
+import { WeatherModule } from '../../../src/weather/weather.module.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

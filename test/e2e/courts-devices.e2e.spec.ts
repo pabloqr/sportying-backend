@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from 'src/auth/enums';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Role } from '../../src/auth/enums/index.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,
@@ -15,7 +15,7 @@ import {
   createDeviceRecord,
   createE2EApp,
   createSportRecord,
-} from './mock/factories';
+} from './mock/factories.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

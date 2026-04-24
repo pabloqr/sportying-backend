@@ -1,8 +1,8 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { OrderBy } from 'src/common/enums';
-import { COURT_ORDER_FIELD_MAP, CourtOrderField, GetCourtsDto } from 'src/courts/dto/get-courts.dto';
-import { CourtStatus } from 'src/courts/enums';
+import { OrderBy } from '../../../src/common/enums/index.js';
+import { COURT_ORDER_FIELD_MAP, CourtOrderField, GetCourtsDto } from '../../../src/courts/dto/get-courts.dto.js';
+import { CourtStatus } from '../../../src/courts/enums/index.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

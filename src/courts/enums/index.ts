@@ -1,1 +1,1 @@
-export * from './court-status.enum';
+export * from './court-status.enum.js';

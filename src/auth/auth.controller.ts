@@ -1,9 +1,9 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { GetUser, Public } from './decorator';
-import { SigninAuthDto, SignupAuthDto } from './dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { JwtRefreshGuard } from './guard';
+import { AuthService } from './auth.service.js';
+import { GetUser, Public } from './decorator/index.js';
+import { SigninAuthDto, SignupAuthDto } from './dto/index.js';
+import { RefreshTokenDto } from './dto/refresh-token.dto.js';
+import { JwtRefreshGuard } from './guard/index.js';
 
 @Controller('auth')
 export class AuthController {

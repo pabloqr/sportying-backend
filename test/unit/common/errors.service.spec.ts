@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Prisma } from 'src/../prisma/generated/client';
-import { ErrorsService } from 'src/common/errors.service';
+import { Prisma } from '../../../prisma/generated/client.js';
+import { ErrorsService } from '../../../src/common/errors.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Helpers

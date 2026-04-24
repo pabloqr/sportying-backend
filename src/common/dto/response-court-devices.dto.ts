@@ -1,6 +1,6 @@
 ﻿import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber } from 'class-validator';
-import { ResponseDeviceDto } from './response-device.dto';
+import { ResponseDeviceDto } from './response-device.dto.js';
 
 export class ResponseCourtDevicesDto {
   @Type(() => Number)

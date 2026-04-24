@@ -21,7 +21,7 @@ describe('main bootstrap', () => {
     }));
 
     await jest.isolateModulesAsync(async () => {
-      await import('src/main');
+      await import('../../../src/main.js');
       await Promise.resolve();
     });
 

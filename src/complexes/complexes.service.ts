@@ -1,25 +1,25 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
-import { Prisma } from 'prisma/generated/client';
+import { Prisma } from '../../prisma/generated/client.js';
 import {
   ResponseComplexDto,
   ResponseComplexTimeDto,
   ResponseCourtAvailabilityDto,
   ResponseWeatherDataDto,
-} from 'src/common/dto';
-import { ErrorsService } from 'src/common/errors.service';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { CourtsService } from 'src/courts/courts.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SportsService } from 'src/sports/sports.service';
-import { WeatherService } from 'src/weather/weather.service';
+} from '../common/dto/index.js';
+import { ErrorsService } from '../common/errors.service.js';
+import { UtilitiesService } from '../common/utilities.service.js';
+import { CourtsService } from '../courts/courts.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { SportsService } from '../sports/sports.service.js';
+import { WeatherService } from '../weather/weather.service.js';
 import {
   COMPLEX_ORDER_FIELD_MAP,
   CreateComplexDto,
   GetComplexesDto,
   UpdateComplexDto,
   UpdateComplexTimeDto,
-} from './dto';
+} from './dto/index.js';
 
 @Injectable()
 export class ComplexesService {
@@ -309,3 +309,5 @@ export class ComplexesService {
     return this.courtsService.getCourtsAvailability(complexId, groupAvailability);
   }
 }
+
+

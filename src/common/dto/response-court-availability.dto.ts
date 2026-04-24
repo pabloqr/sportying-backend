@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
-import { CourtAvailabilitySlotDto } from './court-availability-slot.dto';
+import { CourtAvailabilitySlotDto } from './court-availability-slot.dto.js';
 
 export class ResponseCourtAvailabilityDto {
   @Type(() => Number)
