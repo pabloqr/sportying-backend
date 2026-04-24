@@ -1,13 +1,17 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { OrderBy } from '../../common/enums';
+import { devices_telemetryOrderByWithRelationInput } from 'prisma/generated/models';
+import { OrderBy } from 'src/common/enums';
 
 export enum DeviceTelemetryOrderField {
   VALUE = 'value',
   CREATED_AT = 'createdAt',
 }
 
-export const DEVICE_TELEMETRY_ORDER_FIELD_MAP: Record<string, string> = {
+export const DEVICE_TELEMETRY_ORDER_FIELD_MAP: Record<
+  DeviceTelemetryOrderField,
+  keyof devices_telemetryOrderByWithRelationInput
+> = {
   value: 'value',
   createdAt: 'created_at',
 };

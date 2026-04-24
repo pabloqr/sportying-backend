@@ -12,7 +12,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { GetUser, Roles } from 'src/auth/decorator';
-import { Role } from '../auth/enums';
+import { Role } from 'src/auth/enums';
 import { CreateUserDto, GetUsersDto, UpdateUserDto } from './dto';
 import { UsersService } from './users.service';
 

@@ -1,12 +1,16 @@
 ﻿import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { OrderBy } from '../../common/enums';
+import { Prisma } from 'prisma/generated/client';
+import { OrderBy } from 'src/common/enums';
 
 export enum CourtDevicesOrderField {
   DEVICE_ID = 'deviceId',
 }
 
-export const COURT_DEVICES_ORDER_FIELD_MAP: Record<string, string> = {
+export const COURT_DEVICES_ORDER_FIELD_MAP: Record<
+  CourtDevicesOrderField,
+  keyof Prisma.courts_devicesOrderByWithRelationInput
+> = {
   deviceId: 'device_id',
 };
 

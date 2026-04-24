@@ -1,16 +1,12 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ErrorsService } from '../../../src/common/errors.service';
-import { UtilitiesService } from '../../../src/common/utilities.service';
-import { CourtsStatusService } from '../../../src/courts-status/courts-status.service';
-import { CourtStatus } from '../../../src/courts/enums';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import {
-  ReservationAvailabilityStatus,
-  ReservationStatus,
-  ReservationTimeFilter,
-} from '../../../src/reservations/enums';
-import { ReservationsService } from '../../../src/reservations/reservations.service';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
+import { CourtStatus } from 'src/courts/enums';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
+import { ReservationsService } from 'src/reservations/reservations.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories
@@ -373,7 +369,7 @@ describe('ReservationsService', () => {
       });
 
       expect(result).toHaveLength(1);
-      expect(result[0].status).toBe(ReservationAvailabilityStatus.CANCELLED);
+      expect(result).toEqual([expect.objectContaining({ status: ReservationAvailabilityStatus.CANCELLED })]);
     });
 
     it('filters out cancelled reservations when reservationStatus is SCHEDULED', async () => {
@@ -412,7 +408,7 @@ describe('ReservationsService', () => {
       });
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(2);
+      expect(result).toEqual([expect.objectContaining({ id: 2 })]);
     });
 
     it('also filters out cancelled reservations when reservationStatus is WEATHER', async () => {
@@ -451,7 +447,7 @@ describe('ReservationsService', () => {
       });
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(1);
+      expect(result).toEqual([expect.objectContaining({ id: 1 })]);
     });
   });
 

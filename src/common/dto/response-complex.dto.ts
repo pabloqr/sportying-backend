@@ -11,7 +11,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Coordinates } from '../validators';
+import { Coordinates } from 'src/common/validators';
 import { ResponseWeatherDataDto } from './response-weater-data.dto';
 
 export class ResponseComplexDto {

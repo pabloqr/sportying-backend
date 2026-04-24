@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { ReservationAvailabilityStatus } from '../reservations/enums';
+import { NotificationsService } from 'src/notifications/notifications.service';
+import { ReservationAvailabilityStatus } from 'src/reservations/enums';
 import { UtilitiesService } from './utilities.service';
 
 export interface WeatherData {
@@ -316,9 +316,14 @@ export class AnalysisService {
       return { surfaceWater: 0.0, estimatedDryingTime: 0, alertLevel, alertLevelTicks };
     } else {
       // PASO 2.1: Calcular la intensidad efectiva del agua en función de los bloques de 15 minutos dados
+      // Verificar que los datos obtenidos son correctos
+      if (weather.rain15Min.length < 4 || weather.precipitation15Min.length < 4) {
+        throw new UnprocessableEntityException('Expected at least 4 weather samples.');
+      }
+
       const intensityArray = weather.rain15Min.slice(0, 4).map((r, i) => {
         // Obtener la intensidad por 'precipitation'
-        const p = weather.precipitation15Min[i];
+        const p = weather.precipitation15Min[i]!;
         // Calcular la intensidad efectiva para el bloque actual
         return r + wShowers * (p - r);
       });
@@ -326,7 +331,7 @@ export class AnalysisService {
       // PASO 2.2: Calcular la suma total de la intensidad efectiva del agua durante última hora
       const intensitySum = intensityArray.reduce((sum, intensity) => sum + intensity, 0);
 
-      // PASO 3: Si no se supera el límite para establecer un bloqueo inicial (no está lloviendo), se verifica si la
+      // PASO 3: Si no se supera el límite para establecer un bloqueo inicial (no está lloviendo), verificar si la
       // suma total de la última hora supera el límite para establecer un bloqueo
       if (intensitySum < intensitySumThreshold) {
         const { alertLevel, alertLevelTicks } = this.calculateAlertLevel(
@@ -388,7 +393,7 @@ export class AnalysisService {
         const surfaceWaterMax = 6.0;
 
         const surfaceWater = clamp(
-          wDrain * weather.surfaceWaterPrev + intensityArray.at(-2) + intensity - dryinRate * 0.5,
+          wDrain * weather.surfaceWaterPrev + intensityArray.at(-2)! + intensity - dryinRate * 0.5,
           0,
           surfaceWaterMax,
         );
@@ -480,7 +485,7 @@ export class AnalysisService {
   //       courtStatus = CourtStatus.OPEN;
   //     }
 
-  //     // Obtener el estatus actual de la pista para aplicar los cambios necesarios
+  //     // Obtener el estado actual de la pista para aplicar los cambios necesarios
   //     const statusData = (await this.courtsStatusService.getCourtStatus(complexId, courtId)).statusData;
   //     if (statusData.status !== courtStatus) {
   //       await this.courtsStatusService.setCourtStatus(complexId, courtId, {

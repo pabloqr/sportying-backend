@@ -21,7 +21,7 @@ export class CourtsStatusService {
    * default status if no recent status is found.
    */
   async getCourtStatus(complexId: number, courtId: number): Promise<ResponseCourtStatusDto> {
-    // Tratar de obtener el estatus más actualizado de la pista dada
+    // Tratar de obtener el estado más actualizado de la pista dada
     const status = await this.prisma.courts_status.findFirst({
       where: {
         court_id: courtId,
@@ -31,7 +31,7 @@ export class CourtsStatusService {
       },
     });
 
-    // Devolver el objeto obtenido o construir uno con el estatus por defecto 'OPEN'
+    // Devolver el objeto obtenido o construir uno con el estado por defecto 'OPEN'
     return new ResponseCourtStatusDto({
       court_id: courtId,
       complex_id: complexId,
@@ -56,10 +56,10 @@ export class CourtsStatusService {
     this.errorsService.noBodyError(dto);
 
     try {
-      // Tratar de obtener el estatus más actualizado de la pista dada
+      // Tratar de obtener el estado más actualizado de la pista dada
       const statusPrev = await this.getCourtStatus(complexId, courtId);
 
-      // Actualizar los datos del estatus con valores válidos
+      // Actualizar los datos del estado con valores válidos
       const statusData: CourtStatusData = {
         status: dto.status ?? statusPrev.statusData.status,
         alertLevel: dto.alertLevel ?? statusPrev.statusData.alertLevel,
@@ -74,13 +74,13 @@ export class CourtsStatusService {
         return new ResponseCourtStatusDto({ ...statusPrev, complex_id: complexId });
       }
 
-      // Actualizar el estatus de la pista en función del nivel de alerta
+      // Actualizar el estado de la pista en función del nivel de alerta
       statusData.status =
         statusData.alertLevel >= 2 && !INACTIVE_COURT_STATUS.has(statusData.status)
           ? CourtStatus.WEATHER
           : statusData.status;
 
-      // Añadir una nueva entrada con el estatus de la pista
+      // Añadir una nueva entrada con el estado de la pista
       const status = await this.prisma.courts_status.create({
         data: {
           court_id: courtId,

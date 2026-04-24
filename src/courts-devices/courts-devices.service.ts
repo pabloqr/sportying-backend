@@ -1,10 +1,10 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '../../prisma/generated/client';
-import { ResponseCourtDevicesDto, ResponseCourtDto, ResponseDeviceCourtsDto, ResponseDeviceDto } from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
-import { COURT_DEVICES_ORDER_FIELD_MAP, GetCourtDevicesDto } from '../courts/dto';
-import { CreateDeviceCourtsDto, DEVICE_COURTS_ORDER_FIELD_MAP, GetDeviceCourtsDto } from '../devices/dto';
+import { Prisma } from 'prisma/generated/client';
+import { ResponseCourtDevicesDto, ResponseCourtDto, ResponseDeviceCourtsDto, ResponseDeviceDto } from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
+import { COURT_DEVICES_ORDER_FIELD_MAP, GetCourtDevicesDto } from 'src/courts/dto';
+import { CreateDeviceCourtsDto, DEVICE_COURTS_ORDER_FIELD_MAP, GetDeviceCourtsDto } from 'src/devices/dto';
 import { CourtsStatusService } from 'src/courts-status/courts-status.service';
 
 @Injectable()

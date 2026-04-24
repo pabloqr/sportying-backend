@@ -7,13 +7,14 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderBy } from 'src/common/enums';
 import { ComplexOrderField } from 'src/complexes/dto';
-import { ErrorsService } from '../../../src/common/errors.service';
-import { UtilitiesService } from '../../../src/common/utilities.service';
-import { ComplexesService } from '../../../src/complexes/complexes.service';
-import { CourtsService } from '../../../src/courts/courts.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { SportsService } from '../../../src/sports/sports.service';
-import { WeatherService } from '../../../src/weather/weather.service';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { ComplexesService } from 'src/complexes/complexes.service';
+import { CourtsService } from 'src/courts/courts.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { SportsService } from 'src/sports/sports.service';
+import { WeatherService } from 'src/weather/weather.service';
+import { ResponseComplexDto } from 'src/common/dto';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories
@@ -101,7 +102,7 @@ describe('ComplexesService', () => {
       const result = await service.getComplexes({ orderParams: [{ field: ComplexOrderField.ID, order: OrderBy.ASC }] });
 
       expect(result).toHaveLength(1);
-      expect(result[0].sports).toEqual(['padel']);
+      expect(result).toEqual([expect.objectContaining({ sports: ['padel'] })]);
     });
 
     it('reuses cached weather data for complexes sharing the same geohash', async () => {
@@ -171,7 +172,18 @@ describe('ComplexesService', () => {
         locLatitude: 40.4,
         locLongitude: -3.7,
         sports: [],
-        weather: null,
+        weather: {
+          temperature_curr: 22,
+          relative_humidity_curr: 40,
+          cloud_cover_curr: 20,
+          wind_speed_curr: 12,
+          wind_direction_curr: 120,
+          precip_intensity_curr: 0,
+          precip_probability_curr: 10,
+          precip_probability_next: 15,
+          estimated_drying_time: 0,
+          alert_level: 0,
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
       };

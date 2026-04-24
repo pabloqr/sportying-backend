@@ -11,8 +11,9 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Role } from '../../auth/enums';
-import { OrderBy } from '../../common/enums';
+import { Prisma } from 'prisma/generated/client';
+import { Role } from 'src/auth/enums';
+import { OrderBy } from 'src/common/enums';
 
 export enum UserOrderField {
   ID = 'id',
@@ -26,7 +27,7 @@ export enum UserOrderField {
   UPDATED_AT = 'updatedAt',
 }
 
-export const USER_ORDER_FIELD_MAP: Record<string, string> = {
+export const USER_ORDER_FIELD_MAP: Record<UserOrderField, keyof Prisma.usersOrderByWithRelationInput> = {
   id: 'id',
   role: 'role',
   name: 'name',

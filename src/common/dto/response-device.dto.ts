@@ -1,5 +1,5 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { DeviceStatus, DeviceType } from '../../devices/enum';
+import { DeviceStatus, DeviceType } from 'src/devices/enum';
 
 export class ResponseDeviceDto {
   @IsNumber()
