@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty } from 'class-validator';
-import { CourtStatus } from '../../courts/enums';
+import { CourtStatus } from 'src/courts/enums';
 
 export class CourtStatusData {
   @IsEnum(CourtStatus)

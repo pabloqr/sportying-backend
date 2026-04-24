@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UtilitiesService } from 'src/common/utilities.service';
 import { CourtStatus } from 'src/courts/enums';
@@ -145,6 +146,10 @@ describe('UtilitiesService', () => {
       expect(result.getMinutes()).toBe(35);
       expect(result.getSeconds()).toBe(0);
       expect(result.getMilliseconds()).toBe(0);
+    });
+
+    it('throws BadRequestException when the time format is invalid', () => {
+      expect(() => service.stringToDate('25:99')).toThrow(BadRequestException);
     });
   });
 

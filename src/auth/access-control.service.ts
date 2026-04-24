@@ -44,13 +44,13 @@ export class AccessControlService {
    * priority in any hierarchy. Returns false otherwise.
    */
   public isAuthorized({ currentRole, requiredRole }: RolePair): boolean {
-    // Se procesa cada jerarquía
+    // Procesar cada jerarquía
     for (const hierarchy of this.hierarchies) {
-      // Se trata de obtener la prioridad de los roles dados
+      // Tratar de obtener la prioridad de los roles dados
       const currentPriority = hierarchy.get(currentRole);
       const requiredPriority = hierarchy.get(requiredRole);
 
-      // Se verifica la existencia de los roles en esta jerarquía y, en caso afirmativo, se comprueba si el rol dado
+      // Verificar la existencia de los roles en esta jerarquía y, en caso afirmativo, comprobar si el rol dado
       // está autorizado
       if (currentPriority && requiredPriority) {
         return currentPriority >= requiredPriority;

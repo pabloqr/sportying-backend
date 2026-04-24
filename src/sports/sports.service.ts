@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ResponseSportDto } from 'src/common/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '../../prisma/generated/client';
+import { Prisma } from 'prisma/generated/client';
 import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto';
 
 @Injectable()
@@ -15,12 +15,15 @@ export class SportsService {
       ...(dto.maxPeople && { max_people: dto.maxPeople }),
     };
 
+    // Obtener las claves proporcionadas
+    const keys = dto.keys;
+
     // Obtener las pistas asociadas al complejo actual
     const courts = await this.prisma.courts.findMany({ where: { complex_id: complexId } });
     // Obtener los deportes (construcción del Set) y convertir la colección en un Array
     const sportKeys = [...new Set(courts.map((court) => court.sport_key))];
     // Si se proporciona el listado de claves de deportes, filtrar la lista obtenida
-    const filteredSportKeys = dto.keys ? sportKeys.filter((key) => dto.keys.includes(key)) : sportKeys;
+    const filteredSportKeys = keys ? sportKeys.filter((key) => keys.includes(key)) : sportKeys;
 
     // Obtener los datos de los deportes obtenidos incluyendo los parámetros de filtrado
     const sports = await this.prisma.sports.findMany({
@@ -43,6 +46,9 @@ export class SportsService {
       ...(dto.minPeople && { min_people: dto.minPeople }),
       ...(dto.maxPeople && { max_people: dto.maxPeople }),
     };
+
+    // Obtener las claves proporcionadas
+    const keys = dto.keys;
 
     // Obtener el modo de ordenación de los elementos
     const orderBy: Prisma.sportsOrderByWithRelationInput[] = [];
@@ -69,7 +75,7 @@ export class SportsService {
     });
 
     // Si se proporciona el listado de claves de deportes, filtrar la lista obtenida
-    const filteredSports = dto.keys ? sports.filter((sport) => dto.keys.includes(sport.key)) : sports;
+    const filteredSports = keys ? sports.filter((sport) => keys.includes(sport.key)) : sports;
 
     return filteredSports.map((sport) => new ResponseSportDto(sport));
   }
@@ -79,12 +85,18 @@ export class SportsService {
     const result = await this.getSports({ keys: [sportKey] });
 
     // Verificar los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Sport with Key ${sportKey} not found.`);
-    } else if (result.length > 1) {
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple sports found with Key ${sportKey}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const sport = result[0];
+
+    // Verificar que es un objeto válido
+    if (!sport) {
+      throw new NotFoundException(`Sport with Key ${sportKey} not found.`);
+    }
+
+    return sport;
   }
 }

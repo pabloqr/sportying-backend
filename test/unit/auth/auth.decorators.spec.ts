@@ -1,8 +1,8 @@
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import 'reflect-metadata';
-import { GetTokens, GetUser, IS_PUBLIC_KEY, Public, ROLES_KEY, Roles } from '../../../src/auth/decorator';
-import { Role } from '../../../src/auth/enums';
+import { GetTokens, GetUser, IS_PUBLIC_KEY, Public, ROLES_KEY, Roles } from 'src/auth/decorator';
+import { Role } from 'src/auth/enums';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Helpers

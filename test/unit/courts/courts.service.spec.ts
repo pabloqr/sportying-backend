@@ -6,15 +6,15 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CourtAvailabilitySlotDto } from 'src/common/dto';
-import { ErrorsService } from '../../../src/common/errors.service';
-import { UtilitiesService } from '../../../src/common/utilities.service';
-import { CourtsStatusService } from '../../../src/courts-status/courts-status.service';
-import { CourtsService } from '../../../src/courts/courts.service';
-import { CourtStatus } from '../../../src/courts/enums';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { ReservationAvailabilityStatus, ReservationStatus } from '../../../src/reservations/enums';
-import { ReservationsService } from '../../../src/reservations/reservations.service';
-import { WeatherService } from '../../../src/weather/weather.service';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service';
+import { CourtsService } from 'src/courts/courts.service';
+import { CourtStatus } from 'src/courts/enums';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ReservationAvailabilityStatus, ReservationStatus } from 'src/reservations/enums';
+import { ReservationsService } from 'src/reservations/reservations.service';
+import { WeatherService } from 'src/weather/weather.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories
@@ -418,7 +418,7 @@ describe('CourtsService', () => {
         }),
       );
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(4);
+      expect(result).toEqual([expect.objectContaining({ id: 4 })]);
     });
 
     it('returns all courts when no status filter is provided', async () => {
@@ -441,7 +441,11 @@ describe('CourtsService', () => {
       const result = await service.getCourts(1, {});
 
       expect(result).toHaveLength(1);
-      expect(result[0].statusData.status).toBe(CourtStatus.OPEN);
+      expect(result).toEqual([
+        expect.objectContaining({
+          statusData: expect.objectContaining({ status: CourtStatus.OPEN }),
+        }),
+      ]);
     });
 
     it('includes deleted courts when checkDeleted is true', async () => {
@@ -712,7 +716,11 @@ describe('CourtsService', () => {
       const result = await service.getCourtsAvailability(1, false);
 
       expect(result).toHaveLength(1);
-      expect(result[0].availability).toHaveLength(1);
+      expect(result).toEqual([
+        expect.objectContaining({
+          availability: [expect.any(Object)],
+        }),
+      ]);
     });
 
     it('merges contiguous reservations when grouped availability is requested', async () => {
@@ -754,9 +762,11 @@ describe('CourtsService', () => {
 
       const result = await service.getCourtsAvailability(1);
 
-      expect(result[0].availability).toHaveLength(1);
-      expect(result[0].availability[0].dateIni).toEqual(baseDate);
-      expect(result[0].availability[0].dateEnd).toEqual(thirdDate);
+      expect(result).toEqual([
+        expect.objectContaining({
+          availability: [expect.objectContaining({ dateIni: baseDate, dateEnd: thirdDate })],
+        }),
+      ]);
     });
 
     it('does not merge non contiguous reservations when grouped availability is requested', async () => {
@@ -799,11 +809,14 @@ describe('CourtsService', () => {
 
       const result = await service.getCourtsAvailability(1);
 
-      expect(result[0].availability).toHaveLength(2);
-      expect(result[0].availability[0].dateIni).toEqual(baseDate);
-      expect(result[0].availability[0].dateEnd).toEqual(secondDate);
-      expect(result[0].availability[1].dateIni).toEqual(thirdDate);
-      expect(result[0].availability[1].dateEnd).toEqual(forthDate);
+      expect(result).toEqual([
+        expect.objectContaining({
+          availability: [
+            expect.objectContaining({ dateIni: baseDate, dateEnd: secondDate }),
+            expect.objectContaining({ dateIni: thirdDate, dateEnd: forthDate }),
+          ],
+        }),
+      ]);
     });
 
     it('adds weather drying blocks to court availability', async () => {
@@ -822,8 +835,11 @@ describe('CourtsService', () => {
       const result = await service.getCourtsAvailability(1, false);
 
       expect(mockUtilitiesService.getTimeBlock).toHaveBeenCalledWith(30);
-      expect(result[0].availability).toHaveLength(1);
-      expect(result[0].availability[0].available).toBe(false);
+      expect(result).toEqual([
+        expect.objectContaining({
+          availability: [expect.objectContaining({ available: false })],
+        }),
+      ]);
     });
   });
 

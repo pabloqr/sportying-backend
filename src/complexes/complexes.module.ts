@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SportsModule } from 'src/sports/sports.module';
 import { WeatherModule } from 'src/weather/weather.module';
-import { CourtsModule } from '../courts/courts.module';
+import { CourtsModule } from 'src/courts/courts.module';
 import { ComplexesController } from './complexes.controller';
 import { ComplexesService } from './complexes.service';
 

@@ -1,9 +1,9 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { AccessControlService } from '../../../src/auth/access-control.service';
-import { Role } from '../../../src/auth/enums';
-import { JwtGuard, RolesGuard } from '../../../src/auth/guard';
+import { AccessControlService } from 'src/auth/access-control.service';
+import { Role } from 'src/auth/enums';
+import { JwtGuard, RolesGuard } from 'src/auth/guard';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

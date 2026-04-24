@@ -1,18 +1,18 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as ngeohash from 'ngeohash';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SportsService } from 'src/sports/sports.service';
-import { WeatherService } from 'src/weather/weather.service';
-import { Prisma } from '../../prisma/generated/client';
+import { Prisma } from 'prisma/generated/client';
 import {
   ResponseComplexDto,
   ResponseComplexTimeDto,
   ResponseCourtAvailabilityDto,
   ResponseWeatherDataDto,
-} from '../common/dto';
-import { ErrorsService } from '../common/errors.service';
-import { CourtsService } from '../courts/courts.service';
+} from 'src/common/dto';
+import { ErrorsService } from 'src/common/errors.service';
+import { UtilitiesService } from 'src/common/utilities.service';
+import { CourtsService } from 'src/courts/courts.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { SportsService } from 'src/sports/sports.service';
+import { WeatherService } from 'src/weather/weather.service';
 import {
   COMPLEX_ORDER_FIELD_MAP,
   CreateComplexDto,
@@ -129,13 +129,19 @@ export class ComplexesService {
     const result = await this.getComplexes({ id: complexId });
 
     // Verificar los elementos obtenidos
-    if (result.length === 0) {
-      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
-    } else if (result.length > 1) {
+    if (result.length > 1) {
       throw new InternalServerErrorException(`Multiple complexes found with ID ${complexId}.`);
     }
 
-    return result[0];
+    // Obtener el usuario
+    const complex = result[0];
+
+    // Verificar que es un objeto válido
+    if (!complex) {
+      throw new NotFoundException(`Complex with ID ${complexId} not found.`);
+    }
+
+    return complex;
   }
 
   /**
@@ -148,7 +154,7 @@ export class ComplexesService {
    */
   async createComplex(dto: CreateComplexDto): Promise<ResponseComplexDto> {
     try {
-      // Crear la entrada para el complejo en la BD, o se actualiza una existente, obteniendo los datos de este
+      // Crear la entrada para el complejo en la BD, o actualizar una existente, obteniendo los datos de este
       const complex = await this.prisma.complexes.upsert({
         where: {
           loc_latitude_loc_longitude: {

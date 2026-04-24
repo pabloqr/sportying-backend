@@ -1,7 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { OrderBy } from '../../common/enums';
-import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../enums';
+import { Prisma } from 'prisma/generated/client';
+import { OrderBy } from 'src/common/enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
 
 export enum ReservationOrderField {
   ID = 'id',
@@ -16,17 +17,36 @@ export enum ReservationOrderField {
   UPDATED_AT = 'updatedAt',
 }
 
-export const RESERVATION_ORDER_FIELD_MAP: Record<string, string> = {
+export const RESERVATION_ORDER_FIELD_MAP: Partial<
+  Record<ReservationOrderField, keyof Prisma.reservationsOrderByWithRelationInput>
+> = {
   id: 'id',
   complexId: 'complex_id',
   courtId: 'court_id',
   dateIni: 'date_ini',
   dateEnd: 'date_end',
   status: 'status',
-  reservationStatus: 'reservation_status',
-  timeFilter: 'time_filter',
   createdAt: 'created_at',
   updatedAt: 'updated_at',
+};
+
+export const RESERVATION_AVAILABILITY_STATUS_ORDER: Record<ReservationAvailabilityStatus, number> = {
+  [ReservationAvailabilityStatus.EMPTY]: 0,
+  [ReservationAvailabilityStatus.OCCUPIED]: 1,
+  [ReservationAvailabilityStatus.CANCELLED]: 2,
+};
+
+export const RESERVATION_STATUS_ORDER: Record<ReservationStatus, number> = {
+  [ReservationStatus.SCHEDULED]: 0,
+  [ReservationStatus.WEATHER]: 1,
+  [ReservationStatus.COMPLETED]: 2,
+  [ReservationStatus.CANCELLED]: 3,
+};
+
+export const RESERVATION_TIME_FILTER_ORDER: Record<ReservationTimeFilter, number> = {
+  [ReservationTimeFilter.UPCOMING]: 0,
+  [ReservationTimeFilter.PAST]: 1,
+  [ReservationTimeFilter.ALL]: 2,
 };
 
 export class ReservationOrderParamsDto {

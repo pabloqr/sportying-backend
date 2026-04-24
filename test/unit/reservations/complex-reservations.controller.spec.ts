@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ComplexReservationsController } from '../../../src/reservations/complex-reservations.controller';
-import { ReservationsService } from '../../../src/reservations/reservations.service';
+import { ComplexReservationsController } from 'src/reservations/complex-reservations.controller';
+import { ReservationsService } from 'src/reservations/reservations.service';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

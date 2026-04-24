@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, ValidationPipe } from '@nestjs/common';
 import { Roles } from 'src/auth/decorator';
-import { Role } from '../auth/enums';
+import { Role } from 'src/auth/enums';
 import { ComplexesService } from './complexes.service';
 import { CreateComplexDto, GetComplexesDto, UpdateComplexDto, UpdateComplexTimeDto } from './dto';
 

@@ -4,8 +4,8 @@ import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuidV4 } from 'uuid';
-import { ResponseDeviceDto, ResponseUserDto } from '../common/dto';
-import { UsersService } from '../users/users.service';
+import { ResponseDeviceDto, ResponseUserDto } from 'src/common/dto';
+import { UsersService } from 'src/users/users.service';
 import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Role } from './enums';
@@ -75,33 +75,33 @@ export class AuthService {
    * does not match.
    */
   async validateApiKey(apiKey: string): Promise<ResponseDeviceDto> {
-    // Se obtiene el identificador de la API Key y la clave encriptada
+    // Obtener el identificador de la API Key y la clave encriptada
     const [idKey, secretKey] = apiKey.split('.');
 
-    // Si no se ha podido obtener cualquiera de las dos partes de la clave, se lanza una excepción
+    // Si no se ha podido obtener cualquiera de las dos partes de la clave, lanzar una excepción
     if (!idKey || !secretKey) {
       throw new UnauthorizedException('Invalid API Key.');
     }
 
-    // Se obtiene el dispositivo con el identificador de la API Key
+    // Obtener el dispositivo con el identificador de la API Key
     const device = await this.prisma.devices.findUnique({
       where: {
         id_key: idKey,
       },
     });
 
-    // Si no se ha podido obtener el dispositivo o no contiene la clave encriptada, se devuelve una excepción
+    // Si no se ha podido obtener el dispositivo o no contiene la clave encriptada, devolver una excepción
     if (!device || !device.api_key) {
       throw new UnauthorizedException('Invalid API Key.');
     }
 
-    // Se valida la clave encriptada con la clave dada, en caso de no coincidir, se lanza una excepción
+    // Validar la clave encriptada con la clave dada, en caso de no coincidir, lanzar una excepción
     const valid = await argon.verify(device.api_key, secretKey);
     if (!valid) {
       throw new UnauthorizedException('Invalid API Key.');
     }
 
-    // Se devuelve el dispositivo
+    // Devolver el dispositivo
     return new ResponseDeviceDto(device);
   }
 
@@ -213,27 +213,27 @@ export class AuthService {
    * @throws {ForbiddenException} If the provided credentials (email or password) are invalid.
    */
   async signin(dto: SigninAuthDto): Promise<object> {
-    // Se busca al usuario según el correo electrónico
+    // Buscar al usuario según el correo electrónico
     const user = await this.prisma.users.findUnique({
       where: {
         mail: dto.mail,
       },
     });
 
-    // Si no se encuentra, se lanza una excepción
+    // Si no se encuentra, lanzar una excepción
     if (!user) {
       throw new UnauthorizedException('Credentials invalid. Please try again.');
     }
 
-    // Se compara la contraseña
+    // Comparar la contraseña
     const passwordVerified = await argon.verify(user.password, dto.password);
 
-    // Si la contraseña es incorrecta, se lanza una excepción
+    // Si la contraseña es incorrecta, lanzar una excepción
     if (!passwordVerified) {
       throw new UnauthorizedException('Credentials invalid. Please try again.');
     }
 
-    // Se obtiene el rol del usuario y se generan los tokens
+    // Obtener el rol del usuario y generar los tokens
     const role = user.role as Role;
     const tokens = await this.getSignedTokens(user.id, user.mail, role);
 
@@ -250,7 +250,7 @@ export class AuthService {
    * @return {Promise<void>} A promise that resolves once the user's refresh token has been cleared.
    */
   async signout(userId: number): Promise<void> {
-    // Se establece el valor del token a nulo
+    // Establecer el valor del token a nulo
     await this.prisma.users.updateMany({
       where: {
         id: userId,
@@ -272,34 +272,34 @@ export class AuthService {
    * @return {Promise<TokensDto>} A promise that resolves to an object containing the new authentication tokens.
    */
   async refreshToken(dto: RefreshTokenDto): Promise<TokensDto> {
-    // Se obtienen los datos del token de refresco
+    // Obtener los datos del token de refresco
     const refreshTokenPayload = await this.verifyToken(dto.refreshToken, false);
 
-    // Se trata de obtener el usuario con los datos del token de refresco
+    // Tratar de obtener el usuario con los datos del token de refresco
     const user = await this.prisma.users.findUnique({
       where: {
         id: refreshTokenPayload.sub,
       },
     });
 
-    // Se verifica que el usuario y el token de refresco son válidos
+    // Verificar que el usuario y el token de refresco son válidos
     if (!user || !user.refresh_token) {
       throw new UnauthorizedException('User not registered. Please try again.');
     }
 
-    // Se compara el token de refresco dado con el almacenado
+    // Comparar el token de refresco dado con el almacenado
     const refreshTokenMatch = await argon.verify(user.refresh_token, dto.refreshToken);
     if (!refreshTokenMatch) {
       throw new UnauthorizedException('Invalid refresh token. Please try again.');
     }
 
-    // Se validan los datos del token de refresco
+    // Validar los datos del token de refresco
     const validRefreshToken = this.validatePayload(refreshTokenPayload);
     if (!validRefreshToken) {
       throw new UnauthorizedException('Invalid refresh token. Please try again.');
     }
 
-    // Se obtiene el rol y los tokens
+    // Obtener el rol y los tokens
     const role = Role[refreshTokenPayload.role as keyof typeof Role];
     return this.getSignedTokens(user.id, user.mail, role);
   }
