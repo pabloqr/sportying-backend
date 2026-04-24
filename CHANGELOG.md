@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.9](https://github.com/pabloqr/sportying-backend/compare/v0.2.8...v0.2.9) (2026-04-24)
+
+
+### Build
+
+* enable ESM module resolution ([860e04a](https://github.com/pabloqr/sportying-backend/commit/860e04a15a9a8ed731370461a3cdcd41f996e657))
+* enable ESM module resolution ([fddbe8d](https://github.com/pabloqr/sportying-backend/commit/fddbe8d605cbc2ec2ce77b4f8016f78d23d450fb))
+* enable ESM module resolution ([dd1d9c5](https://github.com/pabloqr/sportying-backend/commit/dd1d9c55b4bb939dff03188e23fded16854a7cb3))
+
 ## [0.2.8](https://github.com/pabloqr/sportying-backend/compare/v0.2.7...v0.2.8) (2026-04-24)
 
 
