@@ -1,9 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { ErrorsService } from 'src/common/errors.service';
-import { CourtsDevicesService } from 'src/courts-devices/courts-devices.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { CourtsStatusService } from '../../../src/courts-status/courts-status.service.js';
+import { ErrorsService } from '../../../src/common/errors.service.js';
+import { CourtsDevicesService } from '../../../src/courts-devices/courts-devices.service.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

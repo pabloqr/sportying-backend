@@ -1,16 +1,16 @@
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from 'prisma/generated/client';
-import { CourtAvailabilitySlotDto, ResponseCourtAvailabilityDto, ResponseCourtDto } from 'src/common/dto';
-import { ErrorsService } from 'src/common/errors.service';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { ReservationOrderField } from 'src/reservations/dto';
-import { ReservationAvailabilityStatus, ReservationStatus } from 'src/reservations/enums';
-import { ReservationsService } from 'src/reservations/reservations.service';
-import { WeatherService } from 'src/weather/weather.service';
-import { COURT_ORDER_FIELD_MAP, CreateCourtDto, CreateCourtStatusDto, GetCourtsDto, UpdateCourtDto } from './dto';
-import { CourtStatus, INACTIVE_COURT_STATUS } from './enums';
+import { CourtsStatusService } from '../courts-status/courts-status.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '../../prisma/generated/client.js';
+import { CourtAvailabilitySlotDto, ResponseCourtAvailabilityDto, ResponseCourtDto } from '../common/dto/index.js';
+import { ErrorsService } from '../common/errors.service.js';
+import { UtilitiesService } from '../common/utilities.service.js';
+import { ReservationOrderField } from '../reservations/dto/index.js';
+import { ReservationAvailabilityStatus, ReservationStatus } from '../reservations/enums/index.js';
+import { ReservationsService } from '../reservations/reservations.service.js';
+import { WeatherService } from '../weather/weather.service.js';
+import { COURT_ORDER_FIELD_MAP, CreateCourtDto, CreateCourtStatusDto, GetCourtsDto, UpdateCourtDto } from './dto/index.js';
+import { CourtStatus, INACTIVE_COURT_STATUS } from './enums/index.js';
 
 @Injectable()
 export class CourtsService {
@@ -511,3 +511,5 @@ export class CourtsService {
     );
   }
 }
+
+

@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString, Matches, Max, Min } from 'class-validator';
-import { Coordinates } from 'src/common/validators';
+import { Coordinates } from '../../common/validators/index.js';
 
 export class CreateComplexDto {
   @IsString()
@@ -37,3 +37,4 @@ export class CreateComplexDto {
   @IsNotEmpty()
   locLongitude: number;
 }
+

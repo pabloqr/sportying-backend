@@ -1,8 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { Prisma } from 'prisma/generated/client';
-import { OrderBy } from 'src/common/enums';
-import { DeviceStatus, DeviceType } from 'src/devices/enum';
+import { Prisma } from '../../../prisma/generated/client.js';
+import { OrderBy } from '../../common/enums/index.js';
+import { DeviceStatus, DeviceType } from '../../devices/enum/index.js';
 
 export enum DeviceOrderField {
   ID = 'id',
@@ -122,3 +122,5 @@ export class GetDevicesDto {
   @IsOptional()
   orderParams?: DeviceOrderParamsDto[];
 }
+
+

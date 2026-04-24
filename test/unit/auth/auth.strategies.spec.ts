@@ -1,8 +1,8 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthService } from 'src/auth/auth.service';
-import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from 'src/auth/strategy';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthService } from '../../../src/auth/auth.service.js';
+import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from '../../../src/auth/strategy/index.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

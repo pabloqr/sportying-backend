@@ -1,5 +1,5 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { DeviceType } from 'src/devices/enum';
+import { DeviceType } from '../../devices/enum/index.js';
 
 export class DeviceTelemetrySlotDto {
   @IsNumber()
@@ -20,3 +20,4 @@ export class DeviceTelemetrySlotDto {
     this.createdAt = new Date(telemetrySlot.created_at ?? telemetrySlot.createdAt);
   }
 }
+

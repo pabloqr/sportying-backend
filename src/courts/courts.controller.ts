@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { CourtsService } from './courts.service';
-import { CreateCourtDto, GetCourtsDto, UpdateCourtDto } from './dto';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { CourtsService } from './courts.service.js';
+import { CreateCourtDto, GetCourtsDto, UpdateCourtDto } from './dto/index.js';
 
 @Controller('complexes')
 export class CourtsController {
@@ -55,3 +55,4 @@ export class CourtsController {
     return this.courtsService.getCourtAvailability(complexId, courtId, groupAvailability);
   }
 }
+

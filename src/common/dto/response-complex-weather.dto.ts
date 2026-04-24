@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
-import { ResponseWeatherDataDto } from './response-weater-data.dto';
+import { ResponseWeatherDataDto } from './response-weater-data.dto.js';
 
 export class ResponseComplexWeatherDto {
   @Type(() => Number)

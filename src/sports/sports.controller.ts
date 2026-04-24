@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Query, ValidationPipe } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { GetSportsDto } from './dto/get-sports.dto';
-import { SportsService } from './sports.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { GetSportsDto } from './dto/get-sports.dto.js';
+import { SportsService } from './sports.service.js';
 
 @Controller('config/sports')
 export class SportsController {
@@ -20,3 +20,4 @@ export class SportsController {
     return this.sportsService.getSport(sportKey);
   }
 }
+

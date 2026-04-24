@@ -5,16 +5,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CourtAvailabilitySlotDto } from 'src/common/dto';
-import { ErrorsService } from 'src/common/errors.service';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { CourtsService } from 'src/courts/courts.service';
-import { CourtStatus } from 'src/courts/enums';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ReservationAvailabilityStatus, ReservationStatus } from 'src/reservations/enums';
-import { ReservationsService } from 'src/reservations/reservations.service';
-import { WeatherService } from 'src/weather/weather.service';
+import { CourtAvailabilitySlotDto } from '../../../src/common/dto/index.js';
+import { ErrorsService } from '../../../src/common/errors.service.js';
+import { UtilitiesService } from '../../../src/common/utilities.service.js';
+import { CourtsStatusService } from '../../../src/courts-status/courts-status.service.js';
+import { CourtsService } from '../../../src/courts/courts.service.js';
+import { CourtStatus } from '../../../src/courts/enums/index.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { ReservationAvailabilityStatus, ReservationStatus } from '../../../src/reservations/enums/index.js';
+import { ReservationsService } from '../../../src/reservations/reservations.service.js';
+import { WeatherService } from '../../../src/weather/weather.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

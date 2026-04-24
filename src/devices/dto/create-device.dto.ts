@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
-import { DeviceStatus, DeviceType } from 'src/devices/enum';
+import { DeviceStatus, DeviceType } from '../../devices/enum/index.js';
 
 export class CreateDeviceDto {
   @IsEnum(DeviceType)
@@ -10,3 +10,4 @@ export class CreateDeviceDto {
   @IsOptional()
   status?: DeviceStatus;
 }
+

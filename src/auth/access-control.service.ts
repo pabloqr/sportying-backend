@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Role } from './enums';
+import { Role } from './enums/index.js';
 
 interface RolePair {
   currentRole: Role;

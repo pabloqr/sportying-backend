@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty } from 'class-validator';
-import { CourtStatus } from 'src/courts/enums';
+import { CourtStatus } from '../../courts/enums/index.js';
 
 export class CourtStatusData {
   @IsEnum(CourtStatus)
@@ -23,3 +23,4 @@ export class CourtStatusData {
     this.estimatedDryingTime = courtStatus.estimated_drying_time ?? courtStatus.estimatedDryingTime;
   }
 }
+

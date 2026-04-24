@@ -1,7 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { devices_telemetryOrderByWithRelationInput } from 'prisma/generated/models';
-import { OrderBy } from 'src/common/enums';
+import { Prisma } from '../../../prisma/generated/client.js';
+import { OrderBy } from '../../common/enums/index.js';
 
 export enum DeviceTelemetryOrderField {
   VALUE = 'value',
@@ -10,7 +10,7 @@ export enum DeviceTelemetryOrderField {
 
 export const DEVICE_TELEMETRY_ORDER_FIELD_MAP: Record<
   DeviceTelemetryOrderField,
-  keyof devices_telemetryOrderByWithRelationInput
+  keyof Prisma.devices_telemetryOrderByWithRelationInput
 > = {
   value: 'value',
   createdAt: 'created_at',

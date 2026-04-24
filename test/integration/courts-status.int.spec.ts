@@ -1,8 +1,8 @@
-import { Role } from 'src/auth/enums';
-import { ErrorsService } from 'src/common/errors.service';
-import { CourtsStatusController } from 'src/courts-status/courts-status.controller';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Role } from '../../src/auth/enums/index.js';
+import { ErrorsService } from '../../src/common/errors.service.js';
+import { CourtsStatusController } from '../../src/courts-status/courts-status.controller.js';
+import { CourtsStatusService } from '../../src/courts-status/courts-status.service.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,
@@ -14,7 +14,7 @@ import {
   createSportRecord,
   mockUser,
   resetMockUser,
-} from './mock/factories';
+} from './mock/factories.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

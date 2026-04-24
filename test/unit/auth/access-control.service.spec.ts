@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AccessControlService } from 'src/auth/access-control.service';
-import { Role } from 'src/auth/enums';
+import { AccessControlService } from '../../../src/auth/access-control.service.js';
+import { Role } from '../../../src/auth/enums/index.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

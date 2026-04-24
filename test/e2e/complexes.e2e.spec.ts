@@ -1,11 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from 'src/auth/enums';
-import { CourtsService } from 'src/courts/courts.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { WeatherService } from 'src/weather/weather.service';
+import { Role } from '../../src/auth/enums/index.js';
+import { CourtsService } from '../../src/courts/courts.service.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { WeatherService } from '../../src/weather/weather.service.js';
 import request from 'supertest';
-import { cleanupUsers, createAuthHeader, createE2EApp, createWeatherServiceMock } from './mock/factories';
+import { cleanupUsers, createAuthHeader, createE2EApp, createWeatherServiceMock } from './mock/factories.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

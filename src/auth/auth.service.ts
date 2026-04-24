@@ -2,13 +2,13 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service.js';
 import { v4 as uuidV4 } from 'uuid';
-import { ResponseDeviceDto, ResponseUserDto } from 'src/common/dto';
-import { UsersService } from 'src/users/users.service';
-import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { Role } from './enums';
+import { ResponseDeviceDto, ResponseUserDto } from '../common/dto/index.js';
+import { UsersService } from '../users/users.service.js';
+import { ApiKeyDto, SigninAuthDto, SignupAuthDto, TokensDto } from './dto/index.js';
+import { RefreshTokenDto } from './dto/refresh-token.dto.js';
+import { Role } from './enums/index.js';
 
 @Injectable()
 export class AuthService {
@@ -304,3 +304,4 @@ export class AuthService {
     return this.getSignedTokens(user.id, user.mail, role);
   }
 }
+

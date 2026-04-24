@@ -1,10 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Role } from 'src/auth/enums';
-import { ErrorsService } from 'src/common/errors.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UsersController } from 'src/users/users.controller';
-import { UsersService } from 'src/users/users.service';
+import { Role } from '../../src/auth/enums/index.js';
+import { ErrorsService } from '../../src/common/errors.service.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { UsersController } from '../../src/users/users.controller.js';
+import { UsersService } from '../../src/users/users.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,
@@ -16,7 +16,7 @@ import {
   mockUser,
   resetMockUser,
   TEST_PHONE_PREFIX,
-} from './mock/factories';
+} from './mock/factories.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

@@ -1,5 +1,5 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
+import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../../reservations/enums/index.js';
 
 export class ResponseReservationDto {
   @IsNumber()
@@ -60,3 +60,4 @@ export class ResponseReservationDto {
     this.updatedAt = new Date(reservation.updated_at ?? reservation.updatedAt);
   }
 }
+

@@ -1,1 +1,1 @@
-export * from './coordinates.validator';
+export * from './coordinates.validator.js';

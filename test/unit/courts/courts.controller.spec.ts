@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CourtsController } from 'src/courts/courts.controller';
-import { CourtsService } from 'src/courts/courts.service';
+import { CourtsController } from '../../../src/courts/courts.controller.js';
+import { CourtsService } from '../../../src/courts/courts.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

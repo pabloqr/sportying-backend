@@ -8,10 +8,10 @@ import {
 import { Cron } from '@nestjs/schedule';
 import * as ngeohash from 'ngeohash';
 import { fetchWeatherApi } from 'openmeteo';
-import { AnalysisService, WeatherData } from 'src/common/analysis.service';
-import { ResponseWeatherDataDto } from 'src/common/dto';
-import { ErrorsService } from 'src/common/errors.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { AnalysisService, WeatherData } from '../common/analysis.service.js';
+import { ResponseWeatherDataDto } from '../common/dto/index.js';
+import { ErrorsService } from '../common/errors.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 interface RawWeatherData {
   // Datos actuales (current)
@@ -536,3 +536,4 @@ export class WeatherService implements OnModuleInit {
     return new ResponseWeatherDataDto(weather);
   }
 }
+

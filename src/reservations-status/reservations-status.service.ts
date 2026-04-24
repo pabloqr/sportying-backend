@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ResponseReservationDto } from 'src/common/dto';
-import { ErrorsService } from 'src/common/errors.service';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ReservationAvailabilityStatus } from 'src/reservations/enums';
+import { ResponseReservationDto } from '../common/dto/index.js';
+import { ErrorsService } from '../common/errors.service.js';
+import { UtilitiesService } from '../common/utilities.service.js';
+import { CourtsStatusService } from '../courts-status/courts-status.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { ReservationAvailabilityStatus } from '../reservations/enums/index.js';
 
 @Injectable()
 export class ReservationsStatusService {
@@ -61,3 +61,4 @@ export class ReservationsStatusService {
     }
   }
 }
+

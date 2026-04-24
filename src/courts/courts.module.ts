@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { CourtsStatusModule } from 'src/courts-status/courts-status.module';
-import { WeatherModule } from 'src/weather/weather.module';
-import { ReservationsModule } from 'src/reservations/reservations.module';
-import { CourtsController } from './courts.controller';
-import { CourtsService } from './courts.service';
+import { CourtsStatusModule } from '../courts-status/courts-status.module.js';
+import { WeatherModule } from '../weather/weather.module.js';
+import { ReservationsModule } from '../reservations/reservations.module.js';
+import { CourtsController } from './courts.controller.js';
+import { CourtsService } from './courts.service.js';
 
 @Module({
   imports: [WeatherModule, CourtsStatusModule, ReservationsModule],
@@ -12,3 +12,4 @@ import { CourtsService } from './courts.service';
   exports: [CourtsService],
 })
 export class CourtsModule {}
+

@@ -11,9 +11,9 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Prisma } from 'prisma/generated/client';
-import { OrderBy } from 'src/common/enums';
-import { Coordinates } from 'src/common/validators';
+import { Prisma } from '../../../prisma/generated/client.js';
+import { OrderBy } from '../../common/enums/index.js';
+import { Coordinates } from '../../common/validators/index.js';
 
 export enum ComplexOrderField {
   ID = 'id',
@@ -127,3 +127,5 @@ export class GetComplexesDto {
   @IsOptional()
   orderParams?: ComplexOrderParamsDto[];
 }
+
+

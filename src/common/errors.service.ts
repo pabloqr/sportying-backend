@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from 'prisma/generated/client';
+import { Prisma } from '../../prisma/generated/client.js';
 
 interface ErrorContext {
   p2002?: string;
@@ -44,3 +44,4 @@ export class ErrorsService {
     }
   }
 }
+

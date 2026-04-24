@@ -1,8 +1,8 @@
 import { Controller, Get, Param, ParseIntPipe, Query, ValidationPipe } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { GetSportsDto } from './dto';
-import { SportsService } from './sports.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { GetSportsDto } from './dto/index.js';
+import { SportsService } from './sports.service.js';
 
 @Controller('complexes')
 export class ComplexSportsController {
@@ -17,3 +17,4 @@ export class ComplexSportsController {
     return this.sportsService.getComplexSports(complexId, query);
   }
 }
+

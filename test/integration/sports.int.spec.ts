@@ -1,8 +1,8 @@
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SportsController } from 'src/sports/sports.controller';
-import { SportsService } from 'src/sports/sports.service';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { SportsController } from '../../src/sports/sports.controller.js';
+import { SportsService } from '../../src/sports/sports.service.js';
 import request from 'supertest';
-import { cleanupSports, createIntegrationApp, createSportRecord, resetMockUser } from './mock/factories';
+import { cleanupSports, createIntegrationApp, createSportRecord, resetMockUser } from './mock/factories.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

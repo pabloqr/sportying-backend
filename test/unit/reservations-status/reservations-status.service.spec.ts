@@ -1,16 +1,16 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ErrorsService } from 'src/common/errors.service';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { CourtsStatusService } from 'src/courts-status/courts-status.service';
-import { CourtStatus } from 'src/courts/enums';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service';
+import { ErrorsService } from '../../../src/common/errors.service.js';
+import { UtilitiesService } from '../../../src/common/utilities.service.js';
+import { CourtsStatusService } from '../../../src/courts-status/courts-status.service.js';
+import { CourtStatus } from '../../../src/courts/enums/index.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { ReservationsStatusService } from '../../../src/reservations-status/reservations-status.service.js';
 import {
   ReservationAvailabilityStatus,
   ReservationStatus,
   ReservationTimeFilter,
-} from 'src/reservations/enums';
+} from '../../../src/reservations/enums/index.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

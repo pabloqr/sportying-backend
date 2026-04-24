@@ -1,1 +1,1 @@
-export * from './order-by.enum';
+export * from './order-by.enum.js';
