@@ -1,10 +1,10 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { fetchWeatherApi } from 'openmeteo';
-import { AnalysisService } from 'src/common/analysis.service';
-import { ErrorsService } from 'src/common/errors.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { WeatherService } from 'src/weather/weather.service';
+import { AnalysisService } from '../../../src/common/analysis.service.js';
+import { ErrorsService } from '../../../src/common/errors.service.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { WeatherService } from '../../../src/weather/weather.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

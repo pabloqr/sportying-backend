@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { firstValueFrom, of } from 'rxjs';
-import { NotificationsSseService } from 'src/notifications/notifications-sse.service';
-import { NotificationsController } from 'src/notifications/notifications.controller';
+import { NotificationsSseService } from '../../../src/notifications/notifications-sse.service.js';
+import { NotificationsController } from '../../../src/notifications/notifications.controller.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

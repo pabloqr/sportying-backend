@@ -1,8 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { CourtStatus } from 'src/courts/enums';
-import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from 'src/reservations/enums';
+import { UtilitiesService } from '../../../src/common/utilities.service.js';
+import { CourtStatus } from '../../../src/courts/enums/index.js';
+import {
+  ReservationAvailabilityStatus,
+  ReservationStatus,
+  ReservationTimeFilter,
+} from '../../../src/reservations/enums/index.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

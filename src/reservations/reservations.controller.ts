@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Put, Query, ValidationPipe } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { GetReservationsDto, UpdateReservationDto } from './dto';
-import { ReservationsService } from './reservations.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { GetReservationsDto, UpdateReservationDto } from './dto/index.js';
+import { ReservationsService } from './reservations.service.js';
 
 @Controller('reservations')
 export class ReservationsController {
@@ -36,3 +36,4 @@ export class ReservationsController {
     return this.reservationsService.deleteReservation(reservationId);
   }
 }
+

@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { CreateCourtStatusDto } from 'src/courts/dto';
-import { CourtsStatusService } from './courts-status.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { CreateCourtStatusDto } from '../courts/dto/index.js';
+import { CourtsStatusService } from './courts-status.service.js';
 
 @Controller('complexes')
 export class CourtsStatusController {
@@ -27,3 +27,4 @@ export class CourtsStatusController {
     return this.courtsStatusService.setCourtStatus(complexId, courtId, dto);
   }
 }
+

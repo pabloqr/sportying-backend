@@ -1,7 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
-import { Prisma } from 'prisma/generated/client';
-import { OrderBy } from 'src/common/enums';
+import { Prisma } from '../../../prisma/generated/client.js';
+import { OrderBy } from '../../common/enums/index.js';
 
 export enum SportOrderField {
   KEY = 'key',
@@ -84,3 +84,5 @@ export class GetSportsDto {
   @IsOptional()
   orderParams?: SportOrderParamsDto[];
 }
+
+

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { SportsModule } from 'src/sports/sports.module';
-import { WeatherModule } from 'src/weather/weather.module';
-import { CourtsModule } from 'src/courts/courts.module';
-import { ComplexesController } from './complexes.controller';
-import { ComplexesService } from './complexes.service';
+import { SportsModule } from '../sports/sports.module.js';
+import { WeatherModule } from '../weather/weather.module.js';
+import { CourtsModule } from '../courts/courts.module.js';
+import { ComplexesController } from './complexes.controller.js';
+import { ComplexesService } from './complexes.service.js';
 
 @Module({
   imports: [WeatherModule, SportsModule, CourtsModule],
@@ -12,3 +12,4 @@ import { ComplexesService } from './complexes.service';
   exports: [ComplexesService],
 })
 export class ComplexesModule {}
+

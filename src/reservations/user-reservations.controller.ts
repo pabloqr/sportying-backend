@@ -1,8 +1,8 @@
 import { Controller, ForbiddenException, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { GetUser, Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { GetUserReservationsDto } from './dto';
-import { ReservationsService } from './reservations.service';
+import { GetUser, Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { GetUserReservationsDto } from './dto/index.js';
+import { ReservationsService } from './reservations.service.js';
 
 @Controller('users')
 export class UserReservationsController {
@@ -24,3 +24,4 @@ export class UserReservationsController {
     return this.reservationsService.getUserReservations(userId, query);
   }
 }
+

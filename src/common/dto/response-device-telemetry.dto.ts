@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
-import { DeviceTelemetrySlotDto } from './device-telemetry-slot.dto';
+import { DeviceTelemetrySlotDto } from './device-telemetry-slot.dto.js';
 
 export class ResponseDeviceTelemetryDto {
   @Type(() => Number)

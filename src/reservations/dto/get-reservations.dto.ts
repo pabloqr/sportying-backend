@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNumber, IsOptional } from 'class-validator';
-import { GetUserReservationsDto } from './get-user-reservations.dto';
+import { GetUserReservationsDto } from './get-user-reservations.dto.js';
 
 export class GetReservationsDto extends GetUserReservationsDto {
   @Type(() => Number)

@@ -1,8 +1,8 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { ResponseComplexWeatherDto } from 'src/common/dto';
-import { WeatherService } from './weather.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { ResponseComplexWeatherDto } from '../common/dto/index.js';
+import { WeatherService } from './weather.service.js';
 
 @Controller('complexes')
 export class WeatherController {
@@ -16,3 +16,4 @@ export class WeatherController {
     return new ResponseComplexWeatherDto({ id: complexId, weather });
   }
 }
+

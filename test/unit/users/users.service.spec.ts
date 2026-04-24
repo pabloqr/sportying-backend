@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as argon from 'argon2';
-import { Role } from 'src/auth/enums';
-import { OrderBy } from 'src/common/enums';
-import { ErrorsService } from 'src/common/errors.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserOrderField } from 'src/users/dto';
-import { UsersService } from 'src/users/users.service';
+import { Role } from '../../../src/auth/enums/index.js';
+import { OrderBy } from '../../../src/common/enums/index.js';
+import { ErrorsService } from '../../../src/common/errors.service.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { UserOrderField } from '../../../src/users/dto/index.js';
+import { UsersService } from '../../../src/users/users.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

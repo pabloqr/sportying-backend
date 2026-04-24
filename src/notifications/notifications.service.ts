@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationsSseService } from './notifications-sse.service';
+import { NotificationsSseService } from './notifications-sse.service.js';
 
 @Injectable()
 export class NotificationsService {

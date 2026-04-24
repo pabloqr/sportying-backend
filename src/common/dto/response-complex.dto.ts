@@ -11,8 +11,8 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Coordinates } from 'src/common/validators';
-import { ResponseWeatherDataDto } from './response-weater-data.dto';
+import { Coordinates } from '../../common/validators/index.js';
+import { ResponseWeatherDataDto } from './response-weater-data.dto.js';
 
 export class ResponseComplexDto {
   @Type(() => Number)
@@ -84,3 +84,4 @@ export class ResponseComplexDto {
     this.updatedAt = new Date(complex.updated_at ?? complex.updatedAt);
   }
 }
+

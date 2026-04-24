@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { ApiKeyGuard } from 'src/auth/guard';
-import { DevicesService } from './devices.service';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { ApiKeyGuard } from '../auth/guard/index.js';
+import { DevicesService } from './devices.service.js';
 import {
   CreateDeviceDto,
   CreateDeviceStatusDto,
@@ -10,7 +10,7 @@ import {
   GetDevicesDto,
   GetDeviceTelemetryDto,
   UpdateDeviceDto,
-} from './dto';
+} from './dto/index.js';
 
 @Controller('complexes')
 export class DevicesController {
@@ -97,3 +97,4 @@ export class DevicesController {
     return this.devicesService.setDeviceStatus(complexId, deviceId, body);
   }
 }
+

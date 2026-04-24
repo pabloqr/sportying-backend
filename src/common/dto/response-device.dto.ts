@@ -1,5 +1,5 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { DeviceStatus, DeviceType } from 'src/devices/enum';
+import { DeviceStatus, DeviceType } from '../../devices/enum/index.js';
 
 export class ResponseDeviceDto {
   @IsNumber()
@@ -35,3 +35,4 @@ export class ResponseDeviceDto {
     this.updatedAt = new Date(device.updated_at ?? device.updatedAt);
   }
 }
+

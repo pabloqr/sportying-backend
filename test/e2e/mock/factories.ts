@@ -2,11 +2,11 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
-import { user_role } from 'prisma/generated/enums';
-import { AppModule } from 'src/app.module';
-import { Role } from 'src/auth/enums';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { WeatherService } from 'src/weather/weather.service';
+import { user_role } from 'prisma/generated/client.js';
+import { AppModule } from '../../../src/app.module.js';
+import { Role } from '../../../src/auth/enums/index.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { WeatherService } from '../../../src/weather/weather.service.js';
 
 const TEST_MAIL_PREFIX = 'e2e_test_';
 export const TEST_PHONE_PREFIX = 34;

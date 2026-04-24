@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
-import { CourtStatusData } from 'src/courts/dto';
+import { CourtStatusData } from '../../courts/dto/index.js';
 
 export class ResponseCourtStatusDto {
   @Type(() => Number)
@@ -29,3 +29,4 @@ export class ResponseCourtStatusDto {
     this.createdAt = new Date(courtStatus.created_at ?? courtStatus.createdAt);
   }
 }
+

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ResponseCourtStatusDto } from 'src/common/dto';
-import { ErrorsService } from 'src/common/errors.service';
-import { CourtStatusData, CreateCourtStatusDto } from 'src/courts/dto';
-import { CourtStatus, INACTIVE_COURT_STATUS } from 'src/courts/enums';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { ResponseCourtStatusDto } from '../common/dto/index.js';
+import { ErrorsService } from '../common/errors.service.js';
+import { CourtStatusData, CreateCourtStatusDto } from '../courts/dto/index.js';
+import { CourtStatus, INACTIVE_COURT_STATUS } from '../courts/enums/index.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class CourtsStatusService {
@@ -105,3 +105,4 @@ export class CourtsStatusService {
     }
   }
 }
+

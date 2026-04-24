@@ -1,3 +1,3 @@
-export * from './reservation-availability-status.enum';
-export * from './reservation-status.enum';
-export * from './reservation-time-filter.enum';
+export * from './reservation-availability-status.enum.js';
+export * from './reservation-status.enum.js';
+export * from './reservation-time-filter.enum.js';

@@ -6,7 +6,7 @@ jest.mock('@prisma/adapter-pg', () => ({
   PrismaPg: jest.fn().mockImplementation((config) => ({ config })),
 }));
 
-jest.mock('src/../prisma/generated/client', () => ({
+jest.mock('../../../prisma/generated/client.js', () => ({
   PrismaClient: jest.fn().mockImplementation(function (this: any, options: any) {
     this.options = options;
     this.$connect = jest.fn().mockResolvedValue(undefined);
@@ -15,8 +15,8 @@ jest.mock('src/../prisma/generated/client', () => ({
 }));
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from 'src/../prisma/generated/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaClient } from '../../../prisma/generated/client.js';
+import { PrismaService } from '../../../src/prisma/prisma.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

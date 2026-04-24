@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { ResponseSportDto } from 'src/common/dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from 'prisma/generated/client';
-import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto';
+import { ResponseSportDto } from '../common/dto/index.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '../../prisma/generated/client.js';
+import { GetSportsDto, SPORT_ORDER_FIELD_MAP } from './dto/index.js';
 
 @Injectable()
 export class SportsService {
@@ -100,3 +100,5 @@ export class SportsService {
     return sport;
   }
 }
+
+

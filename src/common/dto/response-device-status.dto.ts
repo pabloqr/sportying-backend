@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { DeviceStatus } from 'src/devices/enum';
+import { DeviceStatus } from '../../devices/enum/index.js';
 
 export class ResponseDeviceStatusDto {
   @Type(() => Number)
@@ -28,3 +28,4 @@ export class ResponseDeviceStatusDto {
     this.createdAt = new Date(courtStatus.created_at ?? courtStatus.createdAt);
   }
 }
+

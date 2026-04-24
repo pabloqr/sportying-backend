@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { CourtsStatusModule } from 'src/courts-status/courts-status.module';
-import { ReservationsStatusService } from './reservations-status.service';
+import { CourtsStatusModule } from '../courts-status/courts-status.module.js';
+import { ReservationsStatusService } from './reservations-status.service.js';
 
 @Module({
   imports: [CourtsStatusModule],
@@ -8,3 +8,4 @@ import { ReservationsStatusService } from './reservations-status.service';
   exports: [ReservationsStatusService],
 })
 export class ReservationsStatusModule {}
+

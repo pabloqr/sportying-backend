@@ -1,13 +1,13 @@
-import { ErrorsService } from 'src/common/errors.service';
-import { UtilitiesService } from 'src/common/utilities.service';
-import { ComplexesController } from 'src/complexes/complexes.controller';
-import { ComplexesService } from 'src/complexes/complexes.service';
-import { CourtsService } from 'src/courts/courts.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SportsService } from 'src/sports/sports.service';
-import { WeatherService } from 'src/weather/weather.service';
+import { ErrorsService } from '../../src/common/errors.service.js';
+import { UtilitiesService } from '../../src/common/utilities.service.js';
+import { ComplexesController } from '../../src/complexes/complexes.controller.js';
+import { ComplexesService } from '../../src/complexes/complexes.service.js';
+import { CourtsService } from '../../src/courts/courts.service.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { SportsService } from '../../src/sports/sports.service.js';
+import { WeatherService } from '../../src/weather/weather.service.js';
 import request from 'supertest';
-import { createIntegrationApp, resetMockUser } from './mock/factories';
+import { createIntegrationApp, resetMockUser } from './mock/factories.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

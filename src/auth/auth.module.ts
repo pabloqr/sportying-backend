@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { UsersModule } from 'src/users/users.module';
-import { AccessControlService } from './access-control.service';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
+import { UsersModule } from '../users/users.module.js';
+import { AccessControlService } from './access-control.service.js';
+import { AuthController } from './auth.controller.js';
+import { AuthService } from './auth.service.js';
+import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy/index.js';
 
 @Module({
   imports: [JwtModule.register({}), UsersModule],
@@ -13,3 +13,4 @@ import { ApiKeyStrategy, JwtStrategy, RefreshJwtStrategy } from './strategy';
   exports: [AuthService, AccessControlService],
 })
 export class AuthModule {}
+

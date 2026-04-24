@@ -1,2 +1,2 @@
-export * from './device-type.enum';
-export * from './device-status.enum';
+export * from './device-type.enum.js';
+export * from './device-status.enum.js';

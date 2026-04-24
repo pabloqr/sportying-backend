@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, ValidationPipe } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator';
-import { Role } from 'src/auth/enums';
-import { ComplexesService } from './complexes.service';
-import { CreateComplexDto, GetComplexesDto, UpdateComplexDto, UpdateComplexTimeDto } from './dto';
+import { Roles } from '../auth/decorator/index.js';
+import { Role } from '../auth/enums/index.js';
+import { ComplexesService } from './complexes.service.js';
+import { CreateComplexDto, GetComplexesDto, UpdateComplexDto, UpdateComplexTimeDto } from './dto/index.js';
 
 @Controller('complexes')
 export class ComplexesController {
@@ -66,3 +66,4 @@ export class ComplexesController {
     return this.complexesService.getComplexAvailability(complexId, groupAvailability);
   }
 }
+

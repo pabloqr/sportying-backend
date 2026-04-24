@@ -1,5 +1,5 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
-import { Role } from 'src/auth/enums';
+import { Role } from '../../auth/enums/index.js';
 
 export class ResponseUserDto {
   @IsEnum(Role)
@@ -53,3 +53,4 @@ export class ResponseUserDto {
     this.updated_at = new Date(user.updated_at ?? user.updatedAt);
   }
 }
+
