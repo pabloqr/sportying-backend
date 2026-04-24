@@ -23,9 +23,25 @@ module.exports = {
         },
       },
     ],
+    '^.+\\.mjs$': [
+      '@swc/jest',
+      {
+        module: {
+          type: 'commonjs',
+        },
+        jsc: {
+          target: 'es2022',
+          parser: {
+            syntax: 'ecmascript',
+          },
+        },
+      },
+    ],
   },
+  transformIgnorePatterns: ['/node_modules/(?!(@prisma/client)/)'],
   setupFiles: ['<rootDir>/test/support/setup-env.js'],
   moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^prisma/(.*)$': '<rootDir>/prisma/$1',
     '^uuid$': '<rootDir>/test/support/mocks/uuid.ts',
