@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.2.8](https://github.com/pabloqr/sportying-backend/compare/v0.2.7...v0.2.8) (2026-04-24)
+
+
+### Refactors
+
+* adapt services to stricter null checks ([53d92ac](https://github.com/pabloqr/sportying-backend/commit/53d92ac95396ce9f53fe172dc3ee017829b74ab2))
+* replace relative paths with tsconfig aliases ([df49f2f](https://github.com/pabloqr/sportying-backend/commit/df49f2ff08084abaee38bda31166e37112b93fba))
+
+
+### Documentation
+
+* normalize and improve wording in comments (spanish) ([7ea1814](https://github.com/pabloqr/sportying-backend/commit/7ea18145046fa92fb37ddc4de23bf763d72b24ca))
+* normalize and improve wording in comments (spanish) ([13e8a4c](https://github.com/pabloqr/sportying-backend/commit/13e8a4c123e44755a470ad8cd301cbce6fef444e))
+* normalize status wording in services ([547e6ec](https://github.com/pabloqr/sportying-backend/commit/547e6ec607205afd1ee853d093d31e05ae317ced))
+
+
+### Tests
+
+* align mocks and assertions with TypeScript 6 ([f11038a](https://github.com/pabloqr/sportying-backend/commit/f11038afd5e9ed39ffaa4f7bf35ee9400c9a32e6))
+
+
+### CI/CD
+
+* improve PRs checks verification in deps-consolidate workflow ([7be61ca](https://github.com/pabloqr/sportying-backend/commit/7be61ca3d48b929d899340cf4633ef12c5420abc))
+* improve PRs checks verification in deps-consolidate workflow ([c055b32](https://github.com/pabloqr/sportying-backend/commit/c055b32128e7e15adee0ac743786406914769a3b))
+* translate Dependabot PR messages to english in deps-consolidate workflow ([ebe0e5c](https://github.com/pabloqr/sportying-backend/commit/ebe0e5c52460d5def391a3d323a0013c286e9918))
+* translate Dependabot PR messages to english in deps-consolidate workflow ([273a176](https://github.com/pabloqr/sportying-backend/commit/273a1766fa25f6630f21aa1351b8e931da88802b))
+
 ## [0.2.7](https://github.com/pabloqr/sportying-backend/compare/v0.2.6...v0.2.7) (2026-04-19)
 
 
