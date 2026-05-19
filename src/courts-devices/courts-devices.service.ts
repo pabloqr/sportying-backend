@@ -189,11 +189,7 @@ export class CourtsDevicesService {
           });
 
           // Obtener la pista actual para poder devolverla
-          const newCourt = await this.prisma.courts.findUnique({ where: { id: courtId } });
-          // Verificar los datos obtenidos
-          if (!newCourt) {
-            throw new NotFoundException(`Court with ID ${courtId} not found.`);
-          }
+          const newCourt = await this.prisma.courts.findUniqueOrThrow({ where: { id: courtId } });
 
           const courtStatus = await this.courtsStatusService.getCourtStatus(complexId, courtId);
           const newCourtWithStatus = { ...newCourt, status_data: courtStatus.statusData };
