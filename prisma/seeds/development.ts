@@ -110,11 +110,7 @@ export async function seedDevelopmentData(prisma: PrismaClient) {
       superadmin: superadmin.mail,
       admin: admin.mail,
       client: client.mail,
-      password: demoPassword,
     },
-    apiKeys: {
-      rain: `${rainDevice.id_key}.${demoRainDeviceSecret}`,
-      presence: `${presenceDevice.id_key}.${demoPresenceDeviceSecret}`,
-    },
+    apiKeys: '[REDACTED]',
   });
 }
