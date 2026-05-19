@@ -79,6 +79,20 @@ jobs:
           git checkout dev
           git pull origin dev
 
-      - name: Deploy development stack
+      - name: Build development stack
+        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev build
+
+      - name: Run database migrations
         run: |
-          docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev up -d --build
+          docker compose -f /srv/docker/compose/sportying/docker-compose.yml \
+            --profile dev run --rm api \
+            npx prisma migrate deploy
+
+      - name: Seed development database
+        run: |
+          docker compose -f /srv/docker/compose/sportying/docker-compose.yml \
+            --profile dev run --rm -e NODE_ENV=development api \
+            npm run db:seed
+
+      - name: Deploy development stack
+        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev up -d
