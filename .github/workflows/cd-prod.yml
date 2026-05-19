@@ -2,15 +2,92 @@ name: CD Production
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    tags: [ "v*.*.*" ]
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 24.13.1
+  CI_POSTGRES_HOST: localhost
+  CI_POSTGRES_PORT: 5432
+  CI_POSTGRES_DB: tests
+  CI_POSTGRES_USER: postgres
+  CI_POSTGRES_PASSWORD: postgres
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tests?schema=public
+  CI_JWT_SECRET: ci-access-token-secret
+  CI_JWT_REFRESH_SECRET: ci-refresh-token-secret
 
 jobs:
+  #---------------------------------------------------------------------------------------------------------------------
+  # TESTS - Suite completo antes de desplegar en producción
+  #---------------------------------------------------------------------------------------------------------------------
+  validate:
+    name: Typecheck, unit, integration and e2e tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ${{ env.CI_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.CI_POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.CI_POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tests"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create test environment file
+        shell: bash
+        run: |
+          cat <<EOF > .env.test.local
+          DATABASE_URL=${{ env.DATABASE_URL }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
+          EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:int
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
   #---------------------------------------------------------------------------------------------------------------------
   # DEPLOY - Ejecutar al crear un tag de versión
   #---------------------------------------------------------------------------------------------------------------------
   deploy:
     name: Deploy to production
+    needs: validate
     runs-on:
       - self-hosted
       - sportying-dev

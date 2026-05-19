@@ -1,17 +1,65 @@
 name: CD Development
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - dev
+    branches: [ dev ]
+  workflow_dispatch:
+
+concurrency:
+  group: development
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24.13.1
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tests?schema=public
+  CI_JWT_SECRET: ci-access-token-secret
+  CI_JWT_REFRESH_SECRET: ci-refresh-token-secret
 
 jobs:
+  #---------------------------------------------------------------------------------------------------------------------
+  # TESTS - Suite ligero antes de desplegar en desarrollo
+  #---------------------------------------------------------------------------------------------------------------------
+  validate:
+    name: Typecheck and unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create test environment file
+        shell: bash
+        run: |
+          cat <<EOF > .env.test.local
+          DATABASE_URL=${{ env.DATABASE_URL }}
+          JWT_SECRET=${{ env.CI_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ env.CI_JWT_REFRESH_SECRET }}
+          EOF
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm run test:unit
+
   #---------------------------------------------------------------------------------------------------------------------
   # DEPLOY - Ejecutar solo si todos los tests pasan
   #---------------------------------------------------------------------------------------------------------------------
   deploy:
     name: Deploy to development
+    needs: validate
     runs-on:
       - self-hosted
       - sportying-dev
@@ -32,5 +80,5 @@ jobs:
           git pull origin dev
 
       - name: Deploy development stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml
-          --profile dev up -d --build
+        run: |
+          docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev up -d --build
