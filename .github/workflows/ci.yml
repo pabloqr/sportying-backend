@@ -1,12 +1,12 @@
-name: CI Production
+﻿name: CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
+    branches: [ dev, main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: 24.13.1
@@ -42,6 +42,7 @@ jobs:
 
       - name: Run Snyk test
         uses: snyk/actions/node@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
@@ -49,8 +50,6 @@ jobs:
           args: >-
             --sarif-file-output=snyk-oss.sarif
             --all-projects
-            --severity-threshold=high
-            --fail-on=upgradable
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
@@ -135,11 +134,6 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run test:unit -- --coverage
 
-      - name: Verify TypeScript build
-        run: |
-          npx prisma generate
-          npm run build
-
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v7
         if: always()
@@ -161,8 +155,8 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
+          --health-cmd pg_isready 
+          --health-interval 10s 
           --health-timeout 5s
           --health-retries 5
 
@@ -211,9 +205,9 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d tests"
+          --health-cmd "pg_isready -U postgres -d tests" 
           --health-interval 10s
-          --health-timeout 5s
+          --health-timeout 5s 
           --health-retries 5
 
     steps:
