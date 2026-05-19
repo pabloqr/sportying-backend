@@ -3,8 +3,8 @@ import { ModuleMetadata } from '@nestjs/common/interfaces/index.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import { user_role } from 'prisma/generated/client.js';
-import { Role } from '../../../src/auth/enums/index.js';
-import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { Role } from 'src/auth/enums/index.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
 
 export const mockUser = {
   id: 9999,

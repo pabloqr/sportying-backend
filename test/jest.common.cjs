@@ -42,7 +42,9 @@ module.exports = {
   setupFiles: ['<rootDir>/test/support/setup-env.js'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^src/(.*)\\.js$': '<rootDir>/src/$1.ts',
     '^src/(.*)$': '<rootDir>/src/$1',
+    '^prisma/(.*)\\.js$': '<rootDir>/prisma/$1.ts',
     '^prisma/(.*)$': '<rootDir>/prisma/$1',
     '^uuid$': '<rootDir>/test/support/mocks/uuid.ts',
   },

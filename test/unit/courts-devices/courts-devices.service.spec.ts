@@ -1,9 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CourtsStatusService } from '../../../src/courts-status/courts-status.service.js';
-import { ErrorsService } from '../../../src/common/errors.service.js';
-import { CourtsDevicesService } from '../../../src/courts-devices/courts-devices.service.js';
-import { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service.js';
+import { ErrorsService } from 'src/common/errors.service.js';
+import { CourtsDevicesService } from 'src/courts-devices/courts-devices.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories
@@ -20,6 +20,7 @@ const mockPrisma = {
   },
   courts: {
     findUnique: jest.fn(),
+    findUniqueOrThrow: jest.fn(),
   },
 };
 
@@ -182,7 +183,7 @@ describe('CourtsDevicesService', () => {
       jest.spyOn(service, 'getDeviceCourts').mockResolvedValue({
         courts: [{ id: 9 } as any],
       } as any);
-      mockPrisma.courts.findUnique.mockResolvedValue({
+      mockPrisma.courts.findUniqueOrThrow.mockResolvedValue({
         id: 4,
         complex_id: 1,
         sport_key: 'padel',
@@ -265,7 +266,7 @@ describe('CourtsDevicesService', () => {
       jest.spyOn(service, 'getDeviceCourts').mockResolvedValue({
         courts: [],
       } as any);
-      mockPrisma.courts.findUnique.mockResolvedValue(null);
+      mockPrisma.courts.findUniqueOrThrow.mockRejectedValue(new NotFoundException('Court with ID 4 not found.'));
       mockCourtsStatusService.getCourtStatus.mockResolvedValue({
         statusData: { status: 'OPEN', alert_level: 0, estimated_drying_time: 0 },
       });
