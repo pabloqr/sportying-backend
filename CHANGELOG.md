@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.13](https://github.com/pabloqr/sportying-backend/compare/v0.2.12...v0.2.13) (2026-05-19)
+
+
+### CI/CD
+
+* fix branches conflicts ([#123](https://github.com/pabloqr/sportying-backend/issues/123)) ([314c1a3](https://github.com/pabloqr/sportying-backend/commit/314c1a3cf2b89a54e989fc41e688c2586beb0662))
+* trigger main-to-dev sync on main branch push instead of tags ([587e286](https://github.com/pabloqr/sportying-backend/commit/587e286623ea8830df1dbf5b3b1b0717bedf265f))
+* trigger main-to-dev sync on main branch push instead of tags ([#121](https://github.com/pabloqr/sportying-backend/issues/121)) ([c7218ed](https://github.com/pabloqr/sportying-backend/commit/c7218ed8c5a86c5346bb4396698151dba259f02a))
+* trigger main-to-dev sync on main branch push instead of tags ([#122](https://github.com/pabloqr/sportying-backend/issues/122)) ([a7be57b](https://github.com/pabloqr/sportying-backend/commit/a7be57b500967ea68aa92e8ff160f981341143b9))
+
 ## [0.2.12](https://github.com/pabloqr/sportying-backend/compare/v0.2.11...v0.2.12) (2026-05-19)
 
 
