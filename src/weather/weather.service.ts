@@ -6,7 +6,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import * as ngeohash from 'ngeohash';
+import ngeohash from 'ngeohash';
 import { fetchWeatherApi } from 'openmeteo';
 import { AnalysisService, WeatherData } from '../common/analysis.service.js';
 import { ResponseWeatherDataDto } from '../common/dto/index.js';
@@ -396,7 +396,7 @@ export class WeatherService implements OnModuleInit {
     // Si no hay complejos, finalizar la ejecución
     if (activeComplexes.length === 0) return;
 
-    // Generar geohashes únicos (Precisión 5 = ~4.9km x 4.9km)
+    // Generar geohashes únicos (Precisión 5 = ~4.9 km x 4.9 km)
     const geohashes = new Set<string>(
       activeComplexes.map((complex) => ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5)),
     );
@@ -536,4 +536,3 @@ export class WeatherService implements OnModuleInit {
     return new ResponseWeatherDataDto(weather);
   }
 }
-
