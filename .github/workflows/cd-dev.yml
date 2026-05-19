@@ -85,12 +85,13 @@ jobs:
 
       - name: Run database migrations
         run: |
-          docker compose -f ${{ env.COMPOSE_FILE }} --profile dev run --rm api-dev npx prisma migrate deploy
+          docker compose -f ${{ env.COMPOSE_FILE }} --profile dev run --rm api-dev \
+            sh -c "npx prisma generate && npx prisma migrate deploy"
 
       - name: Seed development database
         run: |
           docker compose -f ${{ env.COMPOSE_FILE }} --profile dev run --rm -e NODE_ENV=development api-dev \
-            npx prisma db seed
+            sh -c "npx prisma generate && npx prisma db seed"
 
       - name: Deploy development stack
         run: docker compose -f ${{ env.COMPOSE_FILE }} --profile dev up -d
