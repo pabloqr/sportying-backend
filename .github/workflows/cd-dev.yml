@@ -14,6 +14,7 @@ env:
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tests?schema=public
   CI_JWT_SECRET: ci-access-token-secret
   CI_JWT_REFRESH_SECRET: ci-refresh-token-secret
+  COMPOSE_FILE: /srv/docker/compose/sportying/docker-compose.yml
 
 jobs:
   #---------------------------------------------------------------------------------------------------------------------
@@ -79,20 +80,17 @@ jobs:
           git checkout dev
           git pull origin dev
 
-      - name: Build development stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev build
+      - name: Build image
+        run: docker compose -f ${{ env.COMPOSE_FILE }} --profile dev build
 
       - name: Run database migrations
         run: |
-          docker compose -f /srv/docker/compose/sportying/docker-compose.yml \
-            --profile dev run --rm api-dev \
-            npx prisma migrate deploy
+          docker compose -f ${{ env.COMPOSE_FILE }} --profile dev run --rm api-dev npx prisma migrate deploy
 
       - name: Seed development database
         run: |
-          docker compose -f /srv/docker/compose/sportying/docker-compose.yml \
-            --profile dev run --rm -e NODE_ENV=development api-dev \
-            npm run db:seed
+          docker compose -f ${{ env.COMPOSE_FILE }} --profile dev run --rm -e NODE_ENV=development api-dev \
+            npx prisma db seed
 
       - name: Deploy development stack
-        run: docker compose -f /srv/docker/compose/sportying/docker-compose.yml --profile dev up -d
+        run: docker compose -f ${{ env.COMPOSE_FILE }} --profile dev up -d
