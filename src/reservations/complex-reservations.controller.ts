@@ -26,4 +26,3 @@ export class ComplexReservationsController {
     return this.reservationsService.createReservation(complexId, dto);
   }
 }
-

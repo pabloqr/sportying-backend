@@ -1,5 +1,5 @@
-import { WeatherController } from '../../src/weather/weather.controller.js';
-import { WeatherService } from '../../src/weather/weather.service.js';
+import { WeatherController } from 'src/weather/weather.controller.js';
+import { WeatherService } from 'src/weather/weather.service.js';
 import request from 'supertest';
 import { createIntegrationApp, resetMockUser } from './mock/factories.js';
 

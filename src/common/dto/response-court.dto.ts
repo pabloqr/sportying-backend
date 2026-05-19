@@ -63,4 +63,3 @@ export class ResponseCourtDto {
     this.updatedAt = new Date(court.updated_at ?? court.updatedAt);
   }
 }
-

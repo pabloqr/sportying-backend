@@ -117,5 +117,3 @@ export class GetCourtsDto {
   @IsOptional()
   orderParams?: CourtOrderParamsDto[];
 }
-
-

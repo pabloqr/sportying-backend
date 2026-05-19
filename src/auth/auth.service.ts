@@ -210,7 +210,7 @@ export class AuthService {
    * @param {SigninAuthDto} dto - The data transfer object containing user login credentials, including mail and
    * password.
    * @return {Promise<object>} A Promise that resolves to an object containing authentication tokens and user details.
-   * @throws {ForbiddenException} If the provided credentials (email or password) are invalid.
+   * @throws {UnauthorizedException} If the provided credentials (email or password) are invalid.
    */
   async signin(dto: SigninAuthDto): Promise<object> {
     // Buscar al usuario según el correo electrónico
@@ -304,4 +304,3 @@ export class AuthService {
     return this.getSignedTokens(user.id, user.mail, role);
   }
 }
-

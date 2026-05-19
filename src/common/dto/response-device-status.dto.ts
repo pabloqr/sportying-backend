@@ -28,4 +28,3 @@ export class ResponseDeviceStatusDto {
     this.createdAt = new Date(courtStatus.created_at ?? courtStatus.createdAt);
   }
 }
-

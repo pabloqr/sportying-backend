@@ -12,4 +12,3 @@ import { UserReservationsController } from './user-reservations.controller.js';
   exports: [ReservationsService],
 })
 export class ReservationsModule {}
-

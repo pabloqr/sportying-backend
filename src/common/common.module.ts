@@ -12,4 +12,3 @@ import { UtilitiesService } from './utilities.service.js';
   exports: [ErrorsService, UtilitiesService, AnalysisService],
 })
 export class CommonModule {}
-

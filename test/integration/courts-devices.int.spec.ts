@@ -1,8 +1,8 @@
-import { ErrorsService } from '../../src/common/errors.service.js';
-import { CourtsDevicesController } from '../../src/courts-devices/courts-devices.controller.js';
-import { CourtsDevicesService } from '../../src/courts-devices/courts-devices.service.js';
-import { CourtsStatusService } from '../../src/courts-status/courts-status.service.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { ErrorsService } from 'src/common/errors.service.js';
+import { CourtsDevicesController } from 'src/courts-devices/courts-devices.controller.js';
+import { CourtsDevicesService } from 'src/courts-devices/courts-devices.service.js';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

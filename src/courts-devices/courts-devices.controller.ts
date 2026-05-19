@@ -39,4 +39,3 @@ export class CourtsDevicesController {
     return this.courtsDevicesService.setDeviceCourts(complexId, deviceId, body);
   }
 }
-

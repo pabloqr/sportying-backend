@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotificationsSseService } from '../../../src/notifications/notifications-sse.service.js';
-import { NotificationsService } from '../../../src/notifications/notifications.service.js';
+import { NotificationsSseService } from 'src/notifications/notifications-sse.service.js';
+import { NotificationsService } from 'src/notifications/notifications.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

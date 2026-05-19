@@ -1,5 +1,5 @@
 import * as argon from 'argon2';
-import { device_type, PrismaClient, user_role } from 'prisma/generated/client.js';
+import { device_type, PrismaClient, user_role } from '../generated/client.js';
 import {
   assignAdminToComplex,
   assignDeviceToCourt,
@@ -7,7 +7,7 @@ import {
   upsertCourt,
   upsertDevice,
   upsertUser,
-} from 'prisma/seeds/core.js';
+} from './core.js';
 
 const demoPassword = '1234';
 const demoRainDeviceSecret = 'dev-rain-device-secret';

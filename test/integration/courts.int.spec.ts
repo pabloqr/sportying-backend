@@ -1,11 +1,11 @@
-import { ErrorsService } from '../../src/common/errors.service.js';
-import { UtilitiesService } from '../../src/common/utilities.service.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
-import { CourtsController } from '../../src/courts/courts.controller.js';
-import { CourtsService } from '../../src/courts/courts.service.js';
-import { CourtsStatusService } from '../../src/courts-status/courts-status.service.js';
-import { ReservationsService } from '../../src/reservations/reservations.service.js';
-import { WeatherService } from '../../src/weather/weather.service.js';
+import { ErrorsService } from 'src/common/errors.service.js';
+import { UtilitiesService } from 'src/common/utilities.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
+import { CourtsController } from 'src/courts/courts.controller.js';
+import { CourtsService } from 'src/courts/courts.service.js';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service.js';
+import { ReservationsService } from 'src/reservations/reservations.service.js';
+import { WeatherService } from 'src/weather/weather.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

@@ -127,5 +127,3 @@ export class GetComplexesDto {
   @IsOptional()
   orderParams?: ComplexOrderParamsDto[];
 }
-
-

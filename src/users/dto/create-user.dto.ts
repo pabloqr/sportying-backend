@@ -37,4 +37,3 @@ export class CreateUserDto {
   @IsOptional()
   password?: string;
 }
-

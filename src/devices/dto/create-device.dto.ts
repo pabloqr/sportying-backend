@@ -10,4 +10,3 @@ export class CreateDeviceDto {
   @IsOptional()
   status?: DeviceStatus;
 }
-

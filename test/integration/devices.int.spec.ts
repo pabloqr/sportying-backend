@@ -1,8 +1,8 @@
-import { AuthService } from '../../src/auth/auth.service.js';
-import { ErrorsService } from '../../src/common/errors.service.js';
-import { DevicesController } from '../../src/devices/devices.controller.js';
-import { DevicesService } from '../../src/devices/devices.service.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { AuthService } from 'src/auth/auth.service.js';
+import { ErrorsService } from 'src/common/errors.service.js';
+import { DevicesController } from 'src/devices/devices.controller.js';
+import { DevicesService } from 'src/devices/devices.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

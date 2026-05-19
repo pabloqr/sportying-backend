@@ -17,4 +17,3 @@ export class ComplexSportsController {
     return this.sportsService.getComplexSports(complexId, query);
   }
 }
-

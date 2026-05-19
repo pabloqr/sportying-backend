@@ -27,4 +27,3 @@ export class CourtsStatusController {
     return this.courtsStatusService.setCourtStatus(complexId, courtId, dto);
   }
 }
-

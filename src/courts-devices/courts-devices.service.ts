@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Prisma } from '../../prisma/generated/client.js';
-import { ResponseCourtDevicesDto, ResponseCourtDto, ResponseDeviceCourtsDto, ResponseDeviceDto } from '../common/dto/index.js';
+import {
+  ResponseCourtDevicesDto,
+  ResponseCourtDto,
+  ResponseDeviceCourtsDto,
+  ResponseDeviceDto,
+} from '../common/dto/index.js';
 import { ErrorsService } from '../common/errors.service.js';
 import { COURT_DEVICES_ORDER_FIELD_MAP, GetCourtDevicesDto } from '../courts/dto/index.js';
 import { CreateDeviceCourtsDto, DEVICE_COURTS_ORDER_FIELD_MAP, GetDeviceCourtsDto } from '../devices/dto/index.js';
@@ -22,7 +27,6 @@ export class CourtsDevicesService {
    * @param {number} courtId - The ID of the court whose devices are being retrieved.
    * @param {GetCourtDevicesDto} dto - Data transfer object containing filtering and ordering parameters.
    * @param {boolean} [checkDeleted=false] - If true, includes devices marked as deleted; otherwise, excludes them.
-   * @param {Function} getDevice - Function to get device details by complexId and deviceId.
    * @return {Promise<ResponseCourtDevicesDto>} A promise that resolves to a ResponseCourtDevicesDto containing the
    * court devices data.
    */
@@ -34,7 +38,7 @@ export class CourtsDevicesService {
   ): Promise<ResponseCourtDevicesDto> {
     // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.courts_devicesWhereInput = {
-      // Evitar obtener las pistas eliminados
+      // Evitar obtener las pistas eliminadas
       ...(!checkDeleted && { is_delete: false }),
 
       // Obtener solo las relaciones del dispositivo actual
@@ -87,7 +91,6 @@ export class CourtsDevicesService {
    * @param {number} complexId - The unique identifier of the complex.
    * @param {number} deviceId - The unique identifier of the device.
    * @param {GetDeviceCourtsDto} dto - The data transfer object containing filters and order parameters for the courts.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
    * @param {boolean} [checkDeleted=false] - A flag to include deleted courts in the result. If false, deleted courts
    * are excluded.
    * @return {Promise<ResponseDeviceCourtsDto>} A promise that resolves with a response object containing the device ID,
@@ -101,7 +104,7 @@ export class CourtsDevicesService {
   ): Promise<ResponseDeviceCourtsDto> {
     // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.courts_devicesWhereInput = {
-      // Evitar obtener las pistas eliminados
+      // Evitar obtener las pistas eliminadas
       ...(!checkDeleted && { is_delete: false }),
 
       // Obtener solo las relaciones del dispositivo actual
@@ -156,7 +159,6 @@ export class CourtsDevicesService {
    * @param {number} deviceId - The identifier for the specific device to associate with the courts.
    * @param {CreateDeviceCourtsDto} dto - An object containing the list of court IDs to be associated with the specified
    * device.
-   * @param {Function} getCourt - Function to get court details by complexId and courtId.
    * @return {Promise<ResponseDeviceCourtsDto>} A promise that resolves to an object containing the updated device-court
    * associations.
    */
@@ -184,11 +186,7 @@ export class CourtsDevicesService {
           });
 
           // Obtener la pista actual para poder devolverla
-          const newCourt = await this.prisma.courts.findUnique({ where: { id: courtId } });
-          // Verificar los datos obtenidos
-          if (!newCourt) {
-            throw new NotFoundException(`Court with ID ${courtId} not found.`);
-          }
+          const newCourt = await this.prisma.courts.findUniqueOrThrow({ where: { id: courtId } });
 
           const courtStatus = await this.courtsStatusService.getCourtStatus(complexId, courtId);
           const newCourtWithStatus = { ...newCourt, status_data: courtStatus.statusData };
@@ -245,5 +243,3 @@ export class CourtsDevicesService {
     }
   }
 }
-
-
