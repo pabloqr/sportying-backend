@@ -97,4 +97,3 @@ export class DevicesController {
     return this.devicesService.setDeviceStatus(complexId, deviceId, body);
   }
 }
-

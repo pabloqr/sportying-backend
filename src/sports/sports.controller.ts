@@ -20,4 +20,3 @@ export class SportsController {
     return this.sportsService.getSport(sportKey);
   }
 }
-

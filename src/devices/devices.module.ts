@@ -10,4 +10,3 @@ import { DevicesService } from './devices.service.js';
   exports: [DevicesService],
 })
 export class DevicesModule {}
-

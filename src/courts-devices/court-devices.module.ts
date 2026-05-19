@@ -10,4 +10,3 @@ import { CourtsDevicesService } from './courts-devices.service.js';
   exports: [CourtsDevicesService],
 })
 export class CourtsDevicesModule {}
-

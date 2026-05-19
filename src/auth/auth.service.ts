@@ -304,4 +304,3 @@ export class AuthService {
     return this.getSignedTokens(user.id, user.mail, role);
   }
 }
-

@@ -35,4 +35,3 @@ export class ResponseDeviceDto {
     this.updatedAt = new Date(device.updated_at ?? device.updatedAt);
   }
 }
-

@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Prisma } from '../../prisma/generated/client.js';
-import { ResponseCourtDevicesDto, ResponseCourtDto, ResponseDeviceCourtsDto, ResponseDeviceDto } from '../common/dto/index.js';
+import {
+  ResponseCourtDevicesDto,
+  ResponseCourtDto,
+  ResponseDeviceCourtsDto,
+  ResponseDeviceDto,
+} from '../common/dto/index.js';
 import { ErrorsService } from '../common/errors.service.js';
 import { COURT_DEVICES_ORDER_FIELD_MAP, GetCourtDevicesDto } from '../courts/dto/index.js';
 import { CreateDeviceCourtsDto, DEVICE_COURTS_ORDER_FIELD_MAP, GetDeviceCourtsDto } from '../devices/dto/index.js';
@@ -245,5 +250,3 @@ export class CourtsDevicesService {
     }
   }
 }
-
-

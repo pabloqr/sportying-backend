@@ -16,4 +16,3 @@ export class WeatherController {
     return new ResponseComplexWeatherDto({ id: complexId, weather });
   }
 }
-

@@ -9,7 +9,13 @@ import { ReservationOrderField } from '../reservations/dto/index.js';
 import { ReservationAvailabilityStatus, ReservationStatus } from '../reservations/enums/index.js';
 import { ReservationsService } from '../reservations/reservations.service.js';
 import { WeatherService } from '../weather/weather.service.js';
-import { COURT_ORDER_FIELD_MAP, CreateCourtDto, CreateCourtStatusDto, GetCourtsDto, UpdateCourtDto } from './dto/index.js';
+import {
+  COURT_ORDER_FIELD_MAP,
+  CreateCourtDto,
+  CreateCourtStatusDto,
+  GetCourtsDto,
+  UpdateCourtDto,
+} from './dto/index.js';
 import { CourtStatus, INACTIVE_COURT_STATUS } from './enums/index.js';
 
 @Injectable()
@@ -511,5 +517,3 @@ export class CourtsService {
     );
   }
 }
-
-
