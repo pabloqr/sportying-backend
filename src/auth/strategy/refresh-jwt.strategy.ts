@@ -37,4 +37,3 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     return userWithoutPrivateInfo;
   }
 }
-

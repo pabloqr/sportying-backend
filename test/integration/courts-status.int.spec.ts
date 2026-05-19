@@ -1,8 +1,8 @@
-import { Role } from '../../src/auth/enums/index.js';
-import { ErrorsService } from '../../src/common/errors.service.js';
-import { CourtsStatusController } from '../../src/courts-status/courts-status.controller.js';
-import { CourtsStatusService } from '../../src/courts-status/courts-status.service.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { Role } from 'src/auth/enums/index.js';
+import { ErrorsService } from 'src/common/errors.service.js';
+import { CourtsStatusController } from 'src/courts-status/courts-status.controller.js';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

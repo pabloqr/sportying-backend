@@ -5,15 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { OrderBy } from '../../../src/common/enums/index.js';
-import { ErrorsService } from '../../../src/common/errors.service.js';
-import { UtilitiesService } from '../../../src/common/utilities.service.js';
-import { ComplexesService } from '../../../src/complexes/complexes.service.js';
-import { ComplexOrderField } from '../../../src/complexes/dto/index.js';
-import { CourtsService } from '../../../src/courts/courts.service.js';
-import { PrismaService } from '../../../src/prisma/prisma.service.js';
-import { SportsService } from '../../../src/sports/sports.service.js';
-import { WeatherService } from '../../../src/weather/weather.service.js';
+import { OrderBy } from 'src/common/enums/index.js';
+import { ErrorsService } from 'src/common/errors.service.js';
+import { UtilitiesService } from 'src/common/utilities.service.js';
+import { ComplexesService } from 'src/complexes/complexes.service.js';
+import { ComplexOrderField } from 'src/complexes/dto/index.js';
+import { CourtsService } from 'src/courts/courts.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
+import { SportsService } from 'src/sports/sports.service.js';
+import { WeatherService } from 'src/weather/weather.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

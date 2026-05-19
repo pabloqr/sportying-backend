@@ -1,8 +1,8 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Role } from '../../../src/auth/enums/index.js';
-import { ReservationsService } from '../../../src/reservations/reservations.service.js';
-import { UserReservationsController } from '../../../src/reservations/user-reservations.controller.js';
+import { Role } from 'src/auth/enums/index.js';
+import { ReservationsService } from 'src/reservations/reservations.service.js';
+import { UserReservationsController } from 'src/reservations/user-reservations.controller.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

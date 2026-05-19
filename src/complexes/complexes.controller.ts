@@ -66,4 +66,3 @@ export class ComplexesController {
     return this.complexesService.getComplexAvailability(complexId, groupAvailability);
   }
 }
-

@@ -79,4 +79,3 @@ export class UsersController {
     return this.usersService.deleteUser(userId);
   }
 }
-

@@ -20,4 +20,3 @@ export class DeviceTelemetrySlotDto {
     this.createdAt = new Date(telemetrySlot.created_at ?? telemetrySlot.createdAt);
   }
 }
-

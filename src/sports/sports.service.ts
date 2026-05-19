@@ -100,5 +100,3 @@ export class SportsService {
     return sport;
   }
 }
-
-

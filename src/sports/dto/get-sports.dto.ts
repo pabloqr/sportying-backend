@@ -84,5 +84,3 @@ export class GetSportsDto {
   @IsOptional()
   orderParams?: SportOrderParamsDto[];
 }
-
-

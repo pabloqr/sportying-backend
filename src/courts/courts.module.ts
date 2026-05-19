@@ -12,4 +12,3 @@ import { CourtsService } from './courts.service.js';
   exports: [CourtsService],
 })
 export class CourtsModule {}
-

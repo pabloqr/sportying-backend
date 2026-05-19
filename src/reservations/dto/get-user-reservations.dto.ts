@@ -2,7 +2,11 @@ import { Transform, Type } from 'class-transformer';
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { Prisma } from '../../../prisma/generated/client.js';
 import { OrderBy } from '../../common/enums/index.js';
-import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../../reservations/enums/index.js';
+import {
+  ReservationAvailabilityStatus,
+  ReservationStatus,
+  ReservationTimeFilter,
+} from '../../reservations/enums/index.js';
 
 export enum ReservationOrderField {
   ID = 'id',
@@ -134,5 +138,3 @@ export class GetUserReservationsDto {
   @IsOptional()
   orderParams?: ReservationOrderParamsDto[];
 }
-
-

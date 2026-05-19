@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
-import { Role } from '../../src/auth/enums/index.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
-import { CreateReservationDto } from '../../src/reservations/dto/index.js';
+import { Role } from 'src/auth/enums/index.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
+import { CreateReservationDto } from 'src/reservations/dto/index.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

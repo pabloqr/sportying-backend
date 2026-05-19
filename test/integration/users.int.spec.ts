@@ -1,10 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Role } from '../../src/auth/enums/index.js';
-import { ErrorsService } from '../../src/common/errors.service.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
-import { UsersController } from '../../src/users/users.controller.js';
-import { UsersService } from '../../src/users/users.service.js';
+import { Role } from 'src/auth/enums/index.js';
+import { ErrorsService } from 'src/common/errors.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
+import { UsersController } from 'src/users/users.controller.js';
+import { UsersService } from 'src/users/users.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

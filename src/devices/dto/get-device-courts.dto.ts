@@ -70,5 +70,3 @@ export class GetDeviceCourtsDto {
   @IsOptional()
   orderParams?: DeviceCourtsOrderParamsDto[];
 }
-
-

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from '../../../src/auth/auth.controller.js';
-import { AuthService } from '../../../src/auth/auth.service.js';
+import { AuthController } from 'src/auth/auth.controller.js';
+import { AuthService } from 'src/auth/auth.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

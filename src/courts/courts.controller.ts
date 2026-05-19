@@ -55,4 +55,3 @@ export class CourtsController {
     return this.courtsService.getCourtAvailability(complexId, courtId, groupAvailability);
   }
 }
-
