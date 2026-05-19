@@ -1,6 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CourtStatus } from '../courts/enums/index.js';
-import { ReservationAvailabilityStatus, ReservationStatus, ReservationTimeFilter } from '../reservations/enums/index.js';
+import {
+  ReservationAvailabilityStatus,
+  ReservationStatus,
+  ReservationTimeFilter,
+} from '../reservations/enums/index.js';
 
 @Injectable()
 export class UtilitiesService {
@@ -140,4 +144,3 @@ export class UtilitiesService {
     return reservationStatus;
   }
 }
-

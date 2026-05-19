@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UtilitiesService } from '../../../src/common/utilities.service.js';
-import { CourtsStatusService } from '../../../src/courts-status/courts-status.service.js';
-import { NotificationsService } from '../../../src/notifications/notifications.service.js';
-import { PrismaService } from '../../../src/prisma/prisma.service.js';
-import { ReservationsStatusService } from '../../../src/reservations-status/reservations-status.service.js';
-import { AnalysisService, WeatherData } from '../../../src/common/analysis.service.js';
-import { ReservationAvailabilityStatus } from '../../../src/reservations/enums/index.js';
+import { UtilitiesService } from 'src/common/utilities.service.js';
+import { CourtsStatusService } from 'src/courts-status/courts-status.service.js';
+import { NotificationsService } from 'src/notifications/notifications.service.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
+import { ReservationsStatusService } from 'src/reservations-status/reservations-status.service.js';
+import { AnalysisService, WeatherData } from 'src/common/analysis.service.js';
+import { ReservationAvailabilityStatus } from 'src/reservations/enums/index.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Helpers

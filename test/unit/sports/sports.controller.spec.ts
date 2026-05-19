@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SportsController } from '../../../src/sports/sports.controller.js';
-import { SportsService } from '../../../src/sports/sports.service.js';
+import { SportsController } from 'src/sports/sports.controller.js';
+import { SportsService } from 'src/sports/sports.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ComplexesController } from '../../../src/complexes/complexes.controller.js';
-import { ComplexesService } from '../../../src/complexes/complexes.service.js';
+import { ComplexesController } from 'src/complexes/complexes.controller.js';
+import { ComplexesService } from 'src/complexes/complexes.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Mock factories

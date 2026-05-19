@@ -19,4 +19,3 @@ export class ApiKeyStrategy extends PassportStrategy(Strategy, 'api-key') {
     return this.authService.validateApiKey(apiKey);
   }
 }
-

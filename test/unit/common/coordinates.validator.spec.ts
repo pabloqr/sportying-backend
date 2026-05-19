@@ -1,6 +1,6 @@
 import { getMetadataStorage, validateSync } from 'class-validator';
 import 'reflect-metadata';
-import { Coordinates, CoordinatesValidator } from '../../../src/common/validators/coordinates.validator.js';
+import { Coordinates, CoordinatesValidator } from 'src/common/validators/index.js';
 
 //--------------------------------------------------------------------------------------------------------------------//
 // Test suite

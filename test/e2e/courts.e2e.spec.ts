@@ -1,9 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '../../src/auth/enums/index.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
-import { ReservationsService } from '../../src/reservations/reservations.service.js';
-import { WeatherService } from '../../src/weather/weather.service.js';
+import { Role } from 'src/auth/enums/index.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
+import { ReservationsService } from 'src/reservations/reservations.service.js';
+import { WeatherService } from 'src/weather/weather.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

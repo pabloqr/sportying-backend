@@ -6,4 +6,3 @@ export class CreateDeviceStatusDto {
   @IsNotEmpty()
   status: DeviceStatus;
 }
-

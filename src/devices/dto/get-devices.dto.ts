@@ -122,5 +122,3 @@ export class GetDevicesDto {
   @IsOptional()
   orderParams?: DeviceOrderParamsDto[];
 }
-
-

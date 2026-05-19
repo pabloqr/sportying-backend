@@ -23,4 +23,3 @@ export class CourtStatusData {
     this.estimatedDryingTime = courtStatus.estimated_drying_time ?? courtStatus.estimatedDryingTime;
   }
 }
-

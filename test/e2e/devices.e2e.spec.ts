@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from '../../src/auth/auth.service.js';
-import { Role } from '../../src/auth/enums/index.js';
-import { PrismaService } from '../../src/prisma/prisma.service.js';
+import { AuthService } from 'src/auth/auth.service.js';
+import { Role } from 'src/auth/enums/index.js';
+import { PrismaService } from 'src/prisma/prisma.service.js';
 import request from 'supertest';
 import {
   cleanupComplexes,

@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import * as ngeohash from 'ngeohash';
+import ngeohash from 'ngeohash';
 import { Prisma } from '../../prisma/generated/client.js';
 import {
   ResponseComplexDto,
@@ -309,5 +309,3 @@ export class ComplexesService {
     return this.courtsService.getCourtsAvailability(complexId, groupAvailability);
   }
 }
-
-

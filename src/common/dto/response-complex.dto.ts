@@ -84,4 +84,3 @@ export class ResponseComplexDto {
     this.updatedAt = new Date(complex.updated_at ?? complex.updatedAt);
   }
 }
-

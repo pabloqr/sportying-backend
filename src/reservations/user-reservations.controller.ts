@@ -24,4 +24,3 @@ export class UserReservationsController {
     return this.reservationsService.getUserReservations(userId, query);
   }
 }
-

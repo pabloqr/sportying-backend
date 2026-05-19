@@ -12,4 +12,3 @@ import { ComplexesService } from './complexes.service.js';
   exports: [ComplexesService],
 })
 export class ComplexesModule {}
-

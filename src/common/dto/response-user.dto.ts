@@ -53,4 +53,3 @@ export class ResponseUserDto {
     this.updated_at = new Date(user.updated_at ?? user.updatedAt);
   }
 }
-

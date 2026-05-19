@@ -37,4 +37,3 @@ export class CreateComplexDto {
   @IsNotEmpty()
   locLongitude: number;
 }
-
