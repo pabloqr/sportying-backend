@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.11](https://github.com/pabloqr/sportying-backend/compare/v0.2.10...v0.2.11) (2026-05-19)
+
+
+### Refactors
+
+* update ngeohash import style and minor code cleanup ([f328a6d](https://github.com/pabloqr/sportying-backend/commit/f328a6dbdb7796fa732641e322fffa1a51b9754c))
+
+
+### Documentation
+
+* fix typos, update JSDoc, and correct Prisma import path ([f328a6d](https://github.com/pabloqr/sportying-backend/commit/f328a6dbdb7796fa732641e322fffa1a51b9754c))
+
+
+### Tests
+
+* refactor imports to absolute paths and update jest configuration ([f328a6d](https://github.com/pabloqr/sportying-backend/commit/f328a6dbdb7796fa732641e322fffa1a51b9754c))
+
 ## [0.2.10](https://github.com/pabloqr/sportying-backend/compare/v0.2.9...v0.2.10) (2026-05-19)
 
 
