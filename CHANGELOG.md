@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.12](https://github.com/pabloqr/sportying-backend/compare/v0.2.11...v0.2.12) (2026-05-19)
+
+
+### CI/CD
+
+* update back-merge workflow ([#113](https://github.com/pabloqr/sportying-backend/issues/113)) ([2bfa0d3](https://github.com/pabloqr/sportying-backend/commit/2bfa0d3641a721f90335482881b73f99cc216c6f))
+
 ## [0.2.11](https://github.com/pabloqr/sportying-backend/compare/v0.2.10...v0.2.11) (2026-05-19)
 
 
