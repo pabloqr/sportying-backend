@@ -5,7 +5,7 @@ async function main() {
   await seedBaseData(prisma);
 
   if (process.env.NODE_ENV === 'development') {
-    const { seedDevelopmentData } = await import('prisma/seeds/development.js');
+    const { seedDevelopmentData } = await import('./seeds/development.js');
     await seedDevelopmentData(prisma);
   }
 }

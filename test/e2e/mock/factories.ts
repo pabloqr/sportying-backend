@@ -2,7 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
-import { user_role } from 'prisma/generated/client.js';
+import { user_role } from '../../../prisma/generated/client.js';
 import { AppModule } from 'src/app.module.js';
 import { Role } from 'src/auth/enums/index.js';
 import { PrismaService } from 'src/prisma/prisma.service.js';

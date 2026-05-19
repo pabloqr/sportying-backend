@@ -15,7 +15,7 @@ jest.mock('../../../prisma/generated/client.js', () => ({
 }));
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from 'prisma/generated/client.js';
+import { PrismaClient } from '../../../prisma/generated/client.js';
 import { PrismaService } from 'src/prisma/prisma.service.js';
 
 //--------------------------------------------------------------------------------------------------------------------//

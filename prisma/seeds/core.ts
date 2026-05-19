@@ -1,4 +1,4 @@
-import { device_status, device_type, PrismaClient, user_role } from 'prisma/generated/client.js';
+import { device_status, device_type, PrismaClient, user_role } from '../generated/client.js';
 
 export const time = (value: string) => new Date(`1970-01-01T${value}:00.000Z`);
 
