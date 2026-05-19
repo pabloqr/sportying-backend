@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.10](https://github.com/pabloqr/sportying-backend/compare/v0.2.9...v0.2.10) (2026-05-19)
+
+
+### Refactors
+
+* **prisma:** modularize database seeding and add development environment data ([4d24f58](https://github.com/pabloqr/sportying-backend/commit/4d24f588caf6483edd11d5ead56b37e99d7a7224))
+
+
+### CI/CD
+
+* add build, migrate, and seed steps to development CD workflow ([4d24f58](https://github.com/pabloqr/sportying-backend/commit/4d24f588caf6483edd11d5ead56b37e99d7a7224))
+* add validation jobs to CD workflows ([4d24f58](https://github.com/pabloqr/sportying-backend/commit/4d24f588caf6483edd11d5ead56b37e99d7a7224))
+* consolidate development and production workflows ([4d24f58](https://github.com/pabloqr/sportying-backend/commit/4d24f588caf6483edd11d5ead56b37e99d7a7224))
+* refactor CI workflows and integrate DB seeding ([#102](https://github.com/pabloqr/sportying-backend/issues/102)) ([4d24f58](https://github.com/pabloqr/sportying-backend/commit/4d24f588caf6483edd11d5ead56b37e99d7a7224))
+
 ## [0.2.9](https://github.com/pabloqr/sportying-backend/compare/v0.2.8...v0.2.9) (2026-04-24)
 
 
