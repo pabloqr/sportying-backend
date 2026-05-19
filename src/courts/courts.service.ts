@@ -54,7 +54,7 @@ export class CourtsService {
     // Si existe, lanzar un error de conflicto
     if (exists) {
       throw new ConflictException(
-        `Court number ${number} alerady exists in complex with ID ${complexId} and SportKey ${sportKey}`,
+        `Court number ${number} already exists in complex with ID ${complexId} and SportKey ${sportKey}`,
       );
     }
   }
@@ -118,7 +118,7 @@ export class CourtsService {
   ): Promise<Array<ResponseCourtDto>> {
     // Construir el objeto 'where' para establecer las condiciones de la consulta
     const where: Prisma.courtsWhereInput = {
-      // Evitar obtener las pistas eliminados
+      // Evitar obtener las pistas eliminadas
       ...(!checkDeleted && { is_delete: false }),
 
       // Obtener solo las pistas del complejo actual
@@ -202,6 +202,7 @@ export class CourtsService {
    *
    * @param {number} complexId - The ID of the complex where the court is located.
    * @param {number} courtId - The ID of the court to be retrieved.
+   * @param {boolean} [checkDeleted=false] - Whether to include deleted courts in the results.
    * @return {Promise<ResponseCourtDto>} A promise that resolves to the details of the requested court.
    * @throws {NotFoundException} If no court with the specified ID is found.
    * @throws {InternalServerErrorException} If multiple courts with the specified ID are found.
@@ -237,7 +238,7 @@ export class CourtsService {
    */
   async createCourt(complexId: number, dto: CreateCourtDto): Promise<ResponseCourtDto> {
     try {
-      // Obtener de la petición o calcular el número de pista para la combinación complejo-deporte
+      // Obtener de la petición o calcular el número de la pista para la combinación complejo-deporte
       const number = dto.number ?? (await this.calculateCourtNumber(complexId, dto.sportKey));
 
       // Verificar si hay una pista existente para el número dado y la combinación complejo-deporte
@@ -275,7 +276,7 @@ export class CourtsService {
           estimatedDryingTime: weather.estimated_drying_time,
         };
       } else {
-        // Establecer los datos del estado de la pista con los dado o unos por defecto
+        // Establecer los datos del estado de la pista con los dados o unos por defecto
         statusData = {
           status: dto.statusData?.status ?? CourtStatus.OPEN,
           alertLevel: 0,
