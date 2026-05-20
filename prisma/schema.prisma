@@ -192,6 +192,7 @@ model weather {
   created_at              DateTime @default(now()) @db.Timestamp(6)
 
   @@id([geohash, created_at])
+  @@index([created_at], map: "index_weather_created_at")
   @@index([geohash, created_at(sort: Desc)], map: "index_weather_geohash_created_at_desc")
 }
 
