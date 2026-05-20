@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.14](https://github.com/pabloqr/sportying-backend/compare/v0.2.13...v0.2.14) (2026-05-20)
+
+
+### Bug Fixes
+
+* **weather:** weather service exception ([#127](https://github.com/pabloqr/sportying-backend/issues/127)) ([52313a7](https://github.com/pabloqr/sportying-backend/commit/52313a731d1dcedc36b604c9b4077fe92e9e6012))
+* **weather:** weather service exception ([#129](https://github.com/pabloqr/sportying-backend/issues/129)) ([a1c49bc](https://github.com/pabloqr/sportying-backend/commit/a1c49bc0824986670f993874e338d441ef00ca52))
+
+
+### Performance
+
+* **prisma:** apply DB migration ([#128](https://github.com/pabloqr/sportying-backend/issues/128)) ([4925cf9](https://github.com/pabloqr/sportying-backend/commit/4925cf90a93f5368d9cdf7de4d73a57e247b6603))
+
+
+### CI/CD
+
+* fix release-please configuration and update workflow syntax ([#131](https://github.com/pabloqr/sportying-backend/issues/131)) ([6b07ec6](https://github.com/pabloqr/sportying-backend/commit/6b07ec6b8ee20e809b56911c219b72eb0da66f6f))
+* fix release-please configuration and update workflow syntax ([#132](https://github.com/pabloqr/sportying-backend/issues/132)) ([c06813a](https://github.com/pabloqr/sportying-backend/commit/c06813a3abf9c401767e425ea151c9c0f12dda11))
+
 ## [0.2.13](https://github.com/pabloqr/sportying-backend/compare/v0.2.12...v0.2.13) (2026-05-19)
 
 
