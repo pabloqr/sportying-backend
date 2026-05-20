@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   OnModuleInit,
   UnprocessableEntityException,
@@ -35,6 +36,8 @@ interface RawWeatherData {
 
 @Injectable({})
 export class WeatherService implements OnModuleInit {
+  private readonly logger = new Logger(WeatherService.name);
+
   private activeRequests = new Map<string, Promise<ResponseWeatherDataDto>>();
 
   constructor(
@@ -308,9 +311,14 @@ export class WeatherService implements OnModuleInit {
       // Transformar a WeatherDataDto para persistencia
       const weatherDto = this.toWeatherDataDto(rawWeather);
 
+      // Calcular la fecha límite (1 semana)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() - 7);
+      // expirationData.setHours(expirationDate.getHours - 48);
+
       // Obtener la cantidad de agua en superficie previa para el procesamiento de datos
       const weather = await this.prisma.weather.findFirst({
-        where: { geohash },
+        where: { geohash, created_at: { gte: expirationDate } },
         orderBy: { created_at: 'desc' },
         select: {
           surface_water_prev: true,
@@ -376,6 +384,9 @@ export class WeatherService implements OnModuleInit {
     // Añadir 1 hora para obtener el instante final
     const targetTimeEnd = new Date(currentTime.getTime() + 60 * 60000);
 
+    this.logger.log(`Starting weather update`);
+    const startedAt = Date.now();
+
     // Obtener complejos activos (20 min antes de abrir hasta el cierre)
     const activeComplexes = await this.prisma.complexes.findMany({
       where: {
@@ -393,16 +404,25 @@ export class WeatherService implements OnModuleInit {
       },
     });
 
+    this.logger.log(`Weather update activeComplexes=${activeComplexes.length}`);
+
     // Si no hay complejos, finalizar la ejecución
-    if (activeComplexes.length === 0) return;
+    if (activeComplexes.length === 0) {
+      this.logger.log(`Finished weather update. reason=no_active_complexes`);
+      return;
+    }
 
     // Generar geohashes únicos (Precisión 5 = ~4.9 km x 4.9 km)
     const geohashes = new Set<string>(
       activeComplexes.map((complex) => ngeohash.encode(complex.loc_latitude, complex.loc_longitude, 5)),
     );
 
+    this.logger.log(`Weather update geohashes=${geohashes.size}`);
+
     // Procesar los geohashes para obtener los datos de la API y actualizar la BD
     for (const geohash of geohashes) await this.updateWeather(geohash);
+
+    this.logger.log(`Finished weather update. geohashes=${geohashes.size} durationMs=${Date.now() - startedAt}`);
   }
 
   /**
@@ -412,21 +432,31 @@ export class WeatherService implements OnModuleInit {
    * @throws {InternalServerErrorException} When the database deletion fails.
    */
   private async purgeWeatherLogic() {
-    try {
-      // Calcular la fecha límite (1 semana)
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() - 7);
-      // expirationData.setHours(expirationDate.getHours - 48);
+    // Calcular la fecha límite (1 semana)
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() - 7);
+    // expirationData.setHours(expirationDate.getHours - 48);
 
+    this.logger.log(`Starting weather purge. expirationDate=${expirationDate.toISOString()}`);
+    const startedAt = Date.now();
+
+    try {
       // Eliminar las entradas de la BD más antiguas que la fecha límite
-      await this.prisma.weather.deleteMany({
+      const result = await this.prisma.weather.deleteMany({
         where: { created_at: { lt: expirationDate } },
       });
+
+      this.logger.log(`Finished weather purge. deleted=${result.count} durationMs=${Date.now() - startedAt}`);
     } catch (error) {
-      throw new InternalServerErrorException(
-        `Error deleting old weather data:`,
+      this.logger.error(
+        `Failed weather purge. expirationDate=${expirationDate.toISOString()} durationMs=${Date.now() - startedAt}`,
         this.errorsService.getErrorMessage(error),
       );
+
+      // throw new InternalServerErrorException(
+      //   `Error deleting old weather data:`,
+      //   this.errorsService.getErrorMessage(error),
+      // );
     }
   }
 
@@ -435,8 +465,7 @@ export class WeatherService implements OnModuleInit {
    * Purges expired weather data and performs the initial weather update for active complexes.
    */
   async onModuleInit() {
-    await this.purgeWeatherLogic();
-    await this.updateWeatherLogic();
+    await Promise.all([this.purgeWeatherLogic(), this.updateWeatherLogic()]);
   }
 
   /**
