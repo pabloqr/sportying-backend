@@ -1,4 +1,4 @@
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { fetchWeatherApi } from 'openmeteo';
 import { AnalysisService } from 'src/common/analysis.service.js';
@@ -398,10 +398,13 @@ describe('WeatherService', () => {
     expect(purgeSpy).toHaveBeenCalled();
   });
 
-  it('wraps purge failures in InternalServerErrorException', async () => {
+  it('logs purge failures without throwing', async () => {
+    const loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
     mockPrisma.weather.deleteMany.mockRejectedValue(new Error('db'));
 
-    await expect((service as any).purgeWeatherLogic()).rejects.toThrow(InternalServerErrorException);
+    await expect((service as any).purgeWeatherLogic()).resolves.toBeUndefined();
+
+    expect(loggerErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Failed weather purge. expirationDate='), 'db');
   });
 
   it('clears pending requests when an update fails', async () => {
