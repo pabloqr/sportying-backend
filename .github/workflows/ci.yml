@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v7
@@ -81,7 +81,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v7
@@ -162,7 +162,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v7
@@ -212,7 +212,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v7
